@@ -284,7 +284,7 @@ dialog .f label .hint,
   border: 1.5px solid rgba(27, 21, 12, 0.18);
   border-radius: var(--r-sm);
   font: inherit;
-  font-size: 15.5px;
+  font-size: 16px;
   color: var(--ink);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -301,7 +301,7 @@ dialog .f select,
   background: #14100a;
   border: 1.5px solid rgba(214, 167, 54, 0.35);
   color: #fffdf8;
-  font-size: 14.5px;
+  font-size: 16px;
 }
 
 .dlg .f input::placeholder,
@@ -414,7 +414,7 @@ dialog .f select:focus,
 
 .opt > span b {
   color: var(--ink);
-  font-size: 15.5px;
+  font-size: 16px;
 }
 
 .opt > span span {
@@ -454,7 +454,7 @@ dialog .f select:focus,
   border: 0;
   background: none;
   font-weight: 600;
-  font-size: 15.5px;
+  font-size: 16px;
   color: var(--ink);
 }
 

@@ -636,7 +636,7 @@ views.confirmation = () => {
   const custPhone = (o.customer && o.customer.phone) || o.phone || "";
   const waToCustomer = custPhone ? `<a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/92${custPhone.replace(/^0/, "")}?text=${encodeURIComponent(waMsg)}">💬 Receive WhatsApp Confirmation</a>` : "";
   const trackBtn = `<a class="btn btn-line btn-sm" href="#/track/${o.id}">🚚 Track Order Live</a>`;
-  const emailBtn = `<a class="btn btn-line btn-sm" href="mailto:${(o.customer && o.customer.email) || o.email || C.email}?subject=${encodeURIComponent("Order " + o.id + " Confirmation")}&body=${encodeURIComponent(waMsg)}">✉ Email Receipt</a>`;
+  const emailBtn = `<button class="btn btn-line btn-sm" onclick="openOrderReceiptDialog('${o.id}')">✉ View & Send Receipt</button>`;
 
   return {
     title: `Order Placed | ${window.BRAND_CONFIG.brand.name}`,
@@ -686,12 +686,48 @@ views.track = (orderIdParam) => {
   const brand = window.BRAND_CONFIG.brand;
   const C = window.BRAND_CONFIG.contact;
   let o = orderIdParam ? (typeof findOrder === "function" ? findOrder(orderIdParam) : null) : (lastOrder || null);
-  if (!o && orderIdParam && typeof fetchOrderRemote === "function" && !window._fetchingRemoteOrder) {
+
+  // Background Live Sync from Cloudflare D1
+  if (orderIdParam && typeof fetchOrderRemote === "function" && !window._fetchingRemoteOrder) {
     window._fetchingRemoteOrder = true;
     fetchOrderRemote(orderIdParam).then(remote => {
       window._fetchingRemoteOrder = false;
-      if (remote && typeof route === "function") route();
+      if (remote) {
+        const changed = !o || remote.status !== o.status || remote.updatedAt !== o.updatedAt ||
+          (remote.timeline && o.timeline && remote.timeline.length !== o.timeline.length) ||
+          (remote.tracking && o.tracking && remote.tracking.trackingNumber !== o.tracking.trackingNumber);
+        if (changed && typeof route === "function") {
+          route();
+          if (typeof toast === "function") toast(`🔔 Live Status: ${remote.status}`);
+        }
+      }
     }).catch(() => { window._fetchingRemoteOrder = false; });
+  }
+
+  // Periodic heartbeat polling while on track page (every 10s)
+  if (orderIdParam && !window._trackHeartbeatActive) {
+    window._trackHeartbeatActive = true;
+    if (window._trackInterval) clearInterval(window._trackInterval);
+    window._trackInterval = setInterval(() => {
+      if (!location.hash.startsWith("#/track")) {
+        clearInterval(window._trackInterval);
+        window._trackHeartbeatActive = false;
+        return;
+      }
+      if (typeof fetchOrderRemote === "function") {
+        fetchOrderRemote(orderIdParam).then(remote => {
+          if (remote && o) {
+            const changed = remote.status !== o.status || remote.updatedAt !== o.updatedAt ||
+              (remote.timeline && o.timeline && remote.timeline.length !== o.timeline.length) ||
+              (remote.tracking && o.tracking && remote.tracking.trackingNumber !== o.tracking.trackingNumber);
+            if (changed && typeof route === "function") {
+              route();
+              if (typeof toast === "function") toast(`🔔 Live Status Updated: ${remote.status}`);
+            }
+          }
+        });
+      }
+    }, 10000);
   }
 
   const statusLevels = {
@@ -712,6 +748,9 @@ views.track = (orderIdParam) => {
           <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold-hi)">Live Order Tracking</span>
           <h2 style="font-size:26px;color:var(--cream);margin:4px 0 2px">Order #${esc(o.id)}</h2>
           <small style="color:var(--mute-dark)">Placed on ${o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString())}</small>
+          <div style="margin-top:8px">
+            <button class="btn btn-line btn-sm" style="font-size:12px;padding:4px 11px;border-radius:6px" onclick="refreshTrackLive('${esc(o.id)}')">🔄 Refresh Live Status</button>
+          </div>
         </div>
         <div style="text-align:right">
           <span class="status-pill status-${(o.status || 'pending').toLowerCase()}" style="font-size:13px;padding:6px 14px">${o.status}</span>
@@ -771,7 +810,7 @@ views.track = (orderIdParam) => {
       `}
 
       <!-- 2 Columns: Order Items & Live Activity Log -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+      <div class="track-grid">
         <div>
           <h3 style="font-size:17px;color:var(--cream);margin-bottom:14px;border-bottom:1px solid rgba(214,167,54,0.15);padding-bottom:8px">Order Summary</h3>
           <div class="co-items" style="max-height:280px;overflow-y:auto">
@@ -967,3 +1006,109 @@ views.policy = (key) => {
 if (typeof window !== "undefined") {
   window.views = views;
 }
+
+
+// Interactive Email Receipt Modal Dialog
+function openOrderReceiptDialog(orderId) {
+  const o = (typeof findOrder === "function" ? findOrder(orderId) : null) || lastOrder;
+  if (!o) {
+    if (typeof toast === "function") toast("Order details not found.");
+    return;
+  }
+
+  const C = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact) || {};
+  const recipientEmail = (o.customer && o.customer.email) || o.email || C.email || "msrfoods.official@gmail.com";
+  const brandName = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.name) || "MSR Foods";
+  const payMethod = (window.BRAND_CONFIG && window.BRAND_CONFIG.payments || []).find(p => p.id === (o.paymentMethod || o.pay)) || { name: (o.paymentMethod || o.pay || "Cash on Delivery") };
+
+  const receiptLines = [
+    `🧾 ${brandName.toUpperCase()} — OFFICIAL ORDER RECEIPT`,
+    `Order Reference: #${o.id}`,
+    `Placed On: ${o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString())}`,
+    `Status: ${o.status || "Pending"}`,
+    `Payment Method: ${payMethod.name}`,
+    `--------------------------------------------------`,
+    `ITEMS ORDERED:`,
+    ...(o.items || []).map(i => `• ${i.name} (${i.weight || "Standard"}) × ${i.qty} = PKR ${(i.qty * i.price).toLocaleString()}`),
+    `--------------------------------------------------`,
+    `Subtotal: PKR ${(o.subtotal || o.total).toLocaleString()}`,
+    `Delivery: ${o.shipping === 0 ? "FREE" : "PKR " + (o.shipping || 0).toLocaleString()}`,
+    `TOTAL PAYABLE: PKR ${Number(o.total || 0).toLocaleString()}`,
+    `--------------------------------------------------`,
+    `DELIVERY DESTINATION:`,
+    `Recipient: ${o.customer ? o.customer.name : o.name}`,
+    `Contact Phone: ${o.customer ? o.customer.phone : o.phone}`,
+    `Address: ${o.customer ? o.customer.address : o.addr}, ${o.customer ? o.customer.city : o.city}`,
+    `--------------------------------------------------`,
+    `Live Tracking Link: ${window.location.origin}${window.location.pathname}#/track/${o.id}`,
+    `Support Email: ${C.email || "msrfoods.official@gmail.com"} | WhatsApp: +92${(C.whatsapp || "3368835501").replace(/^92/, "")}`
+  ];
+
+  const receiptText = receiptLines.join("\n");
+  const subject = `Order Receipt #${o.id} - ${brandName}`;
+
+  window._currentReceiptText = receiptText;
+
+  let modal = document.getElementById("dlg-receipt-modal");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-receipt-modal";
+    document.body.appendChild(modal);
+  }
+
+  const gmailWebUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(recipientEmail) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(receiptText);
+  const mailtoUrl = "mailto:" + recipientEmail + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(receiptText);
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(620px,94vw);max-height:90vh;overflow-y:auto">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-receipt-modal').close()">${ICON.x}</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--hair);padding-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:rgba(214,167,54,0.15);color:var(--gold-hi);display:grid;place-items:center;font-size:22px">✉</div>
+        <div>
+          <h3 style="font-size:20px;margin:0;color:var(--cream)">Order Receipt #${o.id}</h3>
+          <p style="font-size:13px;color:var(--mute-dark);margin:2px 0 0">Choose your preferred way to send, save, or copy this receipt:</p>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px;margin-bottom:18px">
+        <div style="font-size:12px;color:var(--gold-hi);text-transform:uppercase;font-weight:600">Recipient Email:</div>
+        <div style="font-size:15px;color:var(--cream);font-weight:600;margin-top:2px">${esc(recipientEmail)}</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <a class="btn btn-gold btn-block" style="text-align:center;padding:12px 16px" target="_blank" rel="noopener" href="${gmailWebUrl}">
+          🌐 Open in Gmail Web (1-Click Compose)
+        </a>
+        <a class="btn btn-line btn-block" style="text-align:center;padding:12px 16px" href="${mailtoUrl}">
+          📧 Open in Default Mail App (Apple Mail / Outlook)
+        </a>
+        <button class="btn btn-line btn-block" style="padding:12px 16px" onclick="if(window._currentReceiptText) { navigator.clipboard.writeText(window._currentReceiptText); if(typeof toast==='function') toast('📋 Full receipt copied to clipboard!'); }">
+          📋 Copy Full Receipt to Clipboard
+        </button>
+        <button class="btn btn-line btn-block" style="padding:12px 16px" onclick="window.print();">
+          🖨️ Print / Save as PDF
+        </button>
+      </div>
+
+      <div style="border-top:1px solid var(--hair);padding-top:14px;display:flex;justify-content:flex-end">
+        <button class="btn btn-line btn-sm" onclick="document.getElementById('dlg-receipt-modal').close()">Close</button>
+      </div>
+    </div>
+  `;
+  modal.showModal();
+}
+window.openOrderReceiptDialog = openOrderReceiptDialog;
+
+// 1-Click Refresh Live Tracking from Cloudflare D1
+window.refreshTrackLive = async function(id) {
+  if (typeof toast === "function") toast("🔄 Checking Cloudflare D1 database for updates...");
+  if (typeof fetchOrderRemote === "function") {
+    const fresh = await fetchOrderRemote(id);
+    if (fresh && typeof route === "function") {
+      route();
+      if (typeof toast === "function") toast(`✅ Live Status: ${fresh.status}`);
+    } else {
+      if (typeof toast === "function") toast("✅ Status is up to date.");
+    }
+  }
+};

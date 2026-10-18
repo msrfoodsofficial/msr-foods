@@ -261,9 +261,7 @@ async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trac
 
 async function fetchOrderRemote(orderId) {
   if (!orderId) return null;
-  // Check local first
   const local = findOrder(orderId);
-  if (local) return local;
 
   try {
     const endpoint = `${getOrdersApiEndpoint()}?id=${encodeURIComponent(orderId)}`;
@@ -276,13 +274,19 @@ async function fetchOrderRemote(orderId) {
         if (idx >= 0) orders[idx] = order;
         else orders.unshift(order);
         Store.set("app_orders", orders);
+
+        if (lastOrder && lastOrder.id === order.id) {
+          lastOrder = order;
+          Store.set("app_last_order", order, sessionStorage);
+          Store.set("msr_order", order, sessionStorage);
+        }
         return order;
       }
     }
   } catch (err) {
-    console.warn("Could not fetch remote order:", err);
+    console.warn("Could not fetch remote order from Cloudflare D1:", err);
   }
-  return null;
+  return local;
 }
 
 function saveOrder(order) {

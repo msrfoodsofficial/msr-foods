@@ -55,7 +55,7 @@ const BRAND_CONFIG = {
     phone: "03368835501",
     phoneIntl: "+923368835501",
     whatsapp: "923368835501", // Set to "" to hide the WhatsApp quick order button
-    email: "shahan.va88@gmail.com",
+    email: "msrfoods.official@gmail.com",
     supportHours: "Mon – Sat: 9:00 AM – 8:00 PM PKT",
     address: [
       "House No. 06 (Rashid Khaleem)",

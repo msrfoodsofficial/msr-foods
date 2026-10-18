@@ -513,6 +513,9 @@ window.addEventListener("storage", (e) => {
 
 // Application Bootstrap
 function initApp() {
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
   initTheme();
   initCart();
   shell();

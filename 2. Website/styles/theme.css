@@ -51,6 +51,18 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+@media (max-width: 860px) {
+  :root {
+    --hdr: 64px;
+  }
+}
+
+@media (max-width: 540px) {
+  :root {
+    --hdr: 58px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --black: #000;

@@ -1733,27 +1733,107 @@
 }
 
 @media (max-width: 860px) {
+  .sec {
+    padding-block: clamp(40px, 6vw, 68px);
+  }
   .hero-grid {
     grid-template-columns: 1fr;
     text-align: center;
-    padding-block: 40px 56px;
+    padding-block: 28px 44px;
+    min-height: 0;
+    gap: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 7.5vw, 3.5rem);
+    line-height: 1.08;
+  }
+  .hero p.sub {
+    margin-top: 14px;
+    margin-inline: auto;
+    font-size: 15px;
+    line-height: 1.55;
+    max-width: 32em;
+  }
+  .hero-cta {
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .hero-art {
+    order: -1;
     min-height: 0;
   }
-  .hero p.sub { margin-inline: auto; }
-  .hero-cta { justify-content: center; }
-  .hero-art { order: -1; min-height: 0; }
-  .hero-jar { height: min(52vh, 430px); }
-  .hero-copy { order: 1; }
-  .strip-in { grid-template-columns: 1fr; }
-  .strip-in div { border-left: 0; border-top: 1px solid var(--hair); padding-inline: 6px; }
-  .strip-in div:first-child { border-top: 0; }
-  .welcome, .about, .moments, .pdp, .cart-grid, .co-grid, .contact-grid, .pcard {
+  .hero-jar {
+    height: clamp(210px, 34vh, 310px);
+    width: auto;
+  }
+  .hero-art .ring {
+    width: min(340px, 85%);
+  }
+  .hero-copy {
+    order: 1;
+  }
+  .strip-in {
     grid-template-columns: 1fr;
   }
-  .grid3 { grid-template-columns: repeat(2, 1fr); }
-  .sticky { position: static; }
-  .pcard-img img { height: min(46vh, 400px); }
-  .gal-main { min-height: 0; padding-top: 70px; }
+  .strip-in div {
+    border-left: 0;
+    border-top: 1px solid var(--hair);
+    padding-inline: 6px;
+  }
+  .strip-in div:first-child {
+    border-top: 0;
+  }
+  .welcome {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 32px;
+  }
+  .welcome .rule {
+    margin-inline: auto;
+  }
+  .welcome .lead {
+    margin-inline: auto;
+    max-width: 34em;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .welcome .sign {
+    margin-top: 20px;
+    font-size: 1.25rem;
+  }
+  .welcome .link {
+    margin-top: 16px;
+  }
+  .panel-sand {
+    padding: 24px 16px 18px;
+    max-width: 380px;
+    margin-inline: auto;
+  }
+  .panel-sand img {
+    height: clamp(180px, 32vh, 270px);
+    width: auto;
+    object-fit: contain;
+  }
+  .about, .moments, .pdp, .cart-grid, .co-grid, .contact-grid, .pcard {
+    grid-template-columns: 1fr;
+  }
+  .grid3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sticky {
+    position: static;
+  }
+  .pcard-img img {
+    height: min(44vh, 360px);
+  }
+  .gal-main {
+    min-height: 0;
+    padding-top: 50px;
+  }
+  .track-card {
+    padding: 24px 18px;
+  }
   .mbar {
     display: flex;
     position: fixed;
@@ -1768,33 +1848,116 @@
     justify-content: space-between;
     gap: 14px;
   }
-  .mbar b { font: 600 1.35rem var(--serif); color: var(--cream); }
-  .mbar small { display: block; color: var(--mute-dark); font-size: 13px; line-height: 1.2; }
-  body.has-mbar { padding-bottom: 84px; }
-  .pgrid { grid-template-columns: 1fr; }
-  .pc-img img { height: min(42vh, 360px); }
+  .mbar b {
+    font: 600 1.35rem var(--serif);
+    color: var(--cream);
+  }
+  .mbar small {
+    display: block;
+    color: var(--mute-dark);
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  body.has-mbar {
+    padding-bottom: 84px;
+  }
+  .pgrid {
+    grid-template-columns: 1fr;
+  }
+  .pc-img img {
+    height: min(38vh, 320px);
+  }
 }
 
 @media (max-width: 620px) {
-  body { font-size: 16.5px; }
-  .wrap { width: min(1200px, 100% - 36px); }
-  .logo img { height: 54px; }
-  .grid4, .grid3 { grid-template-columns: 1fr; }
-  .ftr-grid { grid-template-columns: 1fr; gap: 34px; }
-  .fgrid { grid-template-columns: 1fr; }
-  .li { grid-template-columns: 76px 1fr; }
-  .li-img { width: 76px; height: 92px; }
-  .li-img img { height: 80px; }
-  .li-r { grid-column: 1 / -1; grid-auto-flow: column; justify-content: space-between; align-items: center; justify-items: start; }
-  .orb { display: none; }
-  .show-stage .pair { width: 100%; }
-  .moments > .reveal:first-child { position: static !important; }
-  .hero-jar { height: min(44vh, 380px); }
-  .buy-row .btn { flex: 1 1 100%; }
-  .buy-row .qty { width: 100%; justify-content: space-between; }
-  .strip-in div { padding-block: 16px; }
-  .hero-cta .btn { flex: 1 1 100%; }
-  .moment { grid-template-columns: 44px 1fr; gap: 14px; }
+  body {
+    font-size: 16px;
+  }
+  .wrap {
+    width: min(1200px, 100% - 28px);
+  }
+  .hdr-in {
+    padding-inline: 12px;
+  }
+  .logo img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+  }
+  .hdr-r {
+    gap: 6px;
+  }
+  .ic {
+    width: 38px;
+    height: 38px;
+  }
+  .grid4, .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .ftr-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+  .fgrid {
+    grid-template-columns: 1fr;
+  }
+  .li {
+    grid-template-columns: 76px 1fr;
+  }
+  .li-img {
+    width: 76px;
+    height: 92px;
+  }
+  .li-img img {
+    height: 80px;
+  }
+  .li-r {
+    grid-column: 1 / -1;
+    grid-auto-flow: column;
+    justify-content: space-between;
+    align-items: center;
+    justify-items: start;
+  }
+  .orb {
+    display: none;
+  }
+  .show-stage .pair {
+    width: 100%;
+    max-height: 290px;
+    object-fit: contain;
+  }
+  .moments > .reveal:first-child {
+    position: static !important;
+  }
+  .hero-jar {
+    height: clamp(190px, 30vh, 270px);
+  }
+  .buy-row .btn {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+  .buy-row .qty {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .strip-in div {
+    padding-block: 14px;
+  }
+  .hero-cta .btn {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+  .moment {
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+  }
+  .track-card {
+    padding: 20px 14px;
+    margin-block: 16px;
+  }
+  .dlg {
+    padding: 22px 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1811,6 +1974,19 @@
 /* =======================================================================
    ORDER TRACKING & LIFECYCLE STEPPER STYLES
    ======================================================================= */
+.track-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .track-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+}
+
 .track-card {
   background: var(--bg-card);
   border: 1px solid var(--hair);

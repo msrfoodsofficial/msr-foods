@@ -222,7 +222,8 @@ function updatePay() {
 }
 
 // Order Dispatching
-function placeOrder() {
+function placeOrder(e) {
+  if (e && e.preventDefault) e.preventDefault();
   const g = (id) => ($("#" + id) ? $("#" + id).value.trim() : "");
   const phone = g("f-phone").replace(/[\s-]/g, "");
 
@@ -258,8 +259,8 @@ function placeOrder() {
     return;
   }
 
-  const submitBtn = e && e.target ? (e.target.querySelector("button[type=\"submit\"]") || e.target) : null;
-  if (submitBtn && submitBtn.tagName === "BUTTON") {
+  const submitBtn = (e && e.target ? (e.target.querySelector("button[type=\"submit\"]") || e.target) : null) || document.querySelector("#coForm button[type=\"submit\"]");
+  if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.textContent = "Placing Your Order...";
   }
@@ -486,7 +487,7 @@ document.addEventListener("change", e => {
 
 document.addEventListener("submit", e => {
   e.preventDefault();
-  if (e.target.id === "coForm") placeOrder();
+  if (e.target.id === "coForm") placeOrder(e);
   if (e.target.id === "contactForm") {
     const name = $("#c-name").value.trim();
     const msg = $("#c-msg").value.trim();

@@ -309,8 +309,6 @@
       </div>
       <div class="topbar-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="tag tag-gold" style="font-size:12px">Pakistan Region (PKR)</span>
-        <button class="btn btn-sm btn-gold" onclick="downloadWebsitePackage()" title="Download Storefront code ready for Cloudflare Pages">📥 Website ZIP</button>
-        <button class="btn btn-sm btn-line" onclick="downloadAdminPackage()" title="Download Admin Portal code ready for Cloudflare Pages">⚙️ Admin ZIP</button>
         <button class="btn btn-sm btn-line" onclick="exportBrandConfig()" title="Export configuration and instructions">Deploy & Export</button>
         <button class="btn btn-sm btn-danger-line" onclick="adminSignOut()" title="Sign Out of Admin Portal">🚪 Sign Out</button>
       </div>
@@ -490,8 +488,7 @@
               </div>
 
               <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-                <button class="btn btn-gold btn-block" onclick="downloadWebsitePackage()">📥 Download Website ZIP (Cloudflare Pages)</button>
-                <button class="btn btn-line btn-block" onclick="downloadAdminPackage()">⚙️ Download Admin ZIP (Cloudflare Pages)</button>
+                <button class="btn btn-gold btn-block" onclick="syncAndBuildDeployments(); toast('Brand settings & theme saved to database!');">💾 Save & Apply Branding</button>
                 <button class="btn btn-line btn-block" onclick="exportBrandConfig()" style="font-size:12px;opacity:0.85">Export Config Code</button>
               </div>
             </div>

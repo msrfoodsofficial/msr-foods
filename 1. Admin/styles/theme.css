@@ -1,0 +1,126 @@
+/**
+ * =======================================================================
+ * DESIGN SYSTEM TOKENS & BASE STYLES
+ * =======================================================================
+ */
+
+:root {
+  /* Brand color tokens - default Luxury Gold */
+  --black: #000000;
+  --coal: #0b0906;
+  --char: #16120b;
+  --gold: #d6a736;
+  --gold-hi: #f4d77f;
+  --gold-lo: #9a6f1c;
+  --amber: #e9a21c;
+  --cream: #f8f1e2;
+  --sand: #ecdfc0;
+  --white: #fffdf8;
+  --ink: #1b150c;
+  --mute-dark: #bdae8e;
+  --mute-light: #6a5c42;
+  --hair: rgba(214, 167, 54, 0.26);
+  --gold-grad: linear-gradient(135deg, #f7de8f 0%, #d6a736 48%, #a8761a 100%);
+  --accent-glow: rgba(214, 167, 54, 0.35);
+
+  /* Background surfaces */
+  --bg-body: #000000;
+  --bg-surface: #0b0906;
+  --bg-card: #16120b;
+  --bg-light: #f8f1e2;
+
+  /* Typography */
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Jost", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* Border radius tokens */
+  --r-sm: 8px;
+  --r-md: 16px;
+  --r-lg: 28px;
+  --r-full: 9999px;
+
+  /* Elevation & Shadows */
+  --shadow-soft: 0 18px 50px -18px rgba(40, 26, 4, 0.28);
+  --shadow-deep: 0 30px 70px -24px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 10px 30px -10px var(--accent-glow);
+
+  /* Layout dimensions */
+  --hdr: 76px;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --black: #000;
+    --cream: #f8f1e2;
+  }
+}
+
+:root[data-theme="dark"] {
+  --black: #000;
+  --cream: #f8f1e2;
+}
+
+html {
+  height: 100%;
+  background: var(--bg-body);
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--hdr) + env(safe-area-inset-top, 0px) + 12px);
+  -webkit-text-size-adjust: 100%;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg-body);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.01em;
+  font-variation-settings: "SOFT" 40, "WONK" 0;
+}
+
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

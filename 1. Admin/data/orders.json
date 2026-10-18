@@ -1,0 +1,58 @@
+[
+  {
+    "id": "MSR-261014-9124",
+    "createdAt": "2026-10-14T11:42:00Z",
+    "status": "Pending",
+    "items": [
+      {
+        "id": "msr-500",
+        "name": "MSR Honey Nut Mix",
+        "weight": "500g",
+        "qty": 2,
+        "price": 1599
+      }
+    ],
+    "subtotal": 3198,
+    "shipping": 200,
+    "total": 3398,
+    "paymentMethod": "cod",
+    "customer": {
+      "name": "Muhammad Usman",
+      "phone": "03001234567",
+      "email": "usman.pk@gmail.com",
+      "address": "House 14-B, Street 3, Sector F-7/2",
+      "city": "Islamabad",
+      "province": "Islamabad Capital Territory"
+    }
+  },
+  {
+    "id": "MSR-261013-4412",
+    "createdAt": "2026-10-13T16:15:00Z",
+    "status": "Dispatched",
+    "items": [
+      {
+        "id": "msr-1kg",
+        "name": "MSR Honey Nut Mix",
+        "weight": "1kg",
+        "qty": 1,
+        "price": 2999
+      }
+    ],
+    "subtotal": 2999,
+    "shipping": 0,
+    "total": 2999,
+    "paymentMethod": "bank",
+    "customer": {
+      "name": "Ayesha Malik",
+      "phone": "03219876543",
+      "email": "ayesha.malik@outlook.com",
+      "address": "42-C, Phase 5, DHA",
+      "city": "Lahore",
+      "province": "Punjab"
+    },
+    "tracking": {
+      "courier": "TCS Express",
+      "trackingNumber": "TCS-99482103"
+    }
+  }
+]

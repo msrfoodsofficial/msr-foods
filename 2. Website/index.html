@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pure Taste. Natural Goodness. | Online Store</title>
+  <meta name="description" content="White-label premium product selling storefront. Easily brandable with your logo and UI kit.">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Google Fonts Preconnect & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Design System & Component Styles -->
+  <link rel="stylesheet" href="styles/theme.css?v=5">
+  <link rel="stylesheet" href="styles/ui-kit.css?v=5">
+  <link rel="stylesheet" href="styles/storefront.css?v=5">
+
+</head>
+<body>
+  <!-- Accessibility Skip Link -->
+  <a class="sr" href="#app">Skip to main content</a>
+
+  <!-- Global Application Shell -->
+  <header class="hdr" id="hdr"></header>
+  <main id="app" tabindex="-1"></main>
+  <footer class="ftr" id="ftr"></footer>
+
+  <!-- Modal Dialogs -->
+  <dialog id="dlg-search" aria-label="Search Catalog"></dialog>
+  <dialog id="dlg-account" aria-label="Account / Guest"></dialog>
+  <dialog id="dlg-menu" aria-label="Mobile Navigation Menu"></dialog>
+
+  <!-- Interactive Toast Notification -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- White-Label Configuration & Data -->
+  <script src="config/brand.config.js?v=4"></script>
+  <script src="config/theme.config.js?v=4"></script>
+  <script src="data/products.js?v=4"></script>
+
+  <!-- Core Logic, Router & Application Runtime -->
+  <script src="js/store.js?v=4"></script>
+  <script src="js/router.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
+</body>
+</html>

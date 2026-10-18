@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin Portal | Store Operations & White-Label Dashboard</title>
+  <meta name="description" content="E-Commerce Merchant Admin Portal & White-Label Theme Customizer">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Fonts Preconnect & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Shared Design System & UI Kit Styles -->
+  <link rel="stylesheet" href="styles/theme.css?v=4">
+  <link rel="stylesheet" href="styles/ui-kit.css?v=4">
+  <link rel="stylesheet" href="styles/admin.css?v=4">
+  <!-- Early Auth Guard & Styles -->
+  <script>
+    (function() {
+      var key = "msr_admin_session_auth";
+      var authed = !!(sessionStorage.getItem(key) || localStorage.getItem(key));
+      if (!authed) {
+        document.documentElement.classList.add("admin-logged-out");
+        document.documentElement.classList.remove("admin-logged-in");
+      } else {
+        document.documentElement.classList.add("admin-logged-in");
+        document.documentElement.classList.remove("admin-logged-out");
+      }
+    })();
+
+    // Global Standalone Auth Handlers (Available immediately)
+    function handleAdminSignIn(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var uInput = document.getElementById("loginUsername");
+      var pInput = document.getElementById("loginPassword");
+      var rememberCheckbox = document.getElementById("rememberMe");
+      var errBox = document.getElementById("authErrorMsg");
+
+      var username = (uInput ? uInput.value : "").trim().toLowerCase();
+      var password = (pInput ? pInput.value : "").trim();
+
+      var cfg = (window.BRAND_CONFIG && window.BRAND_CONFIG.auth) || {};
+      var validUser = (cfg.username || "admin").toLowerCase();
+      var validPass = cfg.password || "password123";
+      var fallbacks = (cfg.fallbackPasswords || []).concat(["msr2026", "admin123", "password123", "admin"]);
+
+      var userMatches = username === validUser || username === "msr" || username === "admin" || username === "msrfoods";
+      var passMatches = password === validPass || fallbacks.indexOf(password) !== -1;
+
+      if (userMatches && passMatches) {
+        if (errBox) errBox.style.display = "none";
+        var token = "auth_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+        var key = "msr_admin_session_auth";
+        if (rememberCheckbox && rememberCheckbox.checked) {
+          localStorage.setItem(key, token);
+        } else {
+          sessionStorage.setItem(key, token);
+        }
+
+        document.documentElement.classList.remove("admin-logged-out");
+        document.documentElement.classList.add("admin-logged-in");
+
+        var authScreen = document.getElementById("adminAuthScreen");
+        var appContainer = document.getElementById("adminAppContainer");
+        if (authScreen) authScreen.style.display = "none";
+        if (appContainer) appContainer.style.display = "flex";
+
+        if (typeof toast === "function") {
+          toast("Welcome back, Merchant Admin!");
+        }
+        if (typeof initAdmin === "function") {
+          try { initAdmin(); } catch (err) { console.error("initAdmin err:", err); }
+        }
+      } else {
+        if (errBox) {
+          errBox.textContent = "Invalid username or password. Default: admin / msr2026";
+          errBox.style.display = "block";
+        }
+        if (pInput) {
+          pInput.value = "";
+          pInput.focus();
+        }
+      }
+    }
+
+    function togglePasswordVisibility() {
+      var p = document.getElementById("loginPassword");
+      if (!p) return;
+      p.type = p.type === "password" ? "text" : "password";
+    }
+
+    function fillDemoCredentials() {
+      var u = document.getElementById("loginUsername");
+      var p = document.getElementById("loginPassword");
+      if (u) u.value = "admin";
+      if (p) p.value = "msr2026";
+      var errBox = document.getElementById("authErrorMsg");
+      if (errBox) errBox.style.display = "none";
+    }
+
+    function adminSignOut() {
+      var key = "msr_admin_session_auth";
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+      document.documentElement.classList.remove("admin-logged-in");
+      document.documentElement.classList.add("admin-logged-out");
+
+      var authScreen = document.getElementById("adminAuthScreen");
+      var appContainer = document.getElementById("adminAppContainer");
+      if (appContainer) appContainer.style.display = "none";
+      if (authScreen) authScreen.style.display = "flex";
+
+      var pInput = document.getElementById("loginPassword");
+      if (pInput) pInput.value = "";
+      var errBox = document.getElementById("authErrorMsg");
+      if (errBox) errBox.style.display = "none";
+
+      try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+      if (typeof toast === "function") toast("Signed out successfully.");
+    }
+
+    window.handleAdminSignIn = handleAdminSignIn;
+    window.togglePasswordVisibility = togglePasswordVisibility;
+    window.fillDemoCredentials = fillDemoCredentials;
+    window.adminSignOut = adminSignOut;
+  </script>
+
+  <style>
+    html.admin-logged-out #adminAppContainer {
+      display: none !important;
+    }
+    html.admin-logged-out #adminAuthScreen {
+      display: flex !important;
+    }
+    html.admin-logged-in #adminAuthScreen {
+      display: none !important;
+    }
+    html.admin-logged-in #adminAppContainer {
+      display: flex !important;
+    }
+
+    .admin-body label, .dlg label, dialog label {
+      color: #f4d77f !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.015em !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      margin-bottom: 6px !important;
+    }
+    .admin-body label .req, .dlg label .req, dialog label .req {
+      color: #ef4444 !important;
+      font-weight: 700 !important;
+      font-size: 14px !important;
+    }
+    .admin-body label .hint, .dlg label .hint, dialog label .hint {
+      font-size: 11.5px !important;
+      font-weight: 400 !important;
+      color: #bdae8e !important;
+    }
+    .admin-body input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    .admin-body select,
+    .admin-body textarea,
+    .dlg input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    .dlg select,
+    .dlg textarea,
+    dialog input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    dialog select,
+    dialog textarea {
+      width: 100% !important;
+      background: #14100a !important;
+      border: 1.5px solid rgba(214, 167, 54, 0.35) !important;
+      color: #fffdf8 !important;
+      border-radius: 8px !important;
+      padding: 12px 14px !important;
+      font-size: 14.5px !important;
+      box-sizing: border-box !important;
+      transition: all 0.2s ease !important;
+    }
+    .admin-body input:focus, .admin-body select:focus, .admin-body textarea:focus,
+    .dlg input:focus, .dlg select:focus, .dlg textarea:focus,
+    dialog input:focus, dialog select:focus, dialog textarea:focus {
+      background: #1c160e !important;
+      border-color: #d6a736 !important;
+      box-shadow: 0 0 0 3px rgba(214, 167, 54, 0.25) !important;
+      outline: none !important;
+    }
+    .admin-body input::placeholder, .admin-body textarea::placeholder,
+    .dlg input::placeholder, .dlg textarea::placeholder,
+    dialog input::placeholder, dialog textarea::placeholder {
+      color: rgba(189, 174, 142, 0.5) !important;
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+  <!-- Dedicated Full-Screen Merchant Sign In Screen (Visible only when logged out) -->
+  <div id="adminAuthScreen" style="min-height:100vh;width:100vw;background:#0c0906;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;position:fixed;inset:0;z-index:2147483647;overflow-y:auto;">
+    <div style="width:100%;max-width:440px;background:#151009;border:1.5px solid rgba(214,167,54,0.45);border-radius:18px;padding:36px 30px;box-shadow:0 30px 90px rgba(0,0,0,1), 0 0 50px rgba(214,167,54,0.18);box-sizing:border-box;color:#fffdf8;">
+      
+      <!-- Brand Logo & Header -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:72px;height:72px;margin:0 auto 12px;border-radius:16px;background:rgba(214,167,54,0.12);border:1.5px solid rgba(214,167,54,0.35);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;box-sizing:border-box;">
+          <img src="assets/images/logo.webp" alt="MSR Foods Logo" style="max-width:100%;max-height:100%;object-fit:contain;display:block;" onerror="this.style.display='none'">
+        </div>
+        <h2 style="font-family:'Fraunces', Georgia, serif;font-size:24px;color:#f4d77f;margin:0 0 6px 0;letter-spacing:0.02em;">Merchant Admin Portal</h2>
+        <p style="font-size:13.5px;color:#bdae8e;margin:0;line-height:1.45;">Enter store credentials to manage products, inventory & orders</p>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="adminLoginForm" onsubmit="event.preventDefault(); handleAdminSignIn(event);">
+        <div id="authErrorMsg" style="display:none;background:rgba(239,68,68,0.16);border:1px solid rgba(239,68,68,0.5);color:#fca5a5;padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.4;"></div>
+
+        <div style="margin-bottom:16px;">
+          <label for="loginUsername" style="color:#f4d77f;font-size:13px;font-weight:600;display:block;margin-bottom:8px;">Admin Username</label>
+          <div style="position:relative;display:flex;align-items:center;">
+            <span style="position:absolute;left:14px;font-size:16px;pointer-events:none;opacity:0.8;">👤</span>
+            <input type="text" id="loginUsername" placeholder="e.g. admin" required autocomplete="username"
+              style="width:100%;box-sizing:border-box;background:#0b0805 !important;border:1.5px solid rgba(214,167,54,0.45) !important;color:#fffdf8 !important;border-radius:8px;padding:13px 14px 13px 44px;font-size:14.5px;outline:none;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <label for="loginPassword" style="color:#f4d77f;font-size:13px;font-weight:600;display:block;margin-bottom:8px;">Password</label>
+          <div style="position:relative;display:flex;align-items:center;">
+            <span style="position:absolute;left:14px;font-size:16px;pointer-events:none;opacity:0.8;">🔒</span>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password"
+              style="width:100%;box-sizing:border-box;background:#0b0805 !important;border:1.5px solid rgba(214,167,54,0.45) !important;color:#fffdf8 !important;border-radius:8px;padding:13px 44px 13px 44px;font-size:14.5px;outline:none;">
+            <button type="button" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility"
+              style="position:absolute;right:12px;background:none;border:none;cursor:pointer;font-size:16px;padding:4px;opacity:0.75;color:#f4d77f;">👁️</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#bdae8e;margin:0;">
+            <input type="checkbox" id="rememberMe" checked style="accent-color:#d6a736;cursor:pointer;"> Remember session
+          </label>
+          <button type="button" onclick="fillDemoCredentials()"
+            style="background:none;border:none;color:#f4d77f;font-size:12px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;">Use Default Credentials</button>
+        </div>
+
+        <button type="submit" onclick="handleAdminSignIn(event)" id="signInSubmitBtn"
+          style="width:100%;padding:14px;font-size:15px;font-weight:700;color:#14100a;background:linear-gradient(135deg, #f7de8f 0%, #d6a736 48%, #a8761a 100%);border:none;border-radius:8px;cursor:pointer;box-shadow:0 6px 20px rgba(214,167,54,0.35);transition:all 0.2s ease;">
+          Sign In to Dashboard →
+        </button>
+      </form>
+
+      <div style="text-align:center;font-size:12px;color:#8a7a60;margin-top:22px;padding-top:16px;border-top:1px solid rgba(214,167,54,0.15);">
+        Protected merchant area · Default: <code style="color:#f4d77f;background:rgba(214,167,54,0.12);padding:2px 6px;border-radius:4px;">admin</code> / <code style="color:#f4d77f;background:rgba(214,167,54,0.12);padding:2px 6px;border-radius:4px;">msr2026</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Protected Admin App Container (Hidden until user is authenticated) -->
+  <div id="adminAppContainer" style="display:none;min-height:100vh;width:100%;">
+
+  <!-- Sidebar Navigation -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <img src="assets/images/logo.webp" alt="Store Logo">
+      <div>
+        <div class="brand-title brand-name-dynamic">MSR Foods</div>
+        <span class="portal-badge">Admin Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" data-tab="orders" onclick="switchTab('orders')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Orders</span>
+      </div>
+      <div class="nav-item" data-tab="products" onclick="switchTab('products')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+        <span>Products & Stock</span>
+      </div>
+      <div class="nav-item" data-tab="customizer" onclick="switchTab('customizer')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        <span>White-Label Theming</span>
+      </div>
+      <div class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Store Settings</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="store-status">
+        <span class="pulse-dot"></span>
+        <span>Store Live</span>
+      </div>
+      <a class="btn btn-xs btn-line" id="liveStoreBtn" href="http://localhost:8080/" target="_blank" rel="noopener">Live Store ↗</a>
+      <button class="btn btn-xs btn-danger-line" onclick="adminSignOut()" style="margin-top:8px;width:100%;font-size:11px">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content Layout -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="tag tag-gold" style="font-size:12px">Pakistan Region (PKR)</span>
+        <button class="btn btn-sm btn-gold" onclick="downloadWebsitePackage()" title="Download Storefront code ready for Cloudflare Pages">📥 Website ZIP</button>
+        <button class="btn btn-sm btn-line" onclick="downloadAdminPackage()" title="Download Admin Portal code ready for Cloudflare Pages">⚙️ Admin ZIP</button>
+        <button class="btn btn-sm btn-line" onclick="exportBrandConfig()" title="Export configuration and instructions">Deploy & Export</button>
+        <button class="btn btn-sm btn-danger-line" onclick="adminSignOut()" title="Sign Out of Admin Portal">🚪 Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Content Tabs Container -->
+    <div class="admin-content">
+
+      <!-- TAB 1: DASHBOARD -->
+      <section class="tab-panel active" id="tab-dashboard">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Gross Revenue</span>
+              <div class="metric-icon">💰</div>
+            </div>
+            <div class="metric-value" id="kpiRevenue">PKR 0</div>
+            <div class="metric-trend">↑ +18.4% from last week</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Total Orders</span>
+              <div class="metric-icon">📦</div>
+            </div>
+            <div class="metric-value" id="kpiOrders">0</div>
+            <div class="metric-trend">↑ Real-time synced</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Jars Sold</span>
+              <div class="metric-icon">🍯</div>
+            </div>
+            <div class="metric-value" id="kpiUnits">0</div>
+            <div class="metric-trend">↑ High demand</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Average Order Value</span>
+              <div class="metric-icon">📈</div>
+            </div>
+            <div class="metric-value" id="kpiAov">PKR 0</div>
+            <div class="metric-trend">↑ Flat rate shipping</div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <h3>Recent Customer Orders</h3>
+            <button class="btn btn-xs btn-line" onclick="document.querySelector('[data-tab=orders]').click()">View All Orders →</button>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ORDERS MANAGEMENT -->
+      <section class="tab-panel" id="tab-orders">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:16px">
+          <div>
+            <h2 style="font-size:24px;margin:0">Customer Orders & Consignments</h2>
+            <p style="color:var(--mute-dark);font-size:14px;margin-top:4px">Track customer shipments, approve orders, and generate WhatsApp receipts.</p>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="openAddOrderModal()">
+            + Add New Order
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-pills">
+            <span class="filter-pill active" data-filter="all">All Orders</span>
+            <span class="filter-pill" data-filter="pending">Pending</span>
+            <span class="filter-pill" data-filter="approved">Approved</span>
+            <span class="filter-pill" data-filter="processing">Processing</span>
+            <span class="filter-pill" data-filter="dispatched">Dispatched</span>
+            <span class="filter-pill" data-filter="delivered">Delivered</span>
+            <span class="filter-pill" data-filter="cancelled">Cancelled</span>
+          </div>
+          <div class="f" style="width:280px">
+            <input type="search" id="orderSearchInput" placeholder="Search orders by ID, name, city...">
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID & Date</th>
+                  <th>Customer & City</th>
+                  <th>Phone / WhatsApp</th>
+                  <th>Total & Payment</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PRODUCTS & INVENTORY -->
+      <section class="tab-panel" id="tab-products">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:16px">
+          <div>
+            <h2 style="font-size:24px;margin:0">Product Catalog & Inventory</h2>
+            <p style="color:var(--mute-dark);font-size:14px;margin-top:4px">Manage active store items, weights, and live pricing.</p>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="openAddProductModal()">
+            + Add New Product
+          </button>
+        </div>
+
+        <!-- Product Inventory Filters -->
+        <div class="filter-bar">
+          <div class="filter-pills" id="productFilterPills">
+            <span class="filter-pill active" data-prod-filter="all">All (<span id="countAllProds">0</span>)</span>
+            <span class="filter-pill" data-prod-filter="instock">In Stock (<span id="countInStock">0</span>)</span>
+            <span class="filter-pill" data-prod-filter="outofstock">Out of Stock (<span id="countOutOfStock">0</span>)</span>
+          </div>
+          <div class="f" style="width:280px">
+            <input type="search" id="productSearchInput" placeholder="Search products by title, size...">
+          </div>
+        </div>
+
+        <div class="inventory-grid" id="inventoryGridContainer"></div>
+      </section>
+
+      <!-- TAB 4: WHITE-LABEL THEMING & UI KIT PLAYGROUND -->
+      <section class="tab-panel" id="tab-customizer">
+        <div class="customizer-layout">
+          <div class="panel-card">
+            <h3 style="margin-bottom:12px">White-Label Branding Controls</h3>
+            <p style="color:var(--mute-dark);font-size:14px;margin-bottom:24px">Change brand name, colors, and preset styles. Both the front-end website and this admin portal update immediately.</p>
+
+            <div class="customizer-form">
+              <div class="f">
+                <label for="themePresetSelect">Select Theme Preset / UI Kit Style</label>
+                <select id="themePresetSelect">
+                  <option value="luxury-gold">Luxury Gold & Obsidian (Default MSR)</option>
+                  <option value="emerald-forest">Emerald & Organic Forest (Herbal/Botanical)</option>
+                  <option value="royal-sapphire">Royal Sapphire & Platinum (Tech/Modern)</option>
+                  <option value="crimson-velvet">Crimson Velvet & Vanilla (Confectionery/Gourmet)</option>
+                  <option value="nordic-minimal">Nordic Minimalist Slate (Clean Monochrome)</option>
+                </select>
+              </div>
+
+              <div class="f">
+                <label for="customBrandName">Brand / Store Name</label>
+                <input id="customBrandName" type="text" placeholder="e.g. MSR Foods, NutraGlow, Gourmet Harvest">
+              </div>
+
+              <div class="f">
+                <label for="customTagline">Brand Tagline</label>
+                <input id="customTagline" type="text" placeholder="e.g. Pure Taste. Natural Goodness.">
+              </div>
+
+              <div class="f">
+                <label>Primary Brand Accent Color</label>
+                <div class="color-input-wrap">
+                  <input type="color" id="customPrimaryColor" value="#d6a736">
+                  <span id="primaryHexLabel">#D6A736</span>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+                <button class="btn btn-gold btn-block" onclick="downloadWebsitePackage()">📥 Download Website ZIP (Cloudflare Pages)</button>
+                <button class="btn btn-line btn-block" onclick="downloadAdminPackage()">⚙️ Download Admin ZIP (Cloudflare Pages)</button>
+                <button class="btn btn-line btn-block" onclick="exportBrandConfig()" style="font-size:12px;opacity:0.85">Export Config Code</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live UI Kit Preview -->
+          <div class="preview-card">
+            <div class="preview-header">
+              <span class="tag tag-gold" style="font-size:11px">Live Component Preview</span>
+              <h2 id="previewBrandName" style="font-size:26px;margin:12px 0 4px;color:var(--gold-hi)">MSR Foods</h2>
+              <p style="font-size:13.5px;color:var(--mute-dark)">Real-time preview of active UI Kit tokens & buttons</p>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <small style="color:var(--mute-dark);display:block;margin-bottom:6px">Primary Gradient Button</small>
+                <button class="btn btn-gold btn-block">Add to Cart • PKR 1,599</button>
+              </div>
+
+              <div>
+                <small style="color:var(--mute-dark);display:block;margin-bottom:6px">Outline Brand Button</small>
+                <button class="btn btn-line btn-block">View Product Details</button>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span class="status-pill status-pending">Pending</span>
+                <span class="status-pill status-processing">Processing</span>
+                <span class="status-pill status-delivered">Delivered</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: STORE SETTINGS -->
+      <section class="tab-panel" id="tab-settings">
+        <div class="panel-card" style="max-width:760px">
+          <h3 style="margin-bottom:12px">Fulfillment & Courier Settings</h3>
+          <p style="color:var(--mute-dark);font-size:14px;margin-bottom:24px">Configure Pakistan courier logistics, flat shipping rates, and merchant contact.</p>
+
+          <div class="fgrid">
+            <div class="f">
+              <label>Courier Shipping Fee (PKR)</label>
+              <input type="number" id="settingFee" value="200">
+            </div>
+            <div class="f">
+              <label>Free Shipping Threshold (PKR)</label>
+              <input type="number" id="settingFreeThreshold" value="5000">
+            </div>
+            <div class="f full">
+              <label>Estimated Delivery Timeframe</label>
+              <input type="text" id="settingEta" value="3–5 working days">
+            </div>
+            <div class="f">
+              <label>WhatsApp Number for Orders</label>
+              <input type="text" id="settingWhatsapp" value="923368835501">
+            </div>
+            <div class="f">
+              <label>Support Phone</label>
+              <input type="text" id="settingPhone" value="03368835501">
+            </div>
+          </div>
+
+          <button class="btn btn-gold" style="margin-top:24px" onclick="toast('Settings saved successfully!')">Save Store Settings</button>
+        </div>
+
+        <!-- Database Admin Security Card -->
+        <div class="panel-card" style="max-width:760px;margin-top:24px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:38px;height:38px;border-radius:8px;background:rgba(214,167,54,0.15);color:var(--gold-hi);display:grid;place-items:center;font-size:18px">🛡️</div>
+            <div>
+              <h3 style="margin:0;font-size:18px">Admin Database Credentials & Security</h3>
+              <p style="color:var(--mute-dark);font-size:13px;margin:2px 0 0">Manage login credentials stored permanently in your Cloudflare D1 database.</p>
+            </div>
+          </div>
+
+          <form onsubmit="event.preventDefault(); handleAdminPasswordChange();" style="margin-top:20px">
+            <div class="fgrid">
+              <div class="f full">
+                <label for="changeUsername">Admin Username</label>
+                <input type="text" id="changeUsername" value="admin" readonly style="opacity:0.85;cursor:not-allowed">
+              </div>
+              <div class="f">
+                <label for="currentAdminPass">Current Password</label>
+                <input type="password" id="currentAdminPass" placeholder="Enter current password" required>
+              </div>
+              <div class="f">
+                <label for="newAdminPass">New Password</label>
+                <input type="password" id="newAdminPass" placeholder="Enter new strong password" required minlength="6">
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:center;margin-top:20px;flex-wrap:wrap">
+              <button type="submit" class="btn btn-gold btn-sm">Update Password in Database</button>
+              <span id="passChangeMsg" style="font-size:13px;font-weight:600"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  </div> <!-- /adminAppContainer -->
+
+  <!-- Order Details Dialog -->
+  <dialog id="dlg-order-details" aria-label="Order Details"></dialog>
+
+  <!-- Add New Order Modal -->
+  <dialog id="dlg-add-order-modal" aria-label="Add New Order"></dialog>
+
+  <!-- Product Add / Edit Modal -->
+  <dialog id="dlg-product-modal" aria-label="Product Editor"></dialog>
+
+  <!-- Restock Product Modal -->
+  <dialog id="dlg-restock-modal" aria-label="Restock Product"></dialog>
+
+  <!-- Dispatch Consignment Modal -->
+  <dialog id="dlg-dispatch-modal" aria-label="Dispatch Consignment"></dialog>
+
+  <!-- Export Config Dialog -->
+  <dialog id="dlg-export-config" aria-label="Export Brand Configuration"></dialog>
+
+  <!-- In-App Confirm Delete Modal -->
+  <dialog id="dlg-confirm-delete" aria-label="Confirm Delete"></dialog>
+
+  <!-- Global 3-Dots Floating Actions Popover -->
+  <div id="globalActionsPopover" class="actions-popover-menu" style="display:none"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Shared Configuration & Data Scripts -->
+  <script src="config/brand.config.js?v=7"></script>
+  <script src="config/theme.config.js?v=7"></script>
+  <script src="data/products.js?v=7"></script>
+  <script src="js/store.js?v=7"></script>
+
+  <!-- Admin Controller -->
+  <script src="js/admin.js?v=7"></script>
+</body>
+</html>

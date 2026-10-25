@@ -58,9 +58,7 @@ const BRAND_CONFIG = {
     email: "msrfoods.official@gmail.com",
     supportHours: "Mon – Sat: 9:00 AM – 8:00 PM PKT",
     address: [
-      "House No. 06 (Rashid Khaleem)",
-      "Near Masjid Tuheed, Jungle Khel",
-      "Kohat, KPK, Pakistan"
+      "Kohat, Pakistan"
     ]
   },
 
@@ -80,32 +78,8 @@ const BRAND_CONFIG = {
       name: "Cash on Delivery",
       short: "Pay in cash when your order arrives at your doorstep.",
       detail: "Please keep the exact amount ready for the delivery rider upon arrival.",
-      badge: "Most Popular",
+      badge: "Nationwide",
       icon: "truck"
-    },
-    {
-      id: "bank",
-      name: "Bank Transfer",
-      short: "Direct transfer to our official bank account.",
-      detail: "Bank: Meezan Bank Ltd. · Account: 0102-0102345678 · Title: MSR Foods · IBAN: PK64MEZN0001020102345678",
-      badge: "Instant Verification",
-      icon: "building"
-    },
-    {
-      id: "easypaisa",
-      name: "Easypaisa",
-      short: "Send payment swiftly via Easypaisa mobile wallet.",
-      detail: "Easypaisa Mobile: 0336-8835501 · Account Name: M Zaid Hayat",
-      badge: "Mobile Wallet",
-      icon: "smartphone"
-    },
-    {
-      id: "jazzcash",
-      name: "JazzCash",
-      short: "Send payment swiftly via JazzCash mobile wallet.",
-      detail: "JazzCash Mobile: 0336-8835501 · Account Name: M Zaid Hayat",
-      badge: "Mobile Wallet",
-      icon: "smartphone"
     }
   ],
 

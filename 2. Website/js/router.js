@@ -92,7 +92,7 @@ function secWelcome() {
           <div><a class="link" href="#/about">Our Brand Story ${ICON.arrow}</a></div>
         </div>
         <figure class="panel-sand reveal" style="--d:.2s">
-          <img src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="${B.name} Product Jar Display">
+          <img src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="${B.name} Product Jar Display" width="1340" height="996" style="width:100%;max-width:660px;height:auto;aspect-ratio:1340/996;object-fit:contain;display:block;margin:0 auto">
           <figcaption>Available in 500g and 1kg family sizes.</figcaption>
         </figure>
       </div>
@@ -106,7 +106,7 @@ function prodCard(p) {
   const isProminent = p.prominent || p.id === "msr-250";
   const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
   return `
-    <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}">
+    <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}" data-href="#/product/${p.slug}" role="button" tabindex="0" aria-label="View ${p.title} details">
       <a href="#/product/${p.slug}" class="pc-img" aria-label="${p.title} details">
         <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
         <img src="${imgSrc}" alt="${p.name} ${p.weight}" loading="lazy">
@@ -114,11 +114,6 @@ function prodCard(p) {
       <div class="pc-body">
         <h3><a href="#/product/${p.slug}" style="color:inherit;text-decoration:none">${p.title.replace(/\s*\([^)]*\)\s*$/, "")}</a> <span class="pc-w">(${p.weight})</span></h3>
         <p>${p.shortDesc}</p>
-        <div class="pc-perks">
-          <span>🍯 Pure Honey</span>
-          <span>🌰 Dry Fruits</span>
-          <span>🇵🇰 Cash on Delivery</span>
-        </div>
         <div class="price">
           <span>${money(p.price)}</span>
           ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
@@ -127,11 +122,11 @@ function prodCard(p) {
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
         ${buy ? `
           <div class="buy-row">
-            <button class="btn btn-gold btn-sm" data-act="buy" data-pid="${p.id}" title="Proceed directly to checkout">
-              Buy Now
-            </button>
             <button class="btn btn-line btn-sm" data-act="add" data-pid="${p.id}" title="Add to bag">
               ${ICON.bag} Add to Cart
+            </button>
+            <button class="btn btn-gold btn-sm" data-act="buy" data-pid="${p.id}" title="Proceed directly to checkout">
+              Buy Now
             </button>
           </div>
         ` : `
@@ -293,7 +288,7 @@ function secAbout(full = false) {
         </div>
         <div class="brand-tile reveal" style="--d:.2s">
           <img src="${window.BRAND_CONFIG.logo.src}" alt="${B.name} Logo">
-          <p style="margin-top:20px;font-size:15px;color:var(--mute-dark);text-align:center">Headquartered in ${C.address[2] || "Pakistan"} · Delivering Nationwide</p>
+          <p style="margin-top:20px;font-size:15px;color:var(--mute-dark);text-align:center">Headquartered in ${(C.address[C.address.length - 1] || C.address[0] || "Pakistan")} · Delivering Nationwide</p>
         </div>
       </div>
     </section>
@@ -439,10 +434,10 @@ views.product = (slug) => {
               ${buy ? `
                 <div class="buy-row" style="margin-top:24px">
                   ${qtyCtl(qid, 1)}
-                  <button class="btn btn-gold" data-act="add" data-q="${qid}" data-pid="${p.id}">
+                  <button class="btn btn-line" data-act="add" data-q="${qid}" data-pid="${p.id}" title="Add to bag">
                     ${ICON.bag} Add to Cart
                   </button>
-                  <button class="btn btn-line" data-act="buy" data-q="${qid}" data-pid="${p.id}">
+                  <button class="btn btn-gold" data-act="buy" data-q="${qid}" data-pid="${p.id}" title="Proceed directly to checkout">
                     Buy Now
                   </button>
                 </div>
@@ -468,7 +463,7 @@ views.product = (slug) => {
               <div class="info-box">
                 <div>${ICON.truck}<div><b>Pakistan Delivery: Flat ${money(D.fee)}</b><span>${D.area} · Estimated ${D.eta}</span></div></div>
                 <div>${ICON.shield}<div><b>Double Freshness Seal</b><span>${p.packaging}</span></div></div>
-                <div>${ICON.bag}<div><b>Payment Methods</b><span>Cash on Delivery, Bank Transfer, Easypaisa, JazzCash</span></div></div>
+                <div>${ICON.bag}<div><b>Payment Methods</b><span>Cash on Delivery (COD)</span></div></div>
               </div>
             </div>
           </div>
@@ -668,35 +663,35 @@ views.confirmation = () => {
     location.hash = "#/";
     return null;
   }
-  const C = window.BRAND_CONFIG.contact;
   const payMethod = (window.BRAND_CONFIG.payments || []).find(p => p.id === (o.paymentMethod || o.pay)) || { name: (o.paymentMethod || o.pay || "Cash on Delivery") };
-  const waMsg = (typeof generateOrderWhatsAppMessage === "function") ? generateOrderWhatsAppMessage(o) : orderMessage(o);
 
-  const custPhone = (o.customer && o.customer.phone) || o.phone || "";
-  const waToCustomer = custPhone ? `<a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/92${custPhone.replace(/^0/, "")}?text=${encodeURIComponent(waMsg)}">💬 Receive WhatsApp Confirmation</a>` : "";
-  const trackBtn = `<a class="btn btn-line btn-sm" href="#/track/${o.id}">🚚 Track Order Live</a>`;
-  const emailBtn = `<button class="btn btn-line btn-sm" onclick="openOrderReceiptDialog('${o.id}')">✉ View & Send Receipt</button>`;
+  const customerName = (o.customer ? o.customer.name : o.name || "Valued Customer");
+  const firstName = customerName.split(" ")[0];
 
   return {
     title: `Order Placed | ${window.BRAND_CONFIG.brand.name}`,
     html: `
       <section class="page light">
         <div class="wrap done">
-          <div class="tick">${ICON.check}</div>
-          <h1>Thank you, ${esc((o.customer ? o.customer.name : o.name || "Customer").split(" ")[0])}!</h1>
-          <p class="lead">Your order has been recorded successfully. Order reference: <span class="oid">#${o.id}</span></p>
-
-          <!-- Auto Confirmation & WhatsApp Actions -->
-          <div class="notice" style="background:var(--coal);color:var(--cream);border-color:var(--gold)">
-            <h3 style="color:var(--gold-hi);margin-bottom:8px">Order Confirmation & Receipt</h3>
-            <p style="font-size:14px;color:var(--sand);margin-bottom:14px">An official order record has been created in our database. Tap below to send confirmation directly to WhatsApp or track progress live:</p>
-            <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">${waToCustomer}${trackBtn}${emailBtn}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(27,21,12,.1)">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:52px;height:52px;border-radius:50%;background:var(--gold-grad);display:grid;place-items:center;color:#14100a;flex-shrink:0;box-shadow:0 8px 24px -6px var(--accent-glow)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div>
+                <h1 style="font-size:clamp(1.5rem, 3.2vw, 2.1rem);margin:0;line-height:1.2;text-align:left">Thank you, ${esc(firstName)}!</h1>
+                <p style="margin:4px 0 0;color:var(--mute-body);font-size:0.95rem">Order reference: <span class="oid" style="font-size:0.9rem;padding:3px 12px">#${o.id}</span></p>
+              </div>
+            </div>
+            <div>
+              <a class="btn btn-gold" href="#/track/${o.id}">Track Order</a>
+            </div>
           </div>
 
           <div class="notice">
             <h3>Payment Method: ${payMethod.name}</h3>
-            <p>${payMethod.detail || "Please keep payment ready upon delivery."}</p>
-            <p style="margin:0">Total Amount: <b style="color:var(--gold-hi)">${money(o.total)}</b></p>
+            <p>${payMethod.detail || "Please keep the exact cash amount ready for the courier rider upon delivery."}</p>
+            <p style="margin:0">Total Payable: <b style="color:var(--gold-hi)">${money(o.total)}</b></p>
           </div>
 
           <div class="box">
@@ -707,13 +702,13 @@ views.confirmation = () => {
               <div class="tot"><span>Total</span><span>${money(o.total)}</span></div>
             </div>
             <hr style="border:0;border-top:1px solid rgba(27,21,12,.12);margin:22px 0">
-            <p><b>Delivery To:</b><br>${esc(o.customer ? o.customer.name : o.name)} · ${esc(o.customer ? o.customer.phone : o.phone)}<br>${esc(o.customer ? o.customer.address : o.addr)}, ${esc(o.customer ? o.customer.city : o.city)}${o.zip ? " " + esc(o.zip) : ""}</p>
-            <p style="margin-top:12px"><b>Payment:</b> ${payMethod.name}</p>
+            <p><b>Delivery Details:</b><br>${esc(o.customer ? o.customer.name : o.name)} · ${esc(o.customer ? o.customer.phone : o.phone)}<br>${esc(o.customer ? o.customer.address : o.addr)}, ${esc(o.customer ? o.customer.city : o.city)}${o.zip ? " " + esc(o.zip) : ""}</p>
+            <p style="margin-top:12px"><b>Payment Method:</b> ${payMethod.name}</p>
           </div>
 
-          <div style="display:flex;justify-content:center;gap:14px;margin-top:28px;flex-wrap:wrap">
-            <a class="btn btn-gold" href="#/track/${o.id}">Track Live Consignment</a>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:28px;flex-wrap:wrap">
             <a class="btn btn-ink-line" href="#/shop">Continue Shopping</a>
+            <a class="btn btn-gold" href="#/track/${o.id}">Track Order</a>
           </div>
         </div>
       </section>
@@ -1260,6 +1255,8 @@ async function submitStockNotification(pid) {
   let endpoint = "/api/notify";
   if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
     endpoint = window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/notify";
+  } else if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    endpoint = "https://msrfoodsofficial.food/api/notify";
   }
 
   try {

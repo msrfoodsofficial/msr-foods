@@ -172,7 +172,7 @@ function shell() {
       </div>
       <div class="ftr-bot">
         <span>© ${B.foundedYear} ${B.name}. ${B.license}.</span>
-        <span>Payment Supported: Cash on Delivery · Bank Transfer · Easypaisa · JazzCash</span>
+        <span>Payment Supported: Cash on Delivery (COD)</span>
       </div>
     </div>
   `;
@@ -396,9 +396,26 @@ function afterRender() {
 }
 
 // Global Event Listeners
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target && e.target.classList && e.target.classList.contains("pc")) {
+    if (!e.target.closest("button") && e.target.dataset.href) {
+      e.preventDefault();
+      location.hash = e.target.dataset.href.replace(/^#\/?/, "#/");
+    }
+  }
+});
+
 document.addEventListener("click", e => {
   const actBtn = e.target.closest("[data-act]");
   if (!actBtn) {
+    const pc = e.target.closest(".pc");
+    if (pc && !e.target.closest("button") && !e.target.closest("input") && !e.target.closest(".buy-row")) {
+      const targetHref = pc.dataset.href || (pc.querySelector("a[href*=\"product\"]")?.getAttribute("href"));
+      if (targetHref) {
+        location.hash = targetHref.replace(/^#\/?/, "#/");
+        return;
+      }
+    }
     if (e.target.tagName === "DIALOG") e.target.close();
     return;
   }

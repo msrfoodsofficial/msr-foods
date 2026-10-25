@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdf3cf"/>
+      <stop offset="35%" stop-color="#d4af37"/>
+      <stop offset="70%" stop-color="#aa820a"/>
+      <stop offset="100%" stop-color="#e8c85a"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16120c"/>
+      <stop offset="100%" stop-color="#070503"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#bgGrad)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="13.5" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" opacity="0.7"/>
+  <text x="32" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Fraunces', 'Georgia', serif" font-size="20" font-weight="900" letter-spacing="1.5" fill="url(#goldGrad)" text-anchor="middle">MSR</text>
+  <path d="M18 45 L46 45" stroke="url(#goldGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>
+  <circle cx="32" cy="45" r="2.2" fill="url(#goldGrad)"/>
+</svg>

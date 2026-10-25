@@ -431,16 +431,20 @@
 }
 
 /* Welcome Block */
+.sec-sand .wrap {
+  width: min(1280px, 100% - 48px);
+}
+
 .welcome {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: clamp(30px, 6vw, 90px);
+  grid-template-columns: 1fr 1.15fr;
+  gap: clamp(28px, 4vw, 56px);
   align-items: center;
 }
 
 .welcome .lead {
   margin-top: 22px;
-  max-width: 32em;
+  max-width: 34em;
 }
 
 .welcome .sign {
@@ -461,24 +465,40 @@
 
 .panel-sand {
   position: relative;
-  border-radius: var(--r-lg);
-  background: radial-gradient(70% 70% at 50% 40%, #fff7de, #e8d4a2);
-  padding: 34px 20px 22px;
+  border-radius: var(--r-xl, 28px);
+  background: radial-gradient(75% 75% at 50% 40%, #fff8e3, #e7d29e);
+  padding: clamp(28px, 3.5vw, 44px) clamp(22px, 2.5vw, 36px) 26px;
   text-align: center;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 20px 48px -12px rgba(120, 80, 20, 0.22), 0 0 0 1px rgba(214, 167, 54, 0.28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .panel-sand img {
-  height: min(52vh, 470px);
-  width: auto;
+  width: 100%;
+  max-width: 660px;
+  height: auto;
+  aspect-ratio: 1340 / 996;
+  object-fit: contain;
   margin: 0 auto;
-  filter: drop-shadow(0 24px 22px rgba(60, 38, 6, 0.35));
+  display: block;
+  filter: drop-shadow(0 22px 28px rgba(60, 38, 6, 0.32));
+  transition: transform 0.4s ease;
+}
+
+.panel-sand:hover img {
+  transform: scale(1.02);
 }
 
 .panel-sand figcaption {
-  margin-top: 12px;
-  font-size: 14.5px;
-  color: var(--mute-light);
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #7a6336;
+  letter-spacing: 0.01em;
 }
 
 /* Featured Product Card */
@@ -1559,6 +1579,7 @@
   width: 100%;
   max-width: 480px;
   margin-inline: auto;
+  cursor: pointer;
 }
 
 .pc:hover {
@@ -1625,6 +1646,7 @@
   gap: 12px;
   width: 100%;
   margin-top: 10px;
+  cursor: default;
 }
 
 .pc .buy-row .btn {
@@ -1664,6 +1686,7 @@
   margin: 0;
 }
 
+.pc:hover .pc-body h3 a,
 .pc-body h3 a:hover {
   color: var(--gold-hi);
 }
@@ -1874,13 +1897,14 @@
     margin-top: 16px;
   }
   .panel-sand {
-    padding: 24px 16px 18px;
-    max-width: 380px;
+    padding: 22px 16px 18px;
+    max-width: 440px;
     margin-inline: auto;
   }
   .panel-sand img {
-    height: clamp(180px, 32vh, 270px);
-    width: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1340 / 996;
     object-fit: contain;
   }
   .about, .moments, .pdp, .cart-grid, .co-grid, .contact-grid, .pcard {

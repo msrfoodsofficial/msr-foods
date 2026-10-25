@@ -115,7 +115,7 @@ const FAQS = [
   ["Is the honey 100% pure?", "Yes. We source unadulterated, pure natural honey with zero added refined sugars, corn syrups, or artificial preservatives."],
   ["How should I store the jar once opened?", "Keep in a cool, dry pantry away from direct sunlight. You may refrigerate it after opening for an extra-crisp nut texture."],
   ["How long does delivery take in Pakistan?", "Orders across major cities (Lahore, Karachi, Islamabad, Rawalpindi, Peshawar) arrive in 3–5 working days."],
-  ["What payment options do you support?", "We support Cash on Delivery (COD), Direct Bank Transfer, Easypaisa, and JazzCash mobile wallets."]
+  ["What payment options do you support?", "We currently support Cash on Delivery (COD) nationwide across Pakistan. Keep the exact cash amount ready for the delivery rider."]
 ];
 
 if (typeof window !== "undefined") {

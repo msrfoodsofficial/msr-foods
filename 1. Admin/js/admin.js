@@ -1365,11 +1365,22 @@ let tempUploadedImage = null;
 // =======================================================================
 // CUSTOMER RESTOCK WAITLIST CONTROLLER (Cloudflare D1 & Offline Fallback)
 // =======================================================================
+function getNotifyEndpoint(suffix) {
+  suffix = suffix || "";
+  if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
+    return window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/notify" + suffix;
+  }
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "https://msrfoodsofficial.food/api/notify" + suffix;
+  }
+  return "/api/notify" + suffix;
+}
+
 let appWaitlists = [];
 
 async function fetchWaitlists() {
   try {
-    const res = await fetch("/api/notify");
+    const res = await fetch(getNotifyEndpoint());
     if (res.ok) {
       const data = await res.json();
       appWaitlists = Array.isArray(data) ? data : [];
@@ -1421,7 +1432,7 @@ async function copyWaitlistEmails(productId) {
 
 async function markProductWaitlistNotified(productId) {
   try {
-    await fetch("/api/notify", {
+    await fetch(getNotifyEndpoint(), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId, status: "notified" })
@@ -1451,7 +1462,7 @@ async function markProductWaitlistNotified(productId) {
 
 async function markSingleWaitlistNotified(id, productId) {
   try {
-    await fetch("/api/notify", {
+    await fetch(getNotifyEndpoint(), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: "notified" })
@@ -1976,7 +1987,7 @@ async function restockProduct(productId) {
   // Fetch waitlist for this product
   let waitlist = [];
   try {
-    const res = await fetch(`/api/notify?productId=${encodeURIComponent(target.id)}`);
+    const res = await fetch(getNotifyEndpoint(`?productId=${encodeURIComponent(target.id)}`));
     if (res.ok) {
       const data = await res.json();
       waitlist = Array.isArray(data) ? data : [];

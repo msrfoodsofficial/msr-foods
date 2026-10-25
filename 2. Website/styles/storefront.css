@@ -1519,17 +1519,23 @@
   transform: none;
 }
 
-/* Product Grid */
+/* Product Grid - Responsive Architecture (1440px+, 1200px, 1024px, 768px, Mobile) */
 .pgrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+  justify-content: center;
+  gap: 24px;
   align-items: stretch;
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
   .pgrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 420px;
+    gap: 20px;
   }
 }
 
@@ -1543,6 +1549,9 @@
   box-shadow: var(--shadow-deep);
   transition: border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
   position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin-inline: auto;
 }
 
 .pc:hover {
@@ -1565,15 +1574,15 @@
   content: "✨ NEW · STARTER PACK";
   position: absolute;
   top: 14px;
-  right: 16px;
+  right: 14px;
   background: linear-gradient(135deg, #f4d77f, #d6a736);
   color: #120e06;
   font-family: var(--sans);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 20px;
   box-shadow: 0 4px 12px rgba(214, 167, 54, 0.4);
   z-index: 2;
@@ -1581,74 +1590,90 @@
 
 .pc-img {
   position: relative;
-  display: grid;
-  place-items: center;
-  padding: 40px 18px 24px;
-  background: radial-gradient(58% 58% at 50% 50%, rgba(233, 162, 28, 0.34), transparent 72%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 12px;
+  height: 240px;
+  background: radial-gradient(52% 52% at 50% 50%, rgba(233, 162, 28, 0.25), transparent 72%);
 }
 
 .pc-img img {
-  height: min(44vh, 390px);
+  height: 200px;
   width: auto;
-  max-width: 100%;
-  filter: drop-shadow(0 26px 26px rgba(0, 0, 0, 0.7));
-  transition: transform 0.6s ease;
+  max-width: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.65));
+  transition: transform 0.4s ease;
 }
 
 .pc:hover .pc-img img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .pc .buy-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   width: 100%;
 }
 
 .pc .buy-row .btn {
-  flex: 1;
+  width: 100%;
   text-align: center;
   justify-content: center;
   white-space: nowrap;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .pc-size {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
+  top: 14px;
+  left: 14px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 3px 10px;
+  font-size: 11px;
 }
 
 .pc-body {
-  padding: 6px clamp(22px, 3vw, 34px) clamp(24px, 3vw, 34px);
+  padding: 14px 18px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   flex: 1;
 }
 
 .pc-body h3 {
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-size: 1.25rem;
+  line-height: 1.35;
   color: var(--cream);
+  margin: 0;
 }
 
 .pc-w {
   display: inline-block;
   margin-left: 6px;
-  font: 500 0.95rem var(--sans);
+  font: 500 0.88rem var(--sans);
   color: var(--gold-hi);
   white-space: nowrap;
 }
 
 .pc-body p {
   color: var(--mute-dark);
-  font-size: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .pc-body .price {
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .pc-note,
@@ -1863,9 +1888,14 @@
   }
   .pgrid {
     grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+  .pc-img {
+    height: 220px;
+    padding: 20px 14px 10px;
   }
   .pc-img img {
-    height: min(38vh, 320px);
+    height: 185px;
   }
 }
 

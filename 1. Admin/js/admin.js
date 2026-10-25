@@ -468,7 +468,10 @@ function switchTab(tabId) {
   }
 
   if (tabId === "orders") renderOrdersTable();
-  if (tabId === "products") renderProductsGrid();
+  if (tabId === "products") {
+    renderProductsGrid();
+    if (typeof fetchWaitlists === "function") fetchWaitlists().then(() => renderProductsGrid());
+  }
   if (tabId === "dashboard") renderDashboard();
   try {
     history.replaceState(null, "", `#${tabId}`);
@@ -1358,6 +1361,126 @@ window.openOrderModal = openOrderModal;
 let currentProdFilter = "all";
 let tempUploadedImage = null;
 
+
+// =======================================================================
+// CUSTOMER RESTOCK WAITLIST CONTROLLER (Cloudflare D1 & Offline Fallback)
+// =======================================================================
+let appWaitlists = [];
+
+async function fetchWaitlists() {
+  try {
+    const res = await fetch("/api/notify");
+    if (res.ok) {
+      const data = await res.json();
+      appWaitlists = Array.isArray(data) ? data : [];
+    }
+  } catch (e) {
+    console.warn("Could not fetch waitlist from /api/notify:", e);
+  }
+
+  // Merge local storage restock requests
+  if (typeof Store !== "undefined") {
+    const local = Store.get("app_restock_requests") || [];
+    local.forEach(loc => {
+      const exists = appWaitlists.some(w => 
+        (loc.email && w.customer_email === loc.email) || 
+        (loc.phone && w.customer_phone === loc.phone)
+      );
+      if (!exists) {
+        appWaitlists.push({
+          id: loc.id || 'loc-' + Math.random().toString(36).slice(2, 8),
+          product_id: loc.productId,
+          product_title: loc.productTitle || "",
+          customer_name: loc.name || "Customer",
+          customer_email: loc.email || "",
+          customer_phone: loc.phone || "",
+          want_whatsapp: loc.wantWhatsapp ? 1 : 0,
+          status: loc.status || 'pending',
+          created_at: loc.createdAt || new Date().toISOString()
+        });
+      }
+    });
+  }
+}
+
+async function copyWaitlistEmails(productId) {
+  const pending = (appWaitlists || []).filter(w => w.product_id === productId && w.status !== "notified");
+  const emails = pending.map(c => c.customer_email).filter(Boolean);
+  if (emails.length === 0) {
+    toast("No customer emails found for this product.");
+    return;
+  }
+  const emailStr = emails.join(", ");
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(emailStr);
+    toast(`Copied ${emails.length} customer email(s) to clipboard!`);
+  } else {
+    prompt("Copy customer emails:", emailStr);
+  }
+}
+
+async function markProductWaitlistNotified(productId) {
+  try {
+    await fetch("/api/notify", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, status: "notified" })
+    });
+  } catch (err) {
+    console.warn("Could not patch notify status:", err);
+  }
+
+  // Update local in-memory cache & store
+  if (Array.isArray(appWaitlists)) {
+    appWaitlists.forEach(w => {
+      if (w.product_id === productId) w.status = "notified";
+    });
+  }
+  if (typeof Store !== "undefined") {
+    const local = Store.get("app_restock_requests") || [];
+    local.forEach(r => {
+      if (r.productId === productId) r.status = "notified";
+    });
+    Store.set("app_restock_requests", local);
+  }
+
+  toast("✓ Marked all customers for this product as notified!");
+  restockProduct(productId);
+  renderProductsGrid();
+}
+
+async function markSingleWaitlistNotified(id, productId) {
+  try {
+    await fetch("/api/notify", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: "notified" })
+    });
+  } catch (err) {
+    console.warn("Could not patch single notify status:", err);
+  }
+
+  if (Array.isArray(appWaitlists)) {
+    const item = appWaitlists.find(w => String(w.id) === String(id));
+    if (item) item.status = "notified";
+  }
+  if (typeof Store !== "undefined") {
+    const local = Store.get("app_restock_requests") || [];
+    const item = local.find(r => String(r.id) === String(id));
+    if (item) item.status = "notified";
+    Store.set("app_restock_requests", local);
+  }
+
+  toast("✓ Customer marked as notified!");
+  restockProduct(productId);
+  renderProductsGrid();
+}
+
+window.fetchWaitlists = fetchWaitlists;
+window.copyWaitlistEmails = copyWaitlistEmails;
+window.markProductWaitlistNotified = markProductWaitlistNotified;
+window.markSingleWaitlistNotified = markSingleWaitlistNotified;
+
 // Render Products & Inventory Grid
 function renderProductsGrid() {
   const container = $("#inventoryGridContainer");
@@ -1419,15 +1542,26 @@ function renderProductsGrid() {
           <h3 style="font-size:18px;margin:0;color:var(--cream)">${esc(p.title || p.name)}</h3>
           <p style="font-size:13.5px;color:var(--mute-dark);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.shortDesc || p.subtitle || "")}</p>
           
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:auto;padding-top:12px;border-top:1px solid var(--hair)">
-            <div>
-              <b style="font-size:18px;color:var(--gold-hi)">${money(p.price)}</b>
-              ${p.comparePrice ? `<small style="text-decoration:line-through;color:var(--mute-dark);margin-left:6px">${money(p.comparePrice)}</small>` : ""}
-            </div>
-            <span class="tag tag-${stockPillClass}">
-              ${stockText}
-            </span>
-          </div>
+          ${(() => {
+            const pendingForP = (appWaitlists || []).filter(w => w.product_id === p.id && w.status !== "notified");
+            const waitlistBadge = pendingForP.length > 0
+              ? `<button type="button" class="tag tag-gold" style="cursor:pointer;font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:rgba(214,167,54,0.18);border:1px solid rgba(214,167,54,0.35);color:var(--gold-hi)" onclick="restockProduct('${p.id}')" title="Customers waiting for restock">🔔 ${pendingForP.length} Waiting</button>`
+              : "";
+            return `
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--hair);flex-wrap:wrap;gap:6px">
+                <div>
+                  <b style="font-size:18px;color:var(--gold-hi)">${money(p.price)}</b>
+                  ${p.comparePrice ? `<small style="text-decoration:line-through;color:var(--mute-dark);margin-left:6px">${money(p.comparePrice)}</small>` : ""}
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  ${waitlistBadge}
+                  <span class="tag tag-${stockPillClass}">
+                    ${stockText}
+                  </span>
+                </div>
+              </div>
+            `;
+          })()}
 
           <div class="prod-actions">
             <button type="button" class="btn btn-xs btn-line" onclick="openEditProductModal('${p.id}')">
@@ -1824,8 +1958,8 @@ function markOutOfStock(productId) {
   renderProductsGrid();
 }
 
-// Open Dedicated Restock Modal
-function restockProduct(productId) {
+// Open Dedicated Restock Modal with Waitlist Notifications
+async function restockProduct(productId) {
   const allProducts = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
   const target = allProducts.find(p => p.id === productId);
   if (!target) return;
@@ -1839,13 +1973,78 @@ function restockProduct(productId) {
     document.body.appendChild(modal);
   }
 
+  // Fetch waitlist for this product
+  let waitlist = [];
+  try {
+    const res = await fetch(`/api/notify?productId=${encodeURIComponent(target.id)}`);
+    if (res.ok) {
+      const data = await res.json();
+      waitlist = Array.isArray(data) ? data : [];
+    }
+  } catch (err) {
+    console.warn("Could not fetch remote waitlist:", err);
+  }
+
+  // Include local Store fallback items if any
+  if (typeof Store !== "undefined") {
+    const local = (Store.get("app_restock_requests") || []).filter(r => r.productId === target.id);
+    local.forEach(loc => {
+      const exists = waitlist.some(w => 
+        (loc.email && w.customer_email === loc.email) || 
+        (loc.phone && w.customer_phone === loc.phone)
+      );
+      if (!exists) {
+        waitlist.push({
+          id: loc.id || 'loc-' + Math.random().toString(36).slice(2, 8),
+          product_id: target.id,
+          product_title: target.title || target.name,
+          customer_name: loc.name || "Customer",
+          customer_email: loc.email || "",
+          customer_phone: loc.phone || "",
+          want_whatsapp: loc.wantWhatsapp ? 1 : 0,
+          status: loc.status || 'pending',
+          created_at: loc.createdAt || new Date().toISOString()
+        });
+      }
+    });
+  }
+
+  // Update in-memory waitlists cache
+  if (Array.isArray(appWaitlists)) {
+    appWaitlists = appWaitlists.filter(w => w.product_id !== target.id).concat(waitlist);
+  }
+
+  const pending = waitlist.filter(w => w.status !== "notified");
+  const notified = waitlist.filter(w => w.status === "notified");
+  const emailList = pending.map(c => c.customer_email).filter(Boolean);
+  const phoneList = pending.map(c => c.customer_phone).filter(Boolean);
+
+  const productUrl = `https://msrfoodsofficial.food/#/product/${target.slug || target.id}`;
+  const emailSubject = `MSR Foods: ${target.title} is Back in Stock!`;
+  const emailBody = `Salam / Hello!
+
+Great news! The product you asked to be notified about, "${target.title} (${target.weight || 'Standard'})", is now back in stock and ready to order at MSR Foods!
+
+You can order directly online right now:
+${productUrl}
+
+Fast nationwide delivery across Pakistan with Cash on Delivery is available.
+
+Warm regards,
+MSR Foods Team
+Official Store: https://msrfoodsofficial.food
+WhatsApp Support: 0336-8835501`;
+
+  const mailtoBroadcastUrl = `mailto:?bcc=${encodeURIComponent(emailList.join(","))}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+
   modal.innerHTML = `
-    <div class="dlg" style="width:min(480px,94vw)">
+    <div class="dlg" style="width:min(580px,94vw);max-height:90vh;overflow-y:auto">
       <style>
         #dlg-restock-modal label { color: #f4d77f !important; font-size: 13.5px !important; font-weight: 600 !important; margin-bottom: 6px !important; display: flex !important; }
         #dlg-restock-modal input { background: #14100a !important; color: #f4d77f !important; border: 1.5px solid rgba(214, 167, 54, 0.35) !important; padding: 12px 14px !important; border-radius: 8px !important; width: 100% !important; box-sizing: border-box !important; }
       </style>
       <button class="ic dlg-x" onclick="document.getElementById('dlg-restock-modal').close()">${ICON.x}</button>
+      
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
         <div style="width:44px;height:44px;border-radius:var(--r-sm);background:rgba(16,185,129,0.15);color:#34d399;display:grid;place-items:center;font-size:22px">📦</div>
         <div>
@@ -1854,19 +2053,20 @@ function restockProduct(productId) {
         </div>
       </div>
 
-      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:14px;color:var(--mute-dark)">Current Inventory Status:</span>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--hair);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13.5px;color:var(--mute-dark)">Current Inventory:</span>
         <span class="tag tag-${current > 0 ? 'emerald' : 'rose'}">${current > 0 ? `In Stock (${current} units)` : 'Out of Stock (0 units)'}</span>
       </div>
 
+      <!-- Restock Quantity Form -->
       <form onsubmit="event.preventDefault(); applyRestock('${target.id}', parseInt(document.getElementById('restockQtyInput').value));">
         <div class="f">
           <label for="restockQtyInput">Units to Add into Inventory:</label>
           <input type="number" id="restockQtyInput" min="1" max="9999" value="25" required style="font-size:20px;font-weight:700;text-align:center;color:var(--gold-hi)">
         </div>
 
-        <div style="margin-top:14px">
-          <span style="font-size:12.5px;color:var(--mute-dark)">1-Click Quick Add:</span>
+        <div style="margin-top:12px">
+          <span style="font-size:12px;color:var(--mute-dark)">1-Click Quick Add:</span>
           <div class="preset-img-chips" style="margin-top:6px">
             <span class="preset-chip" onclick="applyRestock('${target.id}', 10)">+10 Units</span>
             <span class="preset-chip active" onclick="applyRestock('${target.id}', 25)">+25 (Standard)</span>
@@ -1875,7 +2075,84 @@ function restockProduct(productId) {
           </div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
+        <!-- CUSTOMER WAITLIST NOTIFICATION PANEL -->
+        <div style="margin-top:22px;border-top:1px solid var(--hair);padding-top:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div>
+              <div style="font-weight:700;font-size:14px;color:var(--gold-hi);display:flex;align-items:center;gap:6px">
+                <span>🔔</span>
+                <span>Restock Waitlist (${pending.length} Waiting)</span>
+              </div>
+              <div style="font-size:12px;color:var(--mute-dark);margin-top:2px">
+                ${emailList.length} customer(s) with Email · ${phoneList.length} with Phone
+              </div>
+            </div>
+            ${pending.length > 0 ? `
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                ${emailList.length > 0 ? `
+                  <a href="${mailtoBroadcastUrl}" class="btn btn-xs btn-gold" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">
+                    📢 Send Email (BCC)
+                  </a>
+                  <button type="button" class="btn btn-xs btn-line" onclick="copyWaitlistEmails('${target.id}')">
+                    📋 Copy Emails
+                  </button>
+                ` : ''}
+                <button type="button" class="btn btn-xs btn-line" onclick="markProductWaitlistNotified('${target.id}')" style="color:#34d399">
+                  ✓ Mark All Notified
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          ${pending.length === 0 ? `
+            <div style="background:rgba(255,255,255,0.02);border:1px dashed var(--hair);border-radius:var(--r-sm);padding:14px;text-align:center;color:var(--mute-dark);font-size:13px">
+              ℹ️ No pending restock waitlist requests for this product.
+              ${notified.length > 0 ? `<div style="font-size:11.5px;color:#34d399;margin-top:4px">✓ ${notified.length} customer(s) were notified in previous restocks.</div>` : ''}
+            </div>
+          ` : `
+            <div style="max-height:190px;overflow-y:auto;border:1px solid var(--hair);border-radius:8px;background:rgba(0,0,0,0.3)">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;text-align:left">
+                <thead style="background:rgba(255,255,255,0.05);color:var(--sand);position:sticky;top:0">
+                  <tr>
+                    <th style="padding:7px 10px">Customer</th>
+                    <th style="padding:7px 10px">Email</th>
+                    <th style="padding:7px 10px">Phone</th>
+                    <th style="padding:7px 10px">Date</th>
+                    <th style="padding:7px 10px;text-align:right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${pending.map(c => {
+                    const cleanPhone = (c.customer_phone || '').replace(/[^0-9]/g, '');
+                    const waText = encodeURIComponent(`Salam ${c.customer_name || ''}! ${target.title} is now back in stock at MSR Foods! Order here: ${productUrl}`);
+                    const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('92') ? cleanPhone : ('92' + cleanPhone.replace(/^0/, ''))}?text=${waText}` : '';
+                    const mailSingleUrl = c.customer_email ? `mailto:${c.customer_email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}` : '';
+                    return `
+                      <tr style="border-top:1px solid rgba(255,255,255,0.05)">
+                        <td style="padding:7px 10px;font-weight:600;color:var(--cream)">${esc(c.customer_name || 'Customer')}</td>
+                        <td style="padding:7px 10px;color:var(--mute-dark)">${c.customer_email ? `<a href="${mailSingleUrl}" style="color:var(--gold-hi);text-decoration:none">${esc(c.customer_email)}</a>` : '—'}</td>
+                        <td style="padding:7px 10px;color:var(--mute-dark)">
+                          ${c.customer_phone ? `
+                            <span>${esc(c.customer_phone)}</span>
+                            ${waUrl ? `<a href="${waUrl}" target="_blank" rel="noopener" style="margin-left:4px;color:#25D366;text-decoration:none;font-weight:600" title="WhatsApp message">💬</a>` : ''}
+                          ` : '—'}
+                        </td>
+                        <td style="padding:7px 10px;color:var(--mute-dark);white-space:nowrap">${new Date(c.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td style="padding:7px 10px;text-align:right;white-space:nowrap">
+                          <button type="button" class="btn btn-xs btn-line" onclick="markSingleWaitlistNotified('${c.id}', '${target.id}')" style="padding:2px 6px;font-size:10px" title="Mark as notified">
+                            ✓ Done
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;border-top:1px solid var(--hair);padding-top:16px">
           <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-restock-modal').close()">Cancel</button>
           <button type="submit" class="btn btn-gold btn-sm">Confirm Restock</button>
         </div>
@@ -1914,7 +2191,14 @@ function applyRestock(productId, qty) {
   const modal = $("#dlg-restock-modal");
   if (modal) modal.close();
 
-  toast(`"${target.title || target.name}" restocked with +${qty} units!`);
+  // Check if there are waiting customers for this product
+  const pendingCustomers = (appWaitlists || []).filter(w => w.product_id === productId && w.status !== "notified");
+  if (pendingCustomers.length > 0) {
+    toast(`"${target.title || target.name}" restocked with +${qty} units! ${pendingCustomers.length} customer(s) are on the restock waitlist.`);
+  } else {
+    toast(`"${target.title || target.name}" restocked with +${qty} units!`);
+  }
+
   renderProductsGrid();
   if (typeof renderDashboard === "function") renderDashboard();
 }
@@ -2194,6 +2478,13 @@ function initAdmin() {
   syncRemoteOrders();
   if (typeof syncProductsRemote === "function") {
     syncProductsRemote();
+  }
+  if (typeof fetchWaitlists === "function") {
+    fetchWaitlists().then(() => {
+      if (typeof currentTab !== "undefined" && currentTab === "products") {
+        renderProductsGrid();
+      }
+    });
   }
 
   // Dynamic Live Store Link

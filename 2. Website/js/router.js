@@ -130,13 +130,12 @@ function prodCard(p) {
             </button>
           </div>
         ` : `
-          <div class="oos-card-action" style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
-            <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#ef4444;background:rgba(239,68,68,0.1);padding:4px 10px;border-radius:6px;border:1px solid rgba(239,68,68,0.25);width:fit-content">
-              <span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block"></span>
+          <div class="buy-row">
+            <button class="btn btn-gold btn-sm" disabled style="opacity:0.65;cursor:not-allowed">
               Out of Stock
-            </div>
-            <button type="button" class="btn btn-gold btn-sm btn-block" data-act="notify" data-pid="${p.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px">
-              🔔 Notify When Available
+            </button>
+            <button type="button" class="btn btn-line btn-sm" data-act="notify" data-pid="${p.id}" title="Notify me when restocked">
+              🔔 Notify Me
             </button>
           </div>
         `}
@@ -452,9 +451,14 @@ views.product = (slug) => {
                   <p style="font-size:13.5px;color:var(--mute-dark,#444);margin:0 0 16px;line-height:1.55">
                     This artisanal batch has temporarily sold out due to high demand. Enter your contact details below to be notified first the second fresh jars arrive!
                   </p>
-                  <button type="button" class="btn btn-gold btn-block" data-act="notify" data-pid="${p.id}" style="padding:14px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
-                    🔔 Notify When Available
-                  </button>
+                  <div class="buy-row" style="margin-top:12px">
+                    <button class="btn btn-gold" disabled style="opacity:0.65;cursor:not-allowed;flex:1">
+                      Out of Stock
+                    </button>
+                    <button type="button" class="btn btn-line" data-act="notify" data-pid="${p.id}" style="flex:1">
+                      🔔 Notify When Available
+                    </button>
+                  </div>
                 </div>
               `}
               <div class="info-box">
@@ -491,7 +495,10 @@ views.product = (slug) => {
             Add to Cart
           </button>
         ` : `
-          <button type="button" class="btn btn-gold btn-sm" data-act="notify" data-pid="${p.id}">
+          <button class="btn btn-gold btn-sm" disabled style="opacity:0.65;cursor:not-allowed">
+            Out of Stock
+          </button>
+          <button type="button" class="btn btn-line btn-sm" data-act="notify" data-pid="${p.id}">
             🔔 Notify Me
           </button>
         `}
@@ -1186,18 +1193,29 @@ function openNotifyModal(pid) {
 
       <form id="stockNotifyForm" onsubmit="event.preventDefault(); submitStockNotification('${p.id}');">
         <div style="margin-bottom:12px">
-          <label for="notifName" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Your Full Name</label>
-          <input type="text" id="notifName" class="inp" placeholder="e.g. Zaid Hayat" required style="width:100%;box-sizing:border-box">
+          <label for="notifName" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
+            Your Full Name <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
+          </label>
+          <input type="text" id="notifName" class="inp" placeholder="e.g. Zaid Hayat" style="width:100%;box-sizing:border-box">
         </div>
 
         <div style="margin-bottom:12px">
-          <label for="notifEmail" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Email Address (for Email Notification)</label>
-          <input type="email" id="notifEmail" class="inp" placeholder="e.g. zaid@example.com" required style="width:100%;box-sizing:border-box">
+          <label for="notifEmail" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
+            Email Address <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
+          </label>
+          <input type="email" id="notifEmail" class="inp" placeholder="e.g. customer@example.com" style="width:100%;box-sizing:border-box">
         </div>
 
-        <div style="margin-bottom:16px">
-          <label for="notifPhone" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Phone or WhatsApp Number</label>
-          <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0336 8835501" required style="width:100%;box-sizing:border-box">
+        <div style="margin-bottom:14px">
+          <label for="notifPhone" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
+            Phone or WhatsApp Number <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
+          </label>
+          <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0336 8835501" style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="background:rgba(214,167,54,0.08);border:1px solid rgba(214,167,54,0.22);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:var(--sand,#c4baa9);display:flex;align-items:center;gap:8px">
+          <span style="font-size:14px">ℹ️</span>
+          <span>Please enter at least an <b>Email address</b> or <b>Phone number</b> so we can reach you.</span>
         </div>
 
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:18px;font-size:12px;color:var(--sand,#c4baa9);line-height:1.4">
@@ -1229,13 +1247,13 @@ async function submitStockNotification(pid) {
   const waCheck = document.getElementById("notifWhatsappCheck");
   const submitBtn = document.getElementById("notifSubmitBtn");
 
-  const name = nameInput ? nameInput.value.trim() : "";
+  const name = (nameInput ? nameInput.value.trim() : "") || "Valued Customer";
   const email = emailInput ? emailInput.value.trim() : "";
   const phone = phoneInput ? phoneInput.value.trim() : "";
   const wantWa = waCheck ? waCheck.checked : true;
 
-  if (!name || (!email && !phone)) {
-    alert("Please provide your name and an email or phone number.");
+  if (!email && !phone) {
+    alert("Please provide at least an Email address or Phone/WhatsApp number so we can notify you.");
     return;
   }
 

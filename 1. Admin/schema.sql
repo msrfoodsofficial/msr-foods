@@ -167,3 +167,19 @@ CREATE TABLE IF NOT EXISTS store_settings (
   value_json TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- 8. STOCK NOTIFICATIONS & RESTOCK WAITLIST
+CREATE TABLE IF NOT EXISTS stock_notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id TEXT NOT NULL,
+  product_title TEXT,
+  customer_name TEXT,
+  customer_email TEXT,
+  customer_phone TEXT,
+  want_whatsapp INTEGER DEFAULT 1,
+  status TEXT DEFAULT 'pending', -- pending, notified
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_stock_notif_product ON stock_notifications(product_id);
+CREATE INDEX IF NOT EXISTS idx_stock_notif_status ON stock_notifications(status);

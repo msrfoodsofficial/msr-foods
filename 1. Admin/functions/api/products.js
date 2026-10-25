@@ -58,6 +58,16 @@ export async function onRequestGet(context) {
       return new Response(row.raw_json, { status: 200, headers });
     }
 
+    // Auto-seed initial catalog into D1 if products table is empty
+    try {
+      const countRow = await db.prepare("SELECT COUNT(*) as cnt FROM products").first();
+      if (!countRow || countRow.cnt === 0) {
+        await seedDefaultProducts(db);
+      }
+    } catch (seedErr) {
+      console.warn("Auto-seed check/execution notice:", seedErr);
+    }
+
     // List products
     let query = "SELECT raw_json FROM products WHERE is_active = 1";
     const params = [];
@@ -138,6 +148,17 @@ export async function onRequestPost(context) {
       };
     }
 
+    // Verify or safely set category_id to prevent FOREIGN KEY constraint violation
+    let categoryId = p.category || p.category_id || p.group || null;
+    if (categoryId) {
+      try {
+        const catRow = await db.prepare("SELECT id FROM categories WHERE id = ? OR slug = ?").bind(categoryId, categoryId).first();
+        categoryId = catRow ? catRow.id : null;
+      } catch (e) {
+        categoryId = null;
+      }
+    }
+
     const imagesJson = JSON.stringify(p.img);
     const rawJson = JSON.stringify(p);
 
@@ -153,6 +174,7 @@ export async function onRequestPost(context) {
           slug = excluded.slug,
           title = excluded.title,
           subtitle = excluded.subtitle,
+          category_id = excluded.category_id,
           price = excluded.price,
           compare_price = excluded.compare_price,
           stock = excluded.stock,
@@ -167,7 +189,7 @@ export async function onRequestPost(context) {
       `)
       .bind(
         id, slug, p.group || "general", p.title, p.subtitle || p.shortDesc || "",
-        p.category || "general", p.price, p.comparePrice, p.stock,
+        categoryId, p.price, p.comparePrice, p.stock,
         p.weight || "", p.badge || "", p.featured ? 1 : 0,
         imagesJson, p.shortDesc || "", p.fullDesc || "", rawJson,
         now, now
@@ -181,7 +203,7 @@ export async function onRequestPost(context) {
 }
 
 // -----------------------------------------------------------------------
-// PATCH /api/products — Edit Product, Restock or Mark Out of Stock
+// PATCH /api/products — Edit Product, Restock or Mark Out of Stock (with Upsert Fallback)
 // -----------------------------------------------------------------------
 export async function onRequestPatch(context) {
   const { request, env } = context;
@@ -201,12 +223,96 @@ export async function onRequestPatch(context) {
     }
 
     const existingRow = await db.prepare("SELECT raw_json FROM products WHERE id = ?").bind(id).first();
+    const now = new Date().toISOString();
+
+    // Auto-create / Upsert fallback if row doesn't exist in D1 yet
     if (!existingRow) {
-      return new Response(JSON.stringify({ error: `Product #${id} not found` }), { status: 404, headers });
+      const defaults = {
+        "msr-500": {
+          id: "msr-500", slug: "honey-nut-mix-500g", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+          title: "HONEY NUT MIX (500g)", subtitle: "Artisanal Roasted Dry Fruits Drenched in Raw Mountain Honey",
+          weight: "500g", netWeight: "500g", price: 1599, comparePrice: 1850, stock: 45,
+          badge: "Most Popular", featured: true,
+          img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+          shortDesc: "A nourishing artisanal blend of almonds, walnuts, cashews, pistachios and peanuts drenched in 100% pure mountain honey."
+        },
+        "msr-1kg": {
+          id: "msr-1kg", slug: "honey-nut-mix-1kg", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+          title: "HONEY NUT MIX (1kg Family Pack)", subtitle: "Value Family Jar for Daily Immunity & Natural Energy",
+          weight: "1kg", netWeight: "1kg (1000g)", price: 2999, comparePrice: 3499, stock: 25,
+          badge: "Best Value", featured: true,
+          img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+          shortDesc: "Double the nutritious goodness for the whole household with our 1kg value family pack."
+        },
+        "msr-250": {
+          id: "msr-250", slug: "honey-nut-mix-250g", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+          title: "HONEY NUT MIX (250g Starter Jar)", subtitle: "Compact Snacking Jar · Perfect Daily Portion & Trial Size",
+          weight: "250g", netWeight: "250g", price: 899, comparePrice: 1099, stock: 60,
+          badge: "✨ New Starter Size", featured: true,
+          img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+          shortDesc: "The perfect introduction to pure honey-roasted nuts. Convenient compact jar for desk snacking or travel."
+        }
+      };
+
+      const base = defaults[id] || {};
+      const newP = {
+        id,
+        slug: body.slug || base.slug || id,
+        group: body.group || base.group || "honey-nut-mix",
+        name: body.title || body.name || base.name || `Product #${id}`,
+        title: body.title || base.title || `Product #${id}`,
+        subtitle: body.shortDesc || body.subtitle || base.subtitle || "",
+        weight: body.weight || base.weight || "",
+        netWeight: body.weight || base.netWeight || "",
+        price: body.price != null ? Number(body.price) : (base.price || 0),
+        comparePrice: body.comparePrice !== undefined ? (body.comparePrice ? Number(body.comparePrice) : null) : (base.comparePrice || null),
+        stock: body.stock !== undefined ? Number(body.stock) : (base.stock != null ? base.stock : 50),
+        badge: body.badge !== undefined ? body.badge : (base.badge || ""),
+        featured: body.featured !== undefined ? !!body.featured : (base.featured !== undefined ? base.featured : true),
+        img: body.img || base.img || { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+        shortDesc: body.shortDesc || base.shortDesc || "",
+        fullDesc: body.fullDesc || base.fullDesc || body.shortDesc || base.shortDesc || "",
+        createdAt: now,
+        updatedAt: now
+      };
+
+      if (body.image) {
+        newP.img = newP.img || {};
+        newP.img.front = body.image;
+        newP.img.pair = body.image;
+      }
+
+      let catId = null;
+      try {
+        const catRow = await db.prepare("SELECT id FROM categories WHERE id = ? OR slug = ?").bind(newP.group, newP.group).first();
+        if (catRow) catId = catRow.id;
+      } catch (e) {}
+
+      const imagesJson = JSON.stringify(newP.img || {});
+      const rawJson = JSON.stringify(newP);
+
+      await db
+        .prepare(`
+          INSERT INTO products (
+            id, slug, group_slug, title, subtitle, category_id,
+            price, compare_price, stock, is_active, weight, badge,
+            featured, images_json, short_desc, full_desc, raw_json,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `)
+        .bind(
+          newP.id, newP.slug, newP.group, newP.title, newP.subtitle,
+          catId, newP.price, newP.comparePrice, newP.stock,
+          newP.weight, newP.badge, newP.featured ? 1 : 0,
+          imagesJson, newP.shortDesc, newP.fullDesc, rawJson,
+          now, now
+        )
+        .run();
+
+      return new Response(JSON.stringify({ success: true, product: newP, created: true }), { status: 200, headers });
     }
 
     let p = JSON.parse(existingRow.raw_json);
-    const now = new Date().toISOString();
 
     if (body.title) { p.title = body.title; p.name = body.title; }
     if (body.price != null) p.price = Number(body.price);
@@ -275,5 +381,75 @@ export async function onRequestDelete(context) {
     return new Response(JSON.stringify({ success: true, message: `Product ${id} archived` }), { status: 200, headers });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// -----------------------------------------------------------------------
+// Auto-seed helper when products table in D1 is empty
+// -----------------------------------------------------------------------
+async function seedDefaultProducts(db) {
+  const now = new Date().toISOString();
+
+  // Ensure category exists
+  try {
+    await db.prepare(`
+      INSERT OR IGNORE INTO categories (id, name, slug, description, sort_order) VALUES
+        ('cat-honey-nuts', 'Honey Nut Blends', 'honey-nuts', 'Artisanal roasted dry fruits drenched in pure mountain honey', 1),
+        ('general', 'General Catalog', 'general', 'General Store Products', 99)
+    `).run();
+  } catch (catErr) {}
+
+  const seeds = [
+    {
+      id: "msr-500", slug: "honey-nut-mix-500g", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+      title: "HONEY NUT MIX (500g)", subtitle: "Artisanal Roasted Dry Fruits Drenched in Raw Mountain Honey",
+      weight: "500g", netWeight: "500g", price: 1599, comparePrice: 1850, stock: 45,
+      badge: "Most Popular", featured: true, categoryId: "cat-honey-nuts",
+      img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+      shortDesc: "A nourishing artisanal blend of almonds, walnuts, cashews, pistachios and peanuts drenched in 100% pure mountain honey.",
+      fullDesc: "MSR Honey Nut Mix brings together hand-selected roasted almonds, crunchy walnuts, buttery cashews, pistachios, and peanuts with rich golden honey in one premium blend. It is an energizing, convenient snack for busy mornings, active gym lifestyles, or any moment you crave pure wholesome sweetness.",
+      packaging: "Airtight clear jar with double freshness hygiene seal", shelfLife: "12 months from packing date"
+    },
+    {
+      id: "msr-1kg", slug: "honey-nut-mix-1kg", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+      title: "HONEY NUT MIX (1kg Family Pack)", subtitle: "Value Family Jar for Daily Immunity & Natural Energy",
+      weight: "1kg", netWeight: "1kg (1000g)", price: 2999, comparePrice: 3499, stock: 25,
+      badge: "Best Value", featured: true, categoryId: "cat-honey-nuts",
+      img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+      shortDesc: "Double the nutritious goodness for the whole household with our 1kg value family pack.",
+      fullDesc: "Double the goodness for the entire household. Packed with essential micronutrients, healthy unsaturated fats, minerals, and natural slow-burning energy. Ideal for sharing with family or stocking your pantry for the month.",
+      packaging: "Heavyweight pantry jar with double seal protection", shelfLife: "12 months from packing date"
+    },
+    {
+      id: "msr-250", slug: "honey-nut-mix-250g", group: "honey-nut-mix", name: "MSR Honey Nut Mix",
+      title: "HONEY NUT MIX (250g Starter Jar)", subtitle: "Compact Snacking Jar · Perfect Daily Portion & Trial Size",
+      weight: "250g", netWeight: "250g", price: 899, comparePrice: 1099, stock: 60,
+      badge: "✨ New Starter Size", featured: true, categoryId: "cat-honey-nuts",
+      img: { front: "assets/images/products/front.webp", back: "assets/images/products/back.webp", pair: "assets/images/products/pair.webp" },
+      shortDesc: "The perfect introduction to pure honey-roasted nuts. Convenient compact jar for desk snacking or travel.",
+      fullDesc: "The brand new 250g edition gives you the exact same gold-standard recipe of whole California almonds, Kashmiri walnuts, roasted cashews, Iranian pistachios, and peanuts drenched in raw mountain honey in an ultra-portable, convenient personal jar.",
+      packaging: "Compact airtight jar with tamper-proof seal", shelfLife: "12 months from packing date"
+    }
+  ];
+
+  for (const s of seeds) {
+    try {
+      const raw = JSON.stringify(s);
+      const imgJson = JSON.stringify(s.img);
+      await db.prepare(`
+        INSERT OR IGNORE INTO products (
+          id, slug, group_slug, title, subtitle, category_id,
+          price, compare_price, stock, is_active, weight, badge,
+          featured, images_json, short_desc, full_desc, raw_json,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        s.id, s.slug, s.group, s.title, s.subtitle, s.categoryId,
+        s.price, s.comparePrice, s.stock, s.weight, s.badge, s.featured ? 1 : 0,
+        imgJson, s.shortDesc, s.fullDesc, raw, now, now
+      ).run();
+    } catch (itemErr) {
+      console.warn("Seed item error:", s.id, itemErr);
+    }
   }
 }

@@ -69,7 +69,8 @@ async function syncProductsRemote() {
 async function saveProductRemote(prod, isNew = false) {
   try {
     const endpoint = getProductsApiEndpoint();
-    const method = isNew ? "POST" : "PATCH";
+    // Use POST if full product object is present or new product, else PATCH
+    const method = (isNew || (prod && prod.title && prod.price != null)) ? "POST" : "PATCH";
     const res = await fetch(endpoint, {
       method,
       headers: { "Content-Type": "application/json" },
@@ -78,6 +79,12 @@ async function saveProductRemote(prod, isNew = false) {
     if (res.ok) {
       const data = await res.json();
       return data && data.product ? data.product : prod;
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      console.warn("D1 Sync failed:", errData.error || res.statusText);
+      if (typeof toast === "function") {
+        toast(`⚠️ Cloud Sync Warning: ${errData.error || "Failed to update database"}`);
+      }
     }
   } catch (e) {
     console.warn("Could not sync product to Cloudflare D1 immediately:", e);
@@ -93,7 +100,15 @@ async function updateProductStockRemote(productId, newStock) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: productId, stock: Number(newStock) })
     });
-    if (res.ok) return await res.json();
+    if (res.ok) {
+      return await res.json();
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      console.warn("D1 Stock sync failed:", errData.error || res.statusText);
+      if (typeof toast === "function") {
+        toast(`⚠️ Cloud Sync Warning: ${errData.error || "Failed to update stock"}`);
+      }
+    }
   } catch (e) {
     console.warn("Could not sync stock to Cloudflare D1:", e);
   }

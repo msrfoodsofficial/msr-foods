@@ -54,7 +54,8 @@ CREATE TABLE IF NOT EXISTS categories (
 INSERT OR IGNORE INTO categories (id, name, slug, description, sort_order) VALUES
   ('cat-honey-nuts', 'Honey Nut Blends', 'honey-nuts', 'Artisanal roasted dry fruits drenched in pure mountain honey', 1),
   ('cat-dry-fruits', 'Premium Dry Fruits', 'dry-fruits', 'Whole California almonds, Kashmiri walnuts and cashews', 2),
-  ('cat-organic', 'Natural Organics', 'organics', 'Pure raw mountain honey and wellness superfoods', 3);
+  ('cat-organic', 'Natural Organics', 'organics', 'Pure raw mountain honey and wellness superfoods', 3),
+  ('general', 'General Catalog', 'general', 'General Store Products', 99);
 
 -- 4. PRODUCTS & INVENTORY CATALOG
 CREATE TABLE IF NOT EXISTS products (
@@ -83,6 +84,40 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_stock ON products(stock);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
 CREATE INDEX IF NOT EXISTS idx_products_created ON products(created_at DESC);
+
+-- Seed default products catalog
+INSERT OR IGNORE INTO products (
+  id, slug, group_slug, title, subtitle, category_id,
+  price, compare_price, stock, is_active, weight, badge,
+  featured, images_json, short_desc, full_desc, raw_json
+) VALUES
+(
+  'msr-500', 'honey-nut-mix-500g', 'honey-nut-mix',
+  'HONEY NUT MIX (500g)', 'Artisanal Roasted Dry Fruits Drenched in Raw Mountain Honey',
+  'cat-honey-nuts', 1599, 1850, 45, 1, '500g', 'Most Popular', 1,
+  '{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"}',
+  'A nourishing artisanal blend of almonds, walnuts, cashews, pistachios and peanuts drenched in 100% pure mountain honey.',
+  'MSR Honey Nut Mix brings together hand-selected roasted almonds, crunchy walnuts, buttery cashews, pistachios, and peanuts with rich golden honey in one premium blend. It is an energizing, convenient snack for busy mornings, active gym lifestyles, or any moment you crave pure wholesome sweetness.',
+  '{"id":"msr-500","slug":"honey-nut-mix-500g","group":"honey-nut-mix","name":"MSR Honey Nut Mix","title":"HONEY NUT MIX (500g)","subtitle":"Artisanal Roasted Dry Fruits Drenched in Raw Mountain Honey","weight":"500g","netWeight":"500g","price":1599,"comparePrice":1850,"stock":45,"featured":true,"badge":"Most Popular","maxQty":20,"img":{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"},"shortDesc":"A nourishing artisanal blend of almonds, walnuts, cashews, pistachios and peanuts drenched in 100% pure mountain honey.","fullDesc":"MSR Honey Nut Mix brings together hand-selected roasted almonds, crunchy walnuts, buttery cashews, pistachios, and peanuts with rich golden honey in one premium blend. It is an energizing, convenient snack for busy mornings, active gym lifestyles, or any moment you crave pure wholesome sweetness.","packaging":"Airtight clear jar with double freshness hygiene seal","shelfLife":"12 months from packing date"}'
+),
+(
+  'msr-1kg', 'honey-nut-mix-1kg', 'honey-nut-mix',
+  'HONEY NUT MIX (1kg Family Pack)', 'Value Family Jar for Daily Immunity & Natural Energy',
+  'cat-honey-nuts', 2999, 3499, 25, 1, '1kg', 'Best Value', 1,
+  '{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"}',
+  'Double the nutritious goodness for the whole household with our 1kg value family pack.',
+  'Double the goodness for the entire household. Packed with essential micronutrients, healthy unsaturated fats, minerals, and natural slow-burning energy. Ideal for sharing with family or stocking your pantry for the month.',
+  '{"id":"msr-1kg","slug":"honey-nut-mix-1kg","group":"honey-nut-mix","name":"MSR Honey Nut Mix","title":"HONEY NUT MIX (1kg Family Pack)","subtitle":"Value Family Jar for Daily Immunity & Natural Energy","weight":"1kg","netWeight":"1kg (1000g)","price":2999,"comparePrice":3499,"stock":25,"featured":true,"badge":"Best Value","maxQty":20,"img":{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"},"shortDesc":"Double the nutritious goodness for the whole household with our 1kg value family pack.","fullDesc":"Double the goodness for the entire household. Packed with essential micronutrients, healthy unsaturated fats, minerals, and natural slow-burning energy. Ideal for sharing with family or stocking your pantry for the month.","packaging":"Heavyweight pantry jar with double seal protection","shelfLife":"12 months from packing date"}'
+),
+(
+  'msr-250', 'honey-nut-mix-250g', 'honey-nut-mix',
+  'HONEY NUT MIX (250g Starter Jar)', 'Compact Snacking Jar · Perfect Daily Portion & Trial Size',
+  'cat-honey-nuts', 899, 1099, 60, 1, '250g', '✨ New Starter Size', 1,
+  '{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"}',
+  'The perfect introduction to pure honey-roasted nuts. Convenient compact jar for desk snacking or travel.',
+  'The brand new 250g edition gives you the exact same gold-standard recipe of whole California almonds, Kashmiri walnuts, roasted cashews, Iranian pistachios, and peanuts drenched in raw mountain honey in an ultra-portable, convenient personal jar.',
+  '{"id":"msr-250","slug":"honey-nut-mix-250g","group":"honey-nut-mix","name":"MSR Honey Nut Mix","title":"HONEY NUT MIX (250g Starter Jar)","subtitle":"Compact Snacking Jar · Perfect Daily Portion & Trial Size","weight":"250g","netWeight":"250g","price":899,"comparePrice":1099,"stock":60,"featured":true,"prominent":true,"badge":"✨ New Starter Size","maxQty":20,"img":{"front":"assets/images/products/front.webp","back":"assets/images/products/back.webp","pair":"assets/images/products/pair.webp"},"shortDesc":"The perfect introduction to pure honey-roasted nuts. Convenient compact jar for desk snacking or travel.","fullDesc":"The brand new 250g edition gives you the exact same gold-standard recipe of whole California almonds, Kashmiri walnuts, roasted cashews, Iranian pistachios, and peanuts drenched in raw mountain honey in an ultra-portable, convenient personal jar.","packaging":"Compact airtight jar with tamper-proof seal","shelfLife":"12 months from packing date"}'
+);
 
 -- 5. ORDERS & FULFILLMENT
 CREATE TABLE IF NOT EXISTS orders (

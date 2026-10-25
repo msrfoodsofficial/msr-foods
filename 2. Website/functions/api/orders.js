@@ -247,6 +247,13 @@ export async function onRequestPost(context) {
       `).bind(orderId, "Customer", "Order Placed", "Order placed online via storefront checkout", now.toISOString()).run();
     } catch (e) {}
 
+    // Dispatch automated admin email alert
+    try {
+      await sendAdminNewOrderEmail(order, env);
+    } catch (emailErr) {
+      console.warn("Admin order alert email error:", emailErr);
+    }
+
     return new Response(
       JSON.stringify({ success: true, order }),
       { status: 201, headers }
@@ -375,3 +382,128 @@ export async function onRequestPatch(context) {
     );
   }
 }
+
+// =======================================================================
+// AUTOMATED ADMIN NEW ORDER EMAIL ALERT
+// =======================================================================
+async function sendAdminNewOrderEmail(order, env) {
+  const apiKey = (env && env.RESEND_API_KEY) || "";
+  const targetEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
+
+  if (!apiKey) {
+    return;
+  }
+
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsHtml = items.map(item => `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+        <b style="color: #111;">${item.title || item.name}</b> ${item.weight ? `<span style="color:#d97706">(${item.weight})</span>` : ''}
+      </td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">${item.qty || 1}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: right;">PKR ${Number(item.price || 0).toLocaleString()}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 700; color: #111;">
+        PKR ${(Number(item.price || 0) * Number(item.qty || 1)).toLocaleString()}
+      </td>
+    </tr>
+  `).join("");
+
+  const cust = order.customer || {};
+  const custName = cust.name || order.name || "Customer";
+  const custPhone = cust.phone || order.phone || "Not provided";
+  const custEmail = cust.email || order.email || "Not provided";
+  const custAddress = cust.address || order.addr || "";
+  const custCity = cust.city || order.city || "";
+  const cleanPhone = String(custPhone).replace(/[^0-9]/g, "");
+  const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('92') ? cleanPhone : ('92' + cleanPhone.replace(/^0/, ''))}` : '';
+
+  const adminPortalUrl = "https://msrfoods-admin.pages.dev/#orders";
+
+  const emailHtml = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+      <div style="background: #14100a; padding: 26px 24px; text-align: center; border-bottom: 3px solid #d6a736;">
+        <h1 style="color: #f4d77f; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px;">MSR FOODS</h1>
+        <p style="color: #ffffff; margin: 6px 0 0; font-size: 15px; font-weight: 500;">🔔 New Storefront Order Received!</p>
+      </div>
+      
+      <div style="padding: 24px;">
+        <div style="background: #fdfaf2; border: 1.5px solid #f4d77f; border-radius: 10px; padding: 16px 20px; margin-bottom: 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 18px; font-weight: 800; color: #14100a;">Order #${order.id}</span>
+            <span style="font-size: 14px; font-weight: 700; color: #b45309; text-transform: uppercase;">${String(order.paymentMethod || 'COD').toUpperCase()}</span>
+          </div>
+          <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">Time: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' })} PKT</div>
+        </div>
+
+        <h3 style="font-size: 14px; color: #374151; margin: 18px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">Customer Delivery Details</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 22px;">
+          <tr><td style="padding: 6px 0; color: #6b7280; width: 130px;">Customer Name:</td><td style="padding: 6px 0; font-weight: 700; color: #111;">${custName}</td></tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6b7280;">Phone / WhatsApp:</td>
+            <td style="padding: 6px 0; font-weight: 700; color: #111;">
+              <a href="tel:${custPhone}" style="color: #b45309; text-decoration: none;">${custPhone}</a>
+              ${waUrl ? ` &nbsp;·&nbsp; <a href="${waUrl}" style="color: #25D366; text-decoration: none; font-weight: 600;" target="_blank">Open WhatsApp Chat →</a>` : ''}
+            </td>
+          </tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Email:</td><td style="padding: 6px 0; color: #111;">${custEmail}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">City:</td><td style="padding: 6px 0; font-weight: 700; color: #111;">${custCity}</td></tr>
+          <tr><td style="padding: 6px 0; color: #6b7280;">Full Address:</td><td style="padding: 6px 0; color: #111; line-height: 1.4;">${custAddress}</td></tr>
+        </table>
+
+        <h3 style="font-size: 14px; color: #374151; margin: 18px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">Order Summary</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: #f9fafb; color: #6b7280; text-align: left;">
+              <th style="padding: 10px;">Product</th>
+              <th style="padding: 10px; text-align: center;">Qty</th>
+              <th style="padding: 10px; text-align: right;">Unit Price</th>
+              <th style="padding: 10px; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="padding: 10px 10px 4px; text-align: right; color: #6b7280;">Subtotal:</td>
+              <td style="padding: 10px 10px 4px; text-align: right; font-weight: 600;">PKR ${Number(order.subtotal || 0).toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="padding: 4px 10px 10px; text-align: right; color: #6b7280;">Shipping Fee:</td>
+              <td style="padding: 4px 10px 10px; text-align: right; font-weight: 600;">PKR ${Number(order.shipping || 0).toLocaleString()}</td>
+            </tr>
+            <tr style="font-size: 16px; border-top: 2px solid #14100a;">
+              <td colspan="3" style="padding: 12px 10px; text-align: right; font-weight: 800; color: #14100a;">Grand Total:</td>
+              <td style="padding: 12px 10px; text-align: right; font-weight: 800; color: #b45309;">PKR ${Number(order.total || 0).toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="margin-top: 28px; text-align: center;">
+          <a href="${adminPortalUrl}" style="background: #d6a736; color: #14100a; padding: 13px 30px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 15px; display: inline-block;">
+            Manage Order in Admin Portal →
+          </a>
+        </div>
+      </div>
+      
+      <div style="background: #f9fafb; padding: 16px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
+        MSR Foods Order Alert System · Pakistan
+      </div>
+    </div>
+  `;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM || "MSR Foods Orders <onboarding@resend.dev>",
+      to: [targetEmail],
+      subject: `🔔 New Order #${order.id} (PKR ${Number(order.total || 0).toLocaleString()}) - ${custName}`,
+      html: emailHtml
+    })
+  });
+}
+

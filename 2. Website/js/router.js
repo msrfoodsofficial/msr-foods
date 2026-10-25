@@ -107,13 +107,18 @@ function prodCard(p) {
   const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
   return `
     <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}">
-      <div class="pc-img">
+      <a href="#/product/${p.slug}" class="pc-img" aria-label="${p.title} details">
         <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
         <img src="${imgSrc}" alt="${p.name} ${p.weight}" loading="lazy">
-      </div>
+      </a>
       <div class="pc-body">
-        <h3>${p.title}<span class="pc-w">(${p.weight})</span></h3>
+        <h3><a href="#/product/${p.slug}" style="color:inherit;text-decoration:none">${p.title.replace(/\s*\([^)]*\)\s*$/, "")}</a> <span class="pc-w">(${p.weight})</span></h3>
         <p>${p.shortDesc}</p>
+        <div class="pc-perks">
+          <span>🍯 Pure Honey</span>
+          <span>🌰 Dry Fruits</span>
+          <span>🇵🇰 Cash on Delivery</span>
+        </div>
         <div class="price">
           <span>${money(p.price)}</span>
           ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
@@ -122,11 +127,11 @@ function prodCard(p) {
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
         ${buy ? `
           <div class="buy-row">
-            <button class="btn btn-gold btn-sm" data-act="add" data-pid="${p.id}">
-              ${ICON.bag} Add to Cart
-            </button>
-            <button class="btn btn-line btn-sm" data-act="buy" data-pid="${p.id}">
+            <button class="btn btn-gold btn-sm" data-act="buy" data-pid="${p.id}" title="Proceed directly to checkout">
               Buy Now
+            </button>
+            <button class="btn btn-line btn-sm" data-act="add" data-pid="${p.id}" title="Add to bag">
+              ${ICON.bag} Add to Cart
             </button>
           </div>
         ` : `
@@ -139,7 +144,6 @@ function prodCard(p) {
             </button>
           </div>
         `}
-        <a class="pc-more" href="#/product/${p.slug}">View full product details →</a>
       </div>
     </article>
   `;

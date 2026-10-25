@@ -623,7 +623,7 @@ async function sendOrderEmails(order, env) {
         </div>
       `;
 
-      await fetch("https://api.resend.com/emails", {
+      const custRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -633,6 +633,35 @@ async function sendOrderEmails(order, env) {
           html: customerEmailHtml
         })
       });
+
+      if (!custRes.ok && custEmail.toLowerCase() !== targetAdminEmail.toLowerCase()) {
+        const errJson = await custRes.json().catch(() => ({}));
+        if (custRes.status === 403 || errJson.statusCode === 403) {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: fromEmail,
+              to: [targetAdminEmail],
+              subject: `[Customer Copy for ${custEmail}] 🎉 Order Confirmed! #${order.id}`,
+              html: `
+                <div style="background:#fff3cd;border:1.5px solid #ffeeba;color:#856404;padding:14px 18px;border-radius:10px;margin:16px auto;max-width:600px;font-family:sans-serif;font-size:13.5px;line-height:1.5;">
+                  ⚠️ <b>Resend Sandbox Notice:</b> The free testing sender (<code>onboarding@resend.dev</code>) only delivers to your account email (<code>${targetAdminEmail}</code>).
+                  <br><br>
+                  <b>To deliver directly to customers (${custEmail}):</b>
+                  <ol style="margin:6px 0 0;padding-left:20px;">
+                    <li>Add your domain <code>msrfoodsofficial.food</code> at <b>resend.com/domains</b></li>
+                    <li>Add the 3 DNS records in Cloudflare DNS</li>
+                    <li>Set <code>EMAIL_FROM=orders@msrfoodsofficial.food</code></li>
+                  </ol>
+                  <p style="margin:8px 0 0;font-weight:600;">Below is the exact email your customer will receive:</p>
+                </div>
+                ${customerEmailHtml}
+              `
+            })
+          });
+        }
+      }
     } catch (errCust) {
       console.warn("Failed sending customer confirmation email:", errCust);
     }

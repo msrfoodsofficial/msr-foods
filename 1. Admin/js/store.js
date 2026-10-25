@@ -45,6 +45,9 @@ function getProductsApiEndpoint() {
   if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
     return window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/products";
   }
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "https://msrfoodsofficial.food/api/products";
+  }
   return "/api/products";
 }
 
@@ -230,6 +233,9 @@ function findOrder(query) {
 function getOrdersApiEndpoint() {
   if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
     return window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/orders";
+  }
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "https://msrfoodsofficial.food/api/orders";
   }
   return "/api/orders";
 }

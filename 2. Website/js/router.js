@@ -1163,27 +1163,25 @@ function openNotifyModal(pid) {
     document.body.appendChild(modal);
   }
 
-  const brand = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR Foods" };
   const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
 
   modal.innerHTML = `
-    <div class="dlg" style="width:min(480px,94vw);padding:28px 24px;border-radius:18px;background:var(--bg-card,#141414);color:var(--cream,#f5f5f0);border:1px solid var(--hair,rgba(255,255,255,0.12));position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+    <div class="dlg" style="width:min(440px,94vw);padding:24px 22px;border-radius:18px;background:var(--bg-card,#141414);color:var(--cream,#f5f5f0);border:1px solid var(--hair,rgba(255,255,255,0.12));position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
       <button class="ic dlg-x" onclick="document.getElementById('dlg-notify').close()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--sand,#aaa);font-size:20px;cursor:pointer">${ICON.x || "✕"}</button>
       
-      <div style="text-align:center;margin-bottom:18px">
-        <div style="width:52px;height:52px;border-radius:50%;background:rgba(212,175,55,0.15);color:var(--gold-hi,#d4af37);display:grid;place-items:center;font-size:24px;margin:0 auto 10px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(212,175,55,0.15);color:var(--gold-hi,#d4af37);display:grid;place-items:center;font-size:22px;margin:0 auto 10px">
           🔔
         </div>
-        <span class="pill" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold-hi,#d4af37);padding:4px 10px;border-radius:20px;background:rgba(212,175,55,0.1);display:inline-block;margin-bottom:6px">Priority Restock Alert</span>
-        <h3 style="font-size:21px;font-family:var(--font-head);color:var(--cream,#f5f5f0);margin:4px 0 6px">Notify When Available</h3>
-        <p style="font-size:13px;color:var(--sand,#c4baa9);margin:0;line-height:1.5">
-          Get an instant alert the moment our next fresh batch of <b style="color:var(--gold-hi,#d4af37)">${p.title}</b> is bottled and ready for dispatch.
+        <h3 style="font-size:20px;font-family:var(--font-head);color:var(--cream,#f5f5f0);margin:0 0 6px">Notify When Available</h3>
+        <p style="font-size:13px;color:var(--sand,#c4baa9);margin:0;line-height:1.45">
+          Enter your email or phone number to receive an alert when <b style="color:var(--gold-hi,#d4af37)">${p.title}</b> is back in stock.
         </p>
       </div>
 
       <!-- Product Preview Snippet -->
-      <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;margin-bottom:18px">
-        <img src="${imgSrc}" alt="${p.title}" style="width:46px;height:46px;object-fit:cover;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;margin-bottom:16px">
+        <img src="${imgSrc}" alt="${p.title}" style="width:42px;height:42px;object-fit:cover;border-radius:8px">
         <div style="flex:1">
           <div style="font-weight:600;font-size:13px;color:var(--cream,#f5f5f0)">${p.title}</div>
           <div style="font-size:12px;color:var(--gold-lo,#b38f26)">${money(p.price)} · ${p.weight || p.netWeight}</div>
@@ -1193,13 +1191,6 @@ function openNotifyModal(pid) {
 
       <form id="stockNotifyForm" onsubmit="event.preventDefault(); submitStockNotification('${p.id}');">
         <div style="margin-bottom:12px">
-          <label for="notifName" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
-            Your Full Name <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
-          </label>
-          <input type="text" id="notifName" class="inp" placeholder="e.g. Zaid Hayat" style="width:100%;box-sizing:border-box">
-        </div>
-
-        <div style="margin-bottom:12px">
           <label for="notifEmail" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
             Email Address <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
           </label>
@@ -1208,28 +1199,14 @@ function openNotifyModal(pid) {
 
         <div style="margin-bottom:14px">
           <label for="notifPhone" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
-            Phone or WhatsApp Number <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
+            Phone Number <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
           </label>
           <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0336 8835501" style="width:100%;box-sizing:border-box">
-        </div>
-
-        <div style="background:rgba(214,167,54,0.08);border:1px solid rgba(214,167,54,0.22);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:var(--sand,#c4baa9);display:flex;align-items:center;gap:8px">
-          <span style="font-size:14px">ℹ️</span>
-          <span>Please enter at least an <b>Email address</b> or <b>Phone number</b> so we can reach you.</span>
-        </div>
-
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:18px;font-size:12px;color:var(--sand,#c4baa9);line-height:1.4">
-          <input type="checkbox" id="notifWhatsappCheck" checked style="accent-color:var(--gold,#d4af37);margin-top:2px">
-          <label for="notifWhatsappCheck" style="cursor:pointer">Send me an instant WhatsApp message when stock is replenished</label>
         </div>
 
         <button type="submit" id="notifSubmitBtn" class="btn btn-gold btn-block" style="padding:13px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
           🔔 Notify Me When Available
         </button>
-
-        <p style="text-align:center;font-size:11px;color:var(--mute,#888);margin:12px 0 0">
-          🔒 Zero spam promise. We will only contact you once for this restock.
-        </p>
       </form>
     </div>
   `;
@@ -1241,41 +1218,30 @@ async function submitStockNotification(pid) {
   const p = typeof getP === "function" ? getP(pid) : null;
   if (!p) return;
 
-  const nameInput = document.getElementById("notifName");
   const emailInput = document.getElementById("notifEmail");
   const phoneInput = document.getElementById("notifPhone");
-  const waCheck = document.getElementById("notifWhatsappCheck");
   const submitBtn = document.getElementById("notifSubmitBtn");
 
-  const name = (nameInput ? nameInput.value.trim() : "") || "Valued Customer";
   const email = emailInput ? emailInput.value.trim() : "";
   const phone = phoneInput ? phoneInput.value.trim() : "";
-  const wantWa = waCheck ? waCheck.checked : true;
 
   if (!email && !phone) {
-    alert("Please provide at least an Email address or Phone/WhatsApp number so we can notify you.");
+    alert("Please provide at least an Email address or Phone number so we can notify you.");
     return;
   }
 
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.innerHTML = "⏳ Saving Request...";
+    submitBtn.innerHTML = "⏳ Saving...";
   }
-
-  const brand = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR Foods" };
-  const contact = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact) || { email: "msrfoods.official@gmail.com", whatsapp: "923368835501" };
-  const targetEmail = contact.email || "msrfoods.official@gmail.com";
-  const targetWa = contact.whatsapp || "923368835501";
 
   const payload = {
     productId: p.id,
     productTitle: p.title || p.name,
-    productWeight: p.weight || p.netWeight,
-    productPrice: p.price,
-    name,
+    weight: p.weight || p.netWeight || "",
     email,
     phone,
-    wantWhatsapp: wantWa,
+    name: "Customer",
     createdAt: new Date().toISOString()
   };
 
@@ -1302,67 +1268,15 @@ async function submitStockNotification(pid) {
     console.warn("Could not sync waitlist to server:", err);
   }
 
-  // 3. Prepare email record for the merchant (MSR Foods)
-  const emailSubject = `🔔 Restock Request: ${p.title} (${p.weight}) - ${name}`;
-  const emailBody = `🔔 RESTOCK WAITLIST REQUEST
---------------------------------------------------
-Product: ${p.title} (${p.weight})
-Product ID: ${p.id}
-Price: PKR ${Number(p.price || 0).toLocaleString()}
-
-CUSTOMER CONTACT:
-Name: ${name}
-Email: ${email}
-Phone / WhatsApp: ${phone}
-WhatsApp Alert Requested: ${wantWa ? "YES" : "No"}
-Date: ${new Date().toLocaleString()}
---------------------------------------------------
-Please notify this customer when this product is restocked!`;
-
-  const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-  const waMsg = `Hi ${brand.name}! I would like to be notified when *${p.title} (${p.weight})* is back in stock. My name is ${name} (${phone}). Thank you!`;
-  const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waMsg)}`;
-
-  // 4. Update Modal UI to Success Confirmation
+  // 3. Close the modal immediately
   const modal = document.getElementById("dlg-notify");
   if (modal) {
-    modal.innerHTML = `
-      <div class="dlg" style="width:min(480px,94vw);padding:32px 24px;border-radius:18px;background:var(--bg-card,#141414);color:var(--cream,#f5f5f0);border:1px solid var(--hair,rgba(255,255,255,0.12));position:relative;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
-        <button class="ic dlg-x" onclick="document.getElementById('dlg-notify').close()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--sand,#aaa);font-size:20px;cursor:pointer">${ICON.x || "✕"}</button>
-        
-        <div style="width:58px;height:58px;border-radius:50%;background:rgba(16,185,129,0.15);color:#10b981;display:grid;place-items:center;font-size:28px;margin:0 auto 16px">
-          ✓
-        </div>
-
-        <span class="pill" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#10b981;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.1);display:inline-block;margin-bottom:8px">Request Confirmed</span>
-        <h3 style="font-size:22px;font-family:var(--font-head);color:var(--cream,#f5f5f0);margin:4px 0 8px">You're on the Priority List!</h3>
-        <p style="font-size:14px;color:var(--sand,#c4baa9);line-height:1.5;margin-bottom:20px">
-          Thank you, <b style="color:var(--cream,#f5f5f0)">${name}</b>! We have logged your request for <b style="color:var(--gold-hi,#d4af37)">${p.title}</b>. We will alert you at <b style="color:var(--gold-hi,#d4af37)">${phone || email}</b> the second the jars are sealed.
-        </p>
-
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;font-size:12px;color:var(--sand,#c4baa9);line-height:1.6">
-          <div style="font-weight:600;color:var(--cream,#f5f5f0);margin-bottom:4px">📨 Record Dispatched to Store Management</div>
-          <div>Destination: <span style="color:var(--gold-hi,#d4af37)">${targetEmail}</span></div>
-          <div>Ref: <span style="font-family:monospace">NOTIF-${Date.now().toString().slice(-6)}</span></div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <a href="${waUrl}" target="_blank" rel="noopener" class="btn btn-gold btn-block" style="padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;border-color:#25D366;color:#000;font-weight:600">
-            💬 Quick Confirm via WhatsApp
-          </a>
-          <a href="${mailtoUrl}" class="btn btn-line btn-block" style="padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
-            📧 Send Record Copy via Mail Client
-          </a>
-          <button type="button" class="btn btn-line btn-block" onclick="document.getElementById('dlg-notify').close()" style="padding:10px;font-size:13px">
-            Done
-          </button>
-        </div>
-      </div>
-    `;
+    modal.close();
   }
 
+  // 4. Show friendly toast confirmation to user
   if (typeof toast === "function") {
-    toast(`🔔 Restock alert requested for ${p.title}!`);
+    toast(`✓ Thank you! We'll notify you as soon as ${p.title} is restocked.`);
   }
 }
 

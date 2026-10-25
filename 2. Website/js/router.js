@@ -106,28 +106,40 @@ function prodCard(p) {
   const isProminent = p.prominent || p.id === "msr-250";
   const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
   return `
-    <article class="pc reveal ${isOutOfStock ? 'pc-out' : ''} ${isProminent ? 'pc-prominent' : ''}">
+    <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}">
       <div class="pc-img">
-        <span class="pill pc-size">${isOutOfStock ? 'Out of Stock' : (p.badge || p.weight)}</span>
+        <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
         <img src="${imgSrc}" alt="${p.name} ${p.weight}" loading="lazy">
       </div>
       <div class="pc-body">
         <h3>${p.title}<span class="pc-w">(${p.weight})</span></h3>
         <p>${p.shortDesc}</p>
         <div class="price">
-          <span>${priceTxt(p)}</span>
+          <span>${money(p.price)}</span>
           ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
           <small>${p.netWeight}</small>
         </div>
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
-        <div class="buy-row">
-          <button class="btn btn-gold btn-sm" data-act="add" data-pid="${p.id}" ${buy ? "" : "disabled"}>
-            ${buy ? `${ICON.bag} Add to Cart` : "Out of Stock"}
-          </button>
-          <button class="btn btn-line btn-sm" data-act="buy" data-pid="${p.id}" ${buy ? "" : "disabled"}>
-            ${buy ? "Buy Now" : "Unavailable"}
-          </button>
-        </div>
+        ${buy ? `
+          <div class="buy-row">
+            <button class="btn btn-gold btn-sm" data-act="add" data-pid="${p.id}">
+              ${ICON.bag} Add to Cart
+            </button>
+            <button class="btn btn-line btn-sm" data-act="buy" data-pid="${p.id}">
+              Buy Now
+            </button>
+          </div>
+        ` : `
+          <div class="oos-card-action" style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#ef4444;background:rgba(239,68,68,0.1);padding:4px 10px;border-radius:6px;border:1px solid rgba(239,68,68,0.25);width:fit-content">
+              <span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block"></span>
+              Out of Stock
+            </div>
+            <button type="button" class="btn btn-gold btn-sm btn-block" data-act="notify" data-pid="${p.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px">
+              🔔 Notify When Available
+            </button>
+          </div>
+        `}
         <a class="pc-more" href="#/product/${p.slug}">View full product details →</a>
       </div>
     </article>
@@ -382,20 +394,15 @@ views.product = (slug) => {
   return {
     title: `${p.name} (${p.weight}) | ${window.BRAND_CONFIG.brand.name}`,
     html: `
-      <header class="page-head">
+      <section class="page light" style="padding-top:clamp(20px, 3vw, 36px)">
         <div class="wrap">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <a href="#/shop">Shop</a> / <span>${p.title}</span></nav>
-          <h1>${p.title}</h1>
-          <p>${p.subtitle || p.shortDesc}</p>
-        </div>
-      </header>
-      <section class="page light">
-        <div class="wrap">
+          <nav class="crumbs" aria-label="Breadcrumb" style="margin-bottom:20px">
+            <a href="#/">Home</a> / <a href="#/shop">Shop</a> / <span>${p.title}</span>
+          </nav>
           <div class="pdp">
             <div>
               <div class="gal-main">
                 <img class="main" id="galMain" src="${imgSrc}" alt="${p.name} ${p.weight}">
-                <img class="wm" src="${window.BRAND_CONFIG.logo.src}" alt="${window.BRAND_CONFIG.brand.name}">
               </div>
               <div class="thumbs">
                 <button class="thumb" aria-pressed="true" data-act="thumb" data-pid="${p.id}" data-src="front" data-alt="front jar view">
@@ -410,10 +417,10 @@ views.product = (slug) => {
               </div>
             </div>
             <div class="pdp-info">
-              <span class="pill">${isOutOfStock ? "Out of Stock" : (p.badge || "Signature Selection")}</span>
+              <span class="pill" style="${isOutOfStock ? "color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || "Signature Selection")}</span>
               <h1 style="margin-top:14px">${p.title}</h1>
               <div class="price">
-                <span>${priceTxt(p)}</span>
+                <span>${money(p.price)}</span>
                 ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
                 <small>${p.netWeight}</small>
               </div>
@@ -421,20 +428,35 @@ views.product = (slug) => {
               ${sameGroup.length > 1 ? `
                 <div class="sizes">
                   <span>Size:</span>
-                  ${sameGroup.map(g => `<a href="#/product/${g.slug}" class="${g.id === p.id ? 'on' : ''}">${g.weight}</a>`).join("")}
+                  ${sameGroup.map(g => `<a href="#/product/${g.slug}" class="${g.id === p.id ? "on" : ""}">${g.weight}</a>`).join("")}
                 </div>
               ` : ""}
-              <p style="margin-top:18px;color:var(--mute-light);line-height:1.7">${p.fullDesc}</p>
+              <p style="margin-top:18px;color:var(--mute-dark,#555);line-height:1.7">${p.fullDesc}</p>
               ${p.note ? `<p class="soon" style="margin-top:18px">${p.note}</p>` : ""}
-              <div class="buy-row" style="margin-top:24px">
-                ${qtyCtl(qid, 1)}
-                <button class="btn btn-gold" data-act="add" data-q="${qid}" data-pid="${p.id}" ${buy ? "" : "disabled"}>
-                  ${buy ? `${ICON.bag} Add to Cart` : "Out of Stock"}
-                </button>
-                <button class="btn btn-line" data-act="buy" data-q="${qid}" data-pid="${p.id}" ${buy ? "" : "disabled"}>
-                  ${buy ? "Buy Now" : "Unavailable"}
-                </button>
-              </div>
+              ${buy ? `
+                <div class="buy-row" style="margin-top:24px">
+                  ${qtyCtl(qid, 1)}
+                  <button class="btn btn-gold" data-act="add" data-q="${qid}" data-pid="${p.id}">
+                    ${ICON.bag} Add to Cart
+                  </button>
+                  <button class="btn btn-line" data-act="buy" data-q="${qid}" data-pid="${p.id}">
+                    Buy Now
+                  </button>
+                </div>
+              ` : `
+                <div class="oos-pdp-box" style="margin-top:24px;padding:20px 22px;border-radius:14px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25)">
+                  <div style="display:flex;align-items:center;gap:8px;color:#ef4444;font-weight:700;font-size:15px;margin-bottom:8px">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>
+                    Currently Out of Stock
+                  </div>
+                  <p style="font-size:13.5px;color:var(--mute-dark,#444);margin:0 0 16px;line-height:1.55">
+                    This artisanal batch has temporarily sold out due to high demand. Enter your contact details below to be notified first the second fresh jars arrive!
+                  </p>
+                  <button type="button" class="btn btn-gold btn-block" data-act="notify" data-pid="${p.id}" style="padding:14px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+                    🔔 Notify When Available
+                  </button>
+                </div>
+              `}
               <div class="info-box">
                 <div>${ICON.truck}<div><b>Pakistan Delivery: Flat ${money(D.fee)}</b><span>${D.area} · Estimated ${D.eta}</span></div></div>
                 <div>${ICON.shield}<div><b>Double Freshness Seal</b><span>${p.packaging}</span></div></div>
@@ -463,10 +485,16 @@ views.product = (slug) => {
         </div>
       </section>
       <div class="mbar">
-        <div><b>${priceTxt(p)}</b><small>${p.netWeight} · Delivery ${money(D.fee)}</small></div>
-        <button class="btn btn-gold btn-sm" data-act="add" data-q="${qid}" data-pid="${p.id}" ${buy ? "" : "disabled"}>
-          ${buy ? "Add to Cart" : "Out of Stock"}
-        </button>
+        <div><b>${money(p.price)}</b><small>${p.netWeight} · Delivery ${money(D.fee)}</small></div>
+        ${buy ? `
+          <button class="btn btn-gold btn-sm" data-act="add" data-q="${qid}" data-pid="${p.id}">
+            Add to Cart
+          </button>
+        ` : `
+          <button type="button" class="btn btn-gold btn-sm" data-act="notify" data-pid="${p.id}">
+            🔔 Notify Me
+          </button>
+        `}
       </div>
     `,
     mbar: true
@@ -1112,3 +1140,213 @@ window.refreshTrackLive = async function(id) {
     }
   }
 };
+
+
+// =======================================================================
+// STOCK RESTOCK WAITLIST & NOTIFICATION CONTROLLER
+// =======================================================================
+function openNotifyModal(pid) {
+  const p = typeof getP === "function" ? getP(pid) : null;
+  if (!p) return;
+
+  let modal = document.getElementById("dlg-notify");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-notify";
+    document.body.appendChild(modal);
+  }
+
+  const brand = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR Foods" };
+  const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(480px,94vw);padding:28px 24px;border-radius:18px;background:var(--bg-card,#141414);color:var(--cream,#f5f5f0);border:1px solid var(--hair,rgba(255,255,255,0.12));position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-notify').close()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--sand,#aaa);font-size:20px;cursor:pointer">${ICON.x || "✕"}</button>
+      
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(212,175,55,0.15);color:var(--gold-hi,#d4af37);display:grid;place-items:center;font-size:24px;margin:0 auto 10px">
+          🔔
+        </div>
+        <span class="pill" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold-hi,#d4af37);padding:4px 10px;border-radius:20px;background:rgba(212,175,55,0.1);display:inline-block;margin-bottom:6px">Priority Restock Alert</span>
+        <h3 style="font-size:21px;font-family:var(--font-head);color:var(--cream,#f5f5f0);margin:4px 0 6px">Notify When Available</h3>
+        <p style="font-size:13px;color:var(--sand,#c4baa9);margin:0;line-height:1.5">
+          Get an instant alert the moment our next fresh batch of <b style="color:var(--gold-hi,#d4af37)">${p.title}</b> is bottled and ready for dispatch.
+        </p>
+      </div>
+
+      <!-- Product Preview Snippet -->
+      <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;margin-bottom:18px">
+        <img src="${imgSrc}" alt="${p.title}" style="width:46px;height:46px;object-fit:cover;border-radius:8px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:var(--cream,#f5f5f0)">${p.title}</div>
+          <div style="font-size:12px;color:var(--gold-lo,#b38f26)">${money(p.price)} · ${p.weight || p.netWeight}</div>
+        </div>
+        <span style="font-size:11px;color:#f87171;background:rgba(239,68,68,0.12);padding:3px 8px;border-radius:6px;font-weight:600;border:1px solid rgba(239,68,68,0.25)">Out of Stock</span>
+      </div>
+
+      <form id="stockNotifyForm" onsubmit="event.preventDefault(); submitStockNotification('${p.id}');">
+        <div style="margin-bottom:12px">
+          <label for="notifName" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Your Full Name</label>
+          <input type="text" id="notifName" class="inp" placeholder="e.g. Zaid Hayat" required style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="notifEmail" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Email Address (for Email Notification)</label>
+          <input type="email" id="notifEmail" class="inp" placeholder="e.g. zaid@example.com" required style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label for="notifPhone" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">Phone or WhatsApp Number</label>
+          <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0336 8835501" required style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:18px;font-size:12px;color:var(--sand,#c4baa9);line-height:1.4">
+          <input type="checkbox" id="notifWhatsappCheck" checked style="accent-color:var(--gold,#d4af37);margin-top:2px">
+          <label for="notifWhatsappCheck" style="cursor:pointer">Send me an instant WhatsApp message when stock is replenished</label>
+        </div>
+
+        <button type="submit" id="notifSubmitBtn" class="btn btn-gold btn-block" style="padding:13px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+          🔔 Notify Me When Available
+        </button>
+
+        <p style="text-align:center;font-size:11px;color:var(--mute,#888);margin:12px 0 0">
+          🔒 Zero spam promise. We will only contact you once for this restock.
+        </p>
+      </form>
+    </div>
+  `;
+
+  modal.showModal();
+}
+
+async function submitStockNotification(pid) {
+  const p = typeof getP === "function" ? getP(pid) : null;
+  if (!p) return;
+
+  const nameInput = document.getElementById("notifName");
+  const emailInput = document.getElementById("notifEmail");
+  const phoneInput = document.getElementById("notifPhone");
+  const waCheck = document.getElementById("notifWhatsappCheck");
+  const submitBtn = document.getElementById("notifSubmitBtn");
+
+  const name = nameInput ? nameInput.value.trim() : "";
+  const email = emailInput ? emailInput.value.trim() : "";
+  const phone = phoneInput ? phoneInput.value.trim() : "";
+  const wantWa = waCheck ? waCheck.checked : true;
+
+  if (!name || (!email && !phone)) {
+    alert("Please provide your name and an email or phone number.");
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "⏳ Saving Request...";
+  }
+
+  const brand = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR Foods" };
+  const contact = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact) || { email: "msrfoods.official@gmail.com", whatsapp: "923368835501" };
+  const targetEmail = contact.email || "msrfoods.official@gmail.com";
+  const targetWa = contact.whatsapp || "923368835501";
+
+  const payload = {
+    productId: p.id,
+    productTitle: p.title || p.name,
+    productWeight: p.weight || p.netWeight,
+    productPrice: p.price,
+    name,
+    email,
+    phone,
+    wantWhatsapp: wantWa,
+    createdAt: new Date().toISOString()
+  };
+
+  // 1. Save locally to Store
+  if (typeof Store !== "undefined") {
+    const storedList = Store.get("app_restock_requests") || [];
+    storedList.unshift(payload);
+    Store.set("app_restock_requests", storedList);
+  }
+
+  // 2. Send to Cloudflare D1 API /api/notify
+  let endpoint = "/api/notify";
+  if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
+    endpoint = window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/notify";
+  }
+
+  try {
+    await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.warn("Could not sync waitlist to server:", err);
+  }
+
+  // 3. Prepare email record for the merchant (MSR Foods)
+  const emailSubject = `🔔 Restock Request: ${p.title} (${p.weight}) - ${name}`;
+  const emailBody = `🔔 RESTOCK WAITLIST REQUEST
+--------------------------------------------------
+Product: ${p.title} (${p.weight})
+Product ID: ${p.id}
+Price: PKR ${Number(p.price || 0).toLocaleString()}
+
+CUSTOMER CONTACT:
+Name: ${name}
+Email: ${email}
+Phone / WhatsApp: ${phone}
+WhatsApp Alert Requested: ${wantWa ? "YES" : "No"}
+Date: ${new Date().toLocaleString()}
+--------------------------------------------------
+Please notify this customer when this product is restocked!`;
+
+  const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  const waMsg = `Hi ${brand.name}! I would like to be notified when *${p.title} (${p.weight})* is back in stock. My name is ${name} (${phone}). Thank you!`;
+  const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waMsg)}`;
+
+  // 4. Update Modal UI to Success Confirmation
+  const modal = document.getElementById("dlg-notify");
+  if (modal) {
+    modal.innerHTML = `
+      <div class="dlg" style="width:min(480px,94vw);padding:32px 24px;border-radius:18px;background:var(--bg-card,#141414);color:var(--cream,#f5f5f0);border:1px solid var(--hair,rgba(255,255,255,0.12));position:relative;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+        <button class="ic dlg-x" onclick="document.getElementById('dlg-notify').close()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--sand,#aaa);font-size:20px;cursor:pointer">${ICON.x || "✕"}</button>
+        
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(16,185,129,0.15);color:#10b981;display:grid;place-items:center;font-size:28px;margin:0 auto 16px">
+          ✓
+        </div>
+
+        <span class="pill" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#10b981;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.1);display:inline-block;margin-bottom:8px">Request Confirmed</span>
+        <h3 style="font-size:22px;font-family:var(--font-head);color:var(--cream,#f5f5f0);margin:4px 0 8px">You're on the Priority List!</h3>
+        <p style="font-size:14px;color:var(--sand,#c4baa9);line-height:1.5;margin-bottom:20px">
+          Thank you, <b style="color:var(--cream,#f5f5f0)">${name}</b>! We have logged your request for <b style="color:var(--gold-hi,#d4af37)">${p.title}</b>. We will alert you at <b style="color:var(--gold-hi,#d4af37)">${phone || email}</b> the second the jars are sealed.
+        </p>
+
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;font-size:12px;color:var(--sand,#c4baa9);line-height:1.6">
+          <div style="font-weight:600;color:var(--cream,#f5f5f0);margin-bottom:4px">📨 Record Dispatched to Store Management</div>
+          <div>Destination: <span style="color:var(--gold-hi,#d4af37)">${targetEmail}</span></div>
+          <div>Ref: <span style="font-family:monospace">NOTIF-${Date.now().toString().slice(-6)}</span></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="${waUrl}" target="_blank" rel="noopener" class="btn btn-gold btn-block" style="padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;border-color:#25D366;color:#000;font-weight:600">
+            💬 Quick Confirm via WhatsApp
+          </a>
+          <a href="${mailtoUrl}" class="btn btn-line btn-block" style="padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+            📧 Send Record Copy via Mail Client
+          </a>
+          <button type="button" class="btn btn-line btn-block" onclick="document.getElementById('dlg-notify').close()" style="padding:10px;font-size:13px">
+            Done
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (typeof toast === "function") {
+    toast(`🔔 Restock alert requested for ${p.title}!`);
+  }
+}
+
+window.openNotifyModal = openNotifyModal;
+window.submitStockNotification = submitStockNotification;

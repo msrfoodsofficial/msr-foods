@@ -433,6 +433,8 @@ document.addEventListener("click", e => {
     cart.items[p.id] = Math.max(cart.items[p.id] || 0, qty);
     saveCart();
     location.hash = "#/checkout";
+  } else if (act === "notify") {
+    if (typeof openNotifyModal === "function") openNotifyModal(actBtn.dataset.pid);
   } else if (act === "remove") {
     delete cart.items[actBtn.dataset.pid];
     saveCart();

@@ -195,9 +195,9 @@ function secIngredients() {
       <div class="wrap">
         <div class="sec-head center reveal">
           <span class="pill">Wholesome Formula</span>
-          <h2 class="h2" style="margin-top:14px">6 Powerhouse Ingredients</h2>
+          <h2 class="h2" style="margin-top:14px">${items.length} Powerhouse Ingredients</h2>
           <div class="rule"></div>
-          <p class="lead">Every single jar contains only these six wholesome elements — nothing more, nothing less.</p>
+          <p class="lead">Every single jar contains only these ${items.length} wholesome elements — pure roasted dry fruits, premium seeds, and raw mountain honey.</p>
         </div>
         <div class="grid3">
           ${items.map((ing, i) => `
@@ -208,7 +208,7 @@ function secIngredients() {
             </div>
           `).join("")}
         </div>
-        <p class="ing-note">Contains whole almonds, walnuts, cashews, pistachios, peanuts, and raw natural honey.</p>
+        <p class="ing-note">Contains whole almonds, walnuts, cashews, pistachios, peanuts, pumpkin seeds, sunflower seeds, sesame seeds, and raw natural honey.</p>
       </div>
     </section>
   `;

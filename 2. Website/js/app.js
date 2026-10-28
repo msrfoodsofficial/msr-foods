@@ -522,7 +522,8 @@ window.addEventListener("hashchange", route);
 
 // Live Cross-Tab Synchronization with Admin Portal
 window.addEventListener("storage", (e) => {
-  if (e.key === "app_products" || e.key === "app_active_theme" || e.key === "app_custom_theme_tokens") {
+  if (e.key === "app_brand_config" || e.key === "app_products" || e.key === "app_active_theme" || e.key === "app_custom_theme_tokens") {
+    if (typeof loadLocalBrandSettings === "function") loadLocalBrandSettings();
     if (typeof initTheme === "function") initTheme();
     if (typeof getProducts === "function") getProducts();
     if (typeof shell === "function") shell();
@@ -530,15 +531,43 @@ window.addEventListener("storage", (e) => {
   }
 });
 
+// Instant Cross-Tab Sync via BroadcastChannel
+try {
+  if (typeof BroadcastChannel !== "undefined") {
+    const syncChannel = new BroadcastChannel("msr_brand_sync");
+    syncChannel.onmessage = (msg) => {
+      if (msg.data && msg.data.type === "BRAND_SETTINGS_UPDATED") {
+        if (typeof applyBrandSettings === "function") applyBrandSettings(msg.data.settings);
+        if (typeof initTheme === "function") initTheme();
+        if (typeof shell === "function") shell();
+        if (typeof route === "function") route();
+      }
+    };
+  }
+} catch (e) {}
+
 // Application Bootstrap
 function initApp() {
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
+  if (typeof loadLocalBrandSettings === "function") {
+    loadLocalBrandSettings();
+  }
   initTheme();
   initCart();
   shell();
   route();
+
+  // Dynamic White-Label Brand Settings & Social Channels Sync from Cloudflare D1
+  if (typeof syncSettingsRemote === "function") {
+    syncSettingsRemote().then(updated => {
+      if (updated) {
+        if (typeof shell === "function") shell();
+        if (typeof route === "function") route();
+      }
+    });
+  }
 
   // Dynamic Multi-Niche Catalog Sync from Cloudflare D1
   if (typeof syncProductsRemote === "function") {

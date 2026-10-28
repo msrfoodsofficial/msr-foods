@@ -97,7 +97,10 @@ const INGREDIENTS = [
   { name: "Walnuts", key: "walnuts", img: "assets/images/ingredients/walnuts.webp", desc: "High in Omega-3 fatty acids for cognitive performance & brain health." },
   { name: "Cashews", key: "cashews", img: "assets/images/ingredients/cashews.webp", desc: "Delicately roasted cashews delivering creamy texture & essential zinc." },
   { name: "Pistachios", key: "pistachios", img: "assets/images/ingredients/pistachios.webp", desc: "Premium Iranian pistachios packed with lutein, protein & fiber." },
-  { name: "Peanuts", key: "peanuts", img: "assets/images/ingredients/peanuts.webp", desc: "Golden roasted peanuts providing heart-healthy fats & crunch." }
+  { name: "Peanuts", key: "peanuts", img: "assets/images/ingredients/peanuts.webp", desc: "Golden roasted peanuts providing heart-healthy fats & crunch." },
+  { name: "Pumpkin Seeds", key: "pumpkin_seeds", img: "assets/images/ingredients/pumpkin_seeds.webp", desc: "Nutrient-dense raw green pepitas rich in zinc, magnesium & plant protein." },
+  { name: "Sunflower Seeds", key: "sunflower_seeds", img: "assets/images/ingredients/sunflower_seeds.webp", desc: "Crisp shelled sunflower kernels packed with Vitamin E, selenium & healthy fats." },
+  { name: "Sesame Seeds", key: "sesame_seeds", img: "assets/images/ingredients/sesame_seeds.webp", desc: "Toasted golden sesame seeds delivering rich calcium, copper & nutty aroma." }
 ];
 
 const NUTRITION_FACTS = [

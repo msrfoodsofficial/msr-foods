@@ -473,6 +473,7 @@ function switchTab(tabId) {
     if (typeof fetchWaitlists === "function") fetchWaitlists().then(() => renderProductsGrid());
   }
   if (tabId === "dashboard") renderDashboard();
+  if (tabId === "settings") loadStoreSettingsForm();
   try {
     history.replaceState(null, "", `#${tabId}`);
   } catch (e) {}
@@ -520,7 +521,11 @@ function renderDashboard() {
   const recent = orders.slice(0, 5);
   recentTbody.innerHTML = recent.map(o => `
     <tr>
-      <td><b style="color:var(--gold-hi)">#${o.id}</b></td>
+      <td>
+        <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view full order details & change status">
+          #${o.id}
+        </button>
+      </td>
       <td>${esc((o.customer && o.customer.name) || o.name || "Customer")}</td>
       <td>${new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
       <td><b>${money(o.total)}</b></td>
@@ -577,7 +582,9 @@ function renderOrdersTable() {
     return `
       <tr>
         <td>
-          <b style="color:var(--gold-hi);font-family:monospace;font-size:14.5px">#${o.id}</b>
+          <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view full order details & change status">
+            #${o.id}
+          </button>
           <div style="font-size:11.5px;color:var(--mute-dark);margin-top:2px">${dateFormatted}</div>
         </td>
         <td>
@@ -1247,31 +1254,49 @@ function openOrderModal(orderId) {
 
   const cleanPhone = (cust.phone || "").replace(/[^0-9]/g, "").replace(/^0/, "");
   const waReceiptUrl = cleanPhone ? `https://wa.me/92${cleanPhone}?text=${encodeURIComponent((typeof generateOrderWhatsAppMessage === "function") ? generateOrderWhatsAppMessage(o) : "Order " + o.id)}` : "#";
+  const statusLower = (o.status || "pending").toLowerCase();
+  const trackUrl = (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.websiteUrl)
+    ? `${window.BRAND_CONFIG.urls.websiteUrl.replace(/\/$/, "")}/#/track/${o.id}`
+    : `#/track/${o.id}`;
 
   modal.innerHTML = `
-    <div class="dlg" style="width:min(720px,94vw)">
+    <div class="dlg" style="width:min(760px,95vw);max-height:92vh;overflow-y:auto">
       <button class="ic dlg-x" onclick="document.getElementById('dlg-order-details').close()">${ICON.x}</button>
       
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--hair);padding-bottom:14px">
         <div>
           <span style="font-size:12px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:0.05em">Order Information</span>
-          <h3 style="font-size:22px;margin:2px 0 0;color:var(--cream)">Order #${o.id}</h3>
-          <small style="color:var(--mute-dark)">Placed on ${o.dateFormatted || formatOrderDate(o.createdAt)}</small>
+          <h3 style="font-size:22px;margin:2px 0 0;color:var(--cream);display:flex;align-items:center;gap:8px">
+            Order #${o.id}
+            <button class="btn btn-xs btn-line" onclick="navigator.clipboard.writeText('${o.id}'); toast('Order ID copied!');" title="Copy Order ID" style="font-size:11px;padding:2px 8px">📋 Copy</button>
+          </h3>
+          <small style="color:var(--mute-dark)">Placed on ${o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString())}</small>
         </div>
         <div style="text-align:right">
-          <span class="status-pill status-${(o.status || 'pending').toLowerCase()}" style="font-size:13px;padding:6px 14px">${o.status}</span>
-          <div style="margin-top:4px;font-size:13px;color:var(--sand)">Payment: <b>${o.paymentMethod || "COD"}</b></div>
+          <span class="status-pill status-${statusLower}" style="font-size:13px;padding:6px 14px">${o.status}</span>
+          <div style="margin-top:4px;font-size:13px;color:var(--sand)">Payment: <b>${o.paymentMethod || o.pay || "Cash on Delivery (COD)"}</b></div>
         </div>
       </div>
 
-      <!-- Quick Lifecycle Action Bar -->
-      <div style="background:rgba(214,167,54,0.06);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <span style="font-size:13.5px;color:var(--cream)"><b>Fulfillment Action:</b></span>
+      <!-- Interactive Order Status & Fulfillment Control Bar -->
+      <div class="status-change-box">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label for="modalOrderStatusSelect" style="font-weight:700;color:var(--cream);font-size:13.5px;display:flex;align-items:center;gap:6px">
+            <span>⚡ Change Status:</span>
+          </label>
+          <select id="modalOrderStatusSelect" class="modal-status-select" onchange="updateOrderStatusFromModal('${o.id}', this.value)">
+            <option value="Pending" ${o.status === "Pending" ? "selected" : ""}>⏳ Pending</option>
+            <option value="Approved" ${o.status === "Approved" ? "selected" : ""}>✓ Approved</option>
+            <option value="Processing" ${o.status === "Processing" ? "selected" : ""}>⚙️ Processing</option>
+            <option value="Dispatched" ${o.status === "Dispatched" ? "selected" : ""}>🚚 Dispatched</option>
+            <option value="Delivered" ${o.status === "Delivered" ? "selected" : ""}>✅ Delivered</option>
+            <option value="Cancelled" ${o.status === "Cancelled" ? "selected" : ""}>❌ Cancelled</option>
+          </select>
+          <button class="btn btn-xs btn-gold" onclick="updateOrderStatusFromModal('${o.id}')">Apply Status</button>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${o.status === "Pending" ? `<button class="btn btn-xs btn-success" onclick="approveOrder('${o.id}'); openOrderModal('${o.id}');">✓ Approve Order</button>` : ""}
           <button class="btn btn-xs btn-warning" onclick="document.getElementById('dlg-order-details').close(); openDispatchModal('${o.id}');">🚚 Set Courier Tracking</button>
-          ${o.status !== "Delivered" ? `<button class="btn btn-xs btn-success" onclick="markOrderDelivered('${o.id}'); openOrderModal('${o.id}');">✓ Mark Delivered</button>` : ""}
-          <a class="btn btn-xs btn-gold" href="${waReceiptUrl}" target="_blank" rel="noopener">💬 WhatsApp Invoice</a>
+          ${cleanPhone ? `<a class="btn btn-xs btn-line" href="${waReceiptUrl}" target="_blank" rel="noopener" style="color:#25D366;border-color:rgba(37,211,102,0.4)">💬 WhatsApp Customer</a>` : ""}
         </div>
       </div>
 
@@ -1291,10 +1316,10 @@ function openOrderModal(orderId) {
       <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-bottom:20px">
         <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:var(--r-sm);padding:16px">
           <h4 style="color:var(--gold-hi);margin:0 0 10px;font-size:14px;text-transform:uppercase">Customer & Destination</h4>
-          <p style="margin:0 0 6px"><b>Name:</b> ${esc(cust.name)}</p>
-          <p style="margin:0 0 6px"><b>Phone:</b> <a href="tel:${cust.phone}" style="color:var(--gold-hi)">${esc(cust.phone)}</a></p>
+          <p style="margin:0 0 6px"><b>Name:</b> ${esc(cust.name || "Customer")}</p>
+          <p style="margin:0 0 6px"><b>Phone:</b> ${cust.phone ? `<a href="tel:${cust.phone}" style="color:var(--gold-hi)">${esc(cust.phone)}</a>` : "N/A"}</p>
           ${cust.email ? `<p style="margin:0 0 6px"><b>Email:</b> ${esc(cust.email)}</p>` : ""}
-          <p style="margin:0 0 6px"><b>Address:</b> ${esc(cust.address)}, ${esc(cust.city)}, ${esc(cust.province || "")}</p>
+          <p style="margin:0 0 6px"><b>Address:</b> ${esc(cust.address || "")}, ${esc(cust.city || "")}, ${esc(cust.province || "")}</p>
           ${cust.notes ? `<p style="margin:0;font-size:12.5px;color:var(--mute-dark)"><b>Notes:</b> <i>${esc(cust.notes)}</i></p>` : ""}
         </div>
 
@@ -1337,9 +1362,9 @@ function openOrderModal(orderId) {
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <a class="btn btn-line btn-sm" href="store.html#/track/${o.id}" target="_blank">View Customer Tracking Page ↗</a>
+        <a class="btn btn-line btn-sm" href="${trackUrl}" target="_blank" rel="noopener">View Customer Tracking Page ↗</a>
         <div style="display:flex;gap:10px">
-          <a class="btn btn-gold btn-sm" href="${waReceiptUrl}" target="_blank" rel="noopener">Send WhatsApp Invoice</a>
+          ${cleanPhone ? `<a class="btn btn-gold btn-sm" href="${waReceiptUrl}" target="_blank" rel="noopener">Send WhatsApp Invoice</a>` : ""}
           <button class="btn btn-line btn-sm" onclick="document.getElementById('dlg-order-details').close()">Close</button>
         </div>
       </div>
@@ -1347,6 +1372,16 @@ function openOrderModal(orderId) {
   `;
 
   modal.showModal();
+}
+
+function updateOrderStatusFromModal(orderId, chosenStatus) {
+  if (!chosenStatus) {
+    const sel = document.getElementById("modalOrderStatusSelect");
+    if (sel) chosenStatus = sel.value;
+  }
+  if (!chosenStatus) return;
+  updateOrderStatus(orderId, chosenStatus);
+  openOrderModal(orderId);
 }
 
 // Global window exposure for inline onclick handlers
@@ -2416,6 +2451,7 @@ function exportBrandConfig() {
   const currentBrand = window.BRAND_CONFIG.brand;
   const currentDelivery = window.BRAND_CONFIG.delivery;
   const currentContact = window.BRAND_CONFIG.contact;
+  const currentSocial = window.BRAND_CONFIG.social;
 
   const exportCode = `// Generated White-Label Configuration
 const BRAND_CONFIG = {
@@ -2438,7 +2474,8 @@ const BRAND_CONFIG = {
     format: (amount) => "PKR " + Number(amount || 0).toLocaleString("en-US")
   },
   delivery: ${JSON.stringify(currentDelivery, null, 2)},
-  contact: ${JSON.stringify(currentContact, null, 2)}
+  contact: ${JSON.stringify(currentContact, null, 2)},
+  social: ${JSON.stringify(currentSocial, null, 2)}
 };`;
 
   const modal = $("#dlg-export-config");
@@ -2481,11 +2518,20 @@ function initAdmin() {
   if (!checkAdminAuth()) {
     return;
   }
+  if (typeof loadLocalBrandSettings === "function") {
+    loadLocalBrandSettings();
+  }
   initTheme();
   seedDefaultOrders();
   initTabs();
   renderDashboard();
   initCustomizer();
+  loadStoreSettingsForm();
+  if (typeof syncSettingsRemote === "function") {
+    syncSettingsRemote().then(() => {
+      loadStoreSettingsForm();
+    });
+  }
   syncRemoteOrders();
   if (typeof syncProductsRemote === "function") {
     syncProductsRemote();
@@ -2547,6 +2593,187 @@ function initAdmin() {
     if (hash && $(`#tab-${hash}`)) switchTab(hash);
   });
 }
+
+// ==========================================================================
+// White-Label Store Settings & Social Links Management
+// ==========================================================================
+function loadStoreSettingsForm() {
+  const currentBrand = window.BRAND_CONFIG || {};
+  const social = currentBrand.social || {};
+  const contact = currentBrand.contact || {};
+  const delivery = currentBrand.delivery || {};
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val != null) el.value = val;
+  };
+
+  // Social Links
+  setVal("settingTiktok", social.tiktok || "");
+  setVal("settingInstagram", social.instagram || "");
+  setVal("settingFacebook", social.facebook || "");
+  setVal("settingYoutube", social.youtube || "");
+
+  // Contact Details
+  setVal("settingWhatsapp", contact.whatsapp || "");
+  setVal("settingPhone", contact.phone || "");
+  setVal("settingPhoneIntl", contact.phoneIntl || "");
+  setVal("settingEmail", contact.email || "");
+  setVal("settingSupportHours", contact.supportHours || "");
+  setVal("settingAddress", Array.isArray(contact.address) ? contact.address.join(", ") : (contact.address || ""));
+
+  // Fulfillment Rates
+  setVal("settingFee", delivery.fee != null ? delivery.fee : 200);
+  setVal("settingFreeThreshold", delivery.freeShippingThreshold != null ? delivery.freeShippingThreshold : 5000);
+  setVal("settingEta", delivery.eta || "3–5 working days");
+}
+
+function openSaveSettingsConfirmation() {
+  const tiktok = ($("#settingTiktok") ? $("#settingTiktok").value.trim() : "");
+  const instagram = ($("#settingInstagram") ? $("#settingInstagram").value.trim() : "");
+  const facebook = ($("#settingFacebook") ? $("#settingFacebook").value.trim() : "");
+  const youtube = ($("#settingYoutube") ? $("#settingYoutube").value.trim() : "");
+  const whatsapp = ($("#settingWhatsapp") ? $("#settingWhatsapp").value.trim() : "");
+  const phone = ($("#settingPhone") ? $("#settingPhone").value.trim() : "");
+  const phoneIntl = ($("#settingPhoneIntl") ? $("#settingPhoneIntl").value.trim() : "");
+  const email = ($("#settingEmail") ? $("#settingEmail").value.trim() : "");
+  const supportHours = ($("#settingSupportHours") ? $("#settingSupportHours").value.trim() : "");
+  const address = ($("#settingAddress") ? $("#settingAddress").value.trim() : "");
+  const fee = $("#settingFee") ? Number($("#settingFee").value) : 200;
+  const freeThreshold = $("#settingFreeThreshold") ? Number($("#settingFreeThreshold").value) : 5000;
+  const eta = ($("#settingEta") ? $("#settingEta").value.trim() : "3–5 working days");
+
+  let modal = $("#dlg-confirm-settings");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-confirm-settings";
+    modal.setAttribute("aria-label", "Confirm Store Settings Update");
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(600px,94vw);padding:28px 24px">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-confirm-settings').close()">${ICON.x}</button>
+      
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--hair);padding-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(214,167,54,0.15);color:var(--gold-hi);display:grid;place-items:center;font-size:22px">
+          💾
+        </div>
+        <div>
+          <h3 style="font-size:20px;color:var(--cream);margin:0">Confirm Store & Social Updates</h3>
+          <p style="font-size:13px;color:var(--mute-dark);margin:2px 0 0">Review changes before publishing live to the customer website</p>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:8px;padding:16px;margin-bottom:18px;font-size:13px;line-height:1.6">
+        <div style="color:var(--gold-hi);font-weight:700;margin-bottom:6px;text-transform:uppercase;font-size:11.5px;letter-spacing:0.05em">Summary of Updates:</div>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:6px 12px;word-break:break-all">
+          <span style="color:var(--sand)">🎵 TikTok:</span>
+          <b>${esc(tiktok || "Not set")}</b>
+          <span style="color:var(--sand)">📸 Instagram:</span>
+          <b>${esc(instagram || "Not set")}</b>
+          <span style="color:var(--sand)">📘 Facebook:</span>
+          <b>${esc(facebook || "Not set")}</b>
+          ${youtube ? `<span style="color:var(--sand)">▶️ YouTube:</span><b>${esc(youtube)}</b>` : ""}
+          <span style="color:var(--sand)">💬 WhatsApp:</span>
+          <b>${esc(whatsapp || "Not set")}</b>
+          <span style="color:var(--sand)">📞 Phone:</span>
+          <b>${esc(phone || "Not set")}</b>
+          <span style="color:var(--sand)">✉️ Email:</span>
+          <b>${esc(email || "Not set")}</b>
+          <span style="color:var(--sand)">📍 Address:</span>
+          <b>${esc(address || "Not set")}</b>
+          <span style="color:var(--sand)">🚚 Shipping Fee:</span>
+          <b>${money(fee)} (Free over ${money(freeThreshold)})</b>
+        </div>
+      </div>
+
+      <div style="background:rgba(214,167,54,0.08);border:1px solid rgba(214,167,54,0.3);border-radius:8px;padding:14px;margin-bottom:20px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:18px">⚡</span>
+          <p style="font-size:12.5px;color:#d1c7b7;margin:0;line-height:1.5">
+            <strong>Direct Website Update:</strong> Once confirmed, these details will immediately save to your Cloudflare D1 database and update live on the storefront website (footer social links, contact page, quick WhatsApp ordering, and checkout shipping fee).
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:12px">
+        <button type="button" class="btn btn-sm btn-line" onclick="document.getElementById('dlg-confirm-settings').close()">Cancel</button>
+        <button type="button" id="btnConfirmPublishModal" class="btn btn-sm btn-gold" onclick="confirmSaveStoreSettings()">
+          Confirm & Publish to Website
+        </button>
+      </div>
+    </div>
+  `;
+
+  modal.showModal();
+}
+
+async function confirmSaveStoreSettings() {
+  const btn = $("#btnConfirmPublishModal");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Publishing...";
+  }
+
+  const tiktok = ($("#settingTiktok") ? $("#settingTiktok").value.trim() : "");
+  const instagram = ($("#settingInstagram") ? $("#settingInstagram").value.trim() : "");
+  const facebook = ($("#settingFacebook") ? $("#settingFacebook").value.trim() : "");
+  const youtube = ($("#settingYoutube") ? $("#settingYoutube").value.trim() : "");
+  const whatsapp = ($("#settingWhatsapp") ? $("#settingWhatsapp").value.trim() : "");
+  const phone = ($("#settingPhone") ? $("#settingPhone").value.trim() : "");
+  const phoneIntl = ($("#settingPhoneIntl") ? $("#settingPhoneIntl").value.trim() : "");
+  const email = ($("#settingEmail") ? $("#settingEmail").value.trim() : "");
+  const supportHours = ($("#settingSupportHours") ? $("#settingSupportHours").value.trim() : "");
+  const address = ($("#settingAddress") ? $("#settingAddress").value.trim() : "");
+  const fee = $("#settingFee") ? Number($("#settingFee").value) : 200;
+  const freeThreshold = $("#settingFreeThreshold") ? Number($("#settingFreeThreshold").value) : 5000;
+  const eta = ($("#settingEta") ? $("#settingEta").value.trim() : "3–5 working days");
+
+  if (!window.BRAND_CONFIG) window.BRAND_CONFIG = {};
+  if (!window.BRAND_CONFIG.social) window.BRAND_CONFIG.social = {};
+  window.BRAND_CONFIG.social.tiktok = tiktok;
+  window.BRAND_CONFIG.social.instagram = instagram;
+  window.BRAND_CONFIG.social.facebook = facebook;
+  window.BRAND_CONFIG.social.youtube = youtube;
+
+  if (!window.BRAND_CONFIG.contact) window.BRAND_CONFIG.contact = {};
+  window.BRAND_CONFIG.contact.whatsapp = whatsapp;
+  window.BRAND_CONFIG.contact.phone = phone;
+  window.BRAND_CONFIG.contact.phoneIntl = phoneIntl || (phone.startsWith("0") ? "+92" + phone.slice(1) : phone);
+  window.BRAND_CONFIG.contact.email = email;
+  window.BRAND_CONFIG.contact.supportHours = supportHours;
+  window.BRAND_CONFIG.contact.address = address ? [address] : ["Kohat, Pakistan"];
+
+  if (!window.BRAND_CONFIG.delivery) window.BRAND_CONFIG.delivery = {};
+  window.BRAND_CONFIG.delivery.fee = fee;
+  window.BRAND_CONFIG.delivery.freeShippingThreshold = freeThreshold;
+  window.BRAND_CONFIG.delivery.eta = eta;
+
+  // Persist locally & remotely
+  if (typeof saveBrandSettingsRemote === "function") {
+    await saveBrandSettingsRemote(window.BRAND_CONFIG);
+  } else {
+    Store.set("app_brand_config", window.BRAND_CONFIG);
+  }
+
+  // Also sync and update packages
+  if (typeof syncAndBuildDeployments === "function") {
+    try {
+      await syncAndBuildDeployments();
+    } catch (e) {}
+  }
+
+  const modal = $("#dlg-confirm-settings");
+  if (modal) modal.close();
+
+  toast("✅ Store settings & social channels successfully published to website!");
+}
+
+window.loadStoreSettingsForm = loadStoreSettingsForm;
+window.openSaveSettingsConfirmation = openSaveSettingsConfirmation;
+window.confirmSaveStoreSettings = confirmSaveStoreSettings;
+window.updateOrderStatusFromModal = updateOrderStatusFromModal;
 
 // Start periodic live order polling
 setInterval(syncRemoteOrders, 4000);

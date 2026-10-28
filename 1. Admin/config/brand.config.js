@@ -17,7 +17,7 @@ const BRAND_CONFIG = {
     fullName: "MSR Foods",
     tagline: "Pure Taste. Natural Goodness.",
     slogan: "Quality Built For You",
-    description: "A premium blend of honey, almonds, walnuts, cashews, pistachios and peanuts. Pakistan-wide delivery.",
+    description: "A premium blend of honey, almonds, walnuts, cashews, pistachios, peanuts, pumpkin seeds, sunflower seeds and sesame seeds. Pakistan-wide delivery.",
     foundedYear: "2026",
     license: "All Rights Reserved",
     defaultTheme: "luxury-gold"
@@ -87,7 +87,7 @@ const BRAND_CONFIG = {
   social: {
     facebook: "https://www.facebook.com/share/1ButraKks3/",
     instagram: "https://www.instagram.com/msrfoods.official",
-    tiktok: "https://www.tiktok.com/@m.shahan666?_r=1&_t=ZN-9AqeE3M0NPi",
+    tiktok: "https://www.tiktok.com/@msrfoodsoffical?lang=en",
     youtube: ""
   },
 

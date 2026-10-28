@@ -437,6 +437,119 @@ if (typeof window !== "undefined") {
   window.canBuy = canBuy;
   window.priceTxt = priceTxt;
   window.clampQ = clampQ;
+// ==========================================================================
+// Dynamic White-Label Brand Settings & Social Channels Synchronization
+// ==========================================================================
+function getSettingsApiEndpoint() {
+  if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
+    return window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/settings";
+  }
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "https://msrfoodsofficial.food/api/settings";
+  }
+  return "/api/settings";
+}
+
+function applyBrandSettings(data) {
+  if (!data || typeof data !== "object") return false;
+  const cfg = data.brand_config || data.brandConfig || data.brand || data;
+  if (!window.BRAND_CONFIG) window.BRAND_CONFIG = {};
+
+  if (cfg.brand && typeof cfg.brand === "object") {
+    window.BRAND_CONFIG.brand = Object.assign({}, window.BRAND_CONFIG.brand, cfg.brand);
+  }
+  if (cfg.contact && typeof cfg.contact === "object") {
+    window.BRAND_CONFIG.contact = Object.assign({}, window.BRAND_CONFIG.contact, cfg.contact);
+  }
+  if (cfg.social && typeof cfg.social === "object") {
+    window.BRAND_CONFIG.social = Object.assign({}, window.BRAND_CONFIG.social, cfg.social);
+  }
+  if (cfg.delivery && typeof cfg.delivery === "object") {
+    window.BRAND_CONFIG.delivery = Object.assign({}, window.BRAND_CONFIG.delivery, cfg.delivery);
+  }
+  if (cfg.urls && typeof cfg.urls === "object") {
+    window.BRAND_CONFIG.urls = Object.assign({}, window.BRAND_CONFIG.urls, cfg.urls);
+  }
+  if (cfg.logo && typeof cfg.logo === "object") {
+    window.BRAND_CONFIG.logo = Object.assign({}, window.BRAND_CONFIG.logo, cfg.logo);
+  }
+  if (cfg.currency && typeof cfg.currency === "object") {
+    window.BRAND_CONFIG.currency = Object.assign({}, window.BRAND_CONFIG.currency, cfg.currency);
+  }
+  if (Array.isArray(cfg.payments)) {
+    window.BRAND_CONFIG.payments = cfg.payments;
+  }
+  if (data.theme && typeof applyTheme === "function") {
+    applyTheme(data.theme);
+  }
+  Store.set("app_brand_config", window.BRAND_CONFIG);
+  return true;
+}
+
+function loadLocalBrandSettings() {
+  const cached = Store.get("app_brand_config");
+  if (cached) {
+    applyBrandSettings(cached);
+    return true;
+  }
+  return false;
+}
+
+async function syncSettingsRemote() {
+  try {
+    const endpoint = getSettingsApiEndpoint();
+    const res = await fetch(endpoint);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && !data.error && data.found !== false) {
+        applyBrandSettings(data);
+        return data;
+      }
+    }
+  } catch (e) {
+    // offline fallback
+  }
+  return null;
+}
+
+async function saveBrandSettingsRemote(fullConfig, theme) {
+  const activeTheme = theme || localStorage.getItem("app_active_theme") || "luxury-gold";
+  applyBrandSettings(fullConfig);
+  Store.set("app_brand_config", window.BRAND_CONFIG);
+
+  try {
+    if (typeof BroadcastChannel !== "undefined") {
+      const channel = new BroadcastChannel("msr_brand_sync");
+      channel.postMessage({
+        type: "BRAND_SETTINGS_UPDATED",
+        settings: window.BRAND_CONFIG,
+        theme: activeTheme,
+        timestamp: Date.now()
+      });
+      channel.close();
+    }
+  } catch (e) {}
+
+  try {
+    const endpoint = getSettingsApiEndpoint();
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brand: window.BRAND_CONFIG,
+        theme: activeTheme
+      })
+    });
+    if (res.ok) {
+      return { success: true };
+    }
+    const err = await res.json().catch(() => ({}));
+    return { success: false, error: err.error || res.statusText };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
   window.getAllOrders = getAllOrders;
   window.findOrder = findOrder;
   window.saveOrder = saveOrder;
@@ -452,4 +565,9 @@ if (typeof window !== "undefined") {
   window.saveProductRemote = saveProductRemote;
   window.updateProductStockRemote = updateProductStockRemote;
   window.deleteProductRemote = deleteProductRemote;
+  window.getSettingsApiEndpoint = getSettingsApiEndpoint;
+  window.applyBrandSettings = applyBrandSettings;
+  window.loadLocalBrandSettings = loadLocalBrandSettings;
+  window.syncSettingsRemote = syncSettingsRemote;
+  window.saveBrandSettingsRemote = saveBrandSettingsRemote;
 }

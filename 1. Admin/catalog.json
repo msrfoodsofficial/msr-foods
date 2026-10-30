@@ -1,0 +1,169 @@
+{
+  "schema": "https://schema.org/ItemList",
+  "generated": "2026-10-30T09:20:00Z",
+  "store": {
+    "name": "MSR Foods",
+    "legalName": "MSR Foods",
+    "tagline": "Pure Taste. Natural Goodness.",
+    "description": "A premium blend of honey, almonds, walnuts, cashews, pistachios, peanuts, pumpkin seeds, sunflower seeds and sesame seeds. Pakistan-wide delivery.",
+    "website": "https://msrfoodsofficial.food",
+    "foundedYear": 2026,
+    "currency": "PKR",
+    "address": {
+      "city": "Kohat",
+      "province": "Khyber Pakhtunkhwa",
+      "country": "Pakistan"
+    },
+    "social": {
+      "facebook": "https://www.facebook.com/share/1ButraKks3/",
+      "instagram": "https://www.instagram.com/msrfoods.official",
+      "tiktok": "https://www.tiktok.com/@msrfoodsoffical?lang=en"
+    }
+  },
+  "products": [
+    {
+      "id": "msr-hnm-500g",
+      "name": "MSR Honey Nut Mix 500g",
+      "sku": "MSR-HNM-500G",
+      "url": "https://msrfoodsofficial.food/products/honey-nut-mix-500g",
+      "price": 1599,
+      "currency": "PKR",
+      "comparePrice": 1850,
+      "availability": "InStock",
+      "stockQuantity": 45,
+      "weight": "500g",
+      "badge": "Most Popular",
+      "description": "Our signature 500g Honey Nut Mix — raw mountain honey blended with California almonds, Kashmiri walnuts, cashews, Iranian pistachios, peanuts, pumpkin seeds, sunflower seeds, and sesame seeds.",
+      "ingredients": [
+        "Raw mountain honey",
+        "California almonds",
+        "Kashmiri walnuts",
+        "Cashews",
+        "Iranian pistachios",
+        "Peanuts",
+        "Pumpkin seeds",
+        "Sunflower seeds",
+        "Sesame seeds"
+      ],
+      "nutritionPer100g": {
+        "calories": 510,
+        "protein": "15.4g",
+        "fat": "32.8g",
+        "carbohydrates": "41.6g",
+        "fiber": "6.2g"
+      },
+      "images": [
+        "https://msrfoodsofficial.food/assets/images/products/500g.webp"
+      ],
+      "shelfLife": "12 months",
+      "packaging": "Sealed jar",
+      "shipping": {
+        "eta": "3-5 working days",
+        "area": "Pakistan-wide",
+        "method": "TCS, Leopard Courier, Trax Logistics, PostEx"
+      },
+      "moq": 1
+    },
+    {
+      "id": "msr-hnm-1kg",
+      "name": "MSR Honey Nut Mix 1kg Family Pack",
+      "sku": "MSR-HNM-1KG",
+      "url": "https://msrfoodsofficial.food/products/honey-nut-mix-1kg",
+      "price": 2999,
+      "currency": "PKR",
+      "comparePrice": 3499,
+      "availability": "InStock",
+      "stockQuantity": 25,
+      "weight": "1kg",
+      "badge": "Best Value",
+      "description": "Our 1kg Family Pack Honey Nut Mix — the best-value option for families who love the goodness of raw mountain honey and premium dry fruits every day.",
+      "ingredients": [
+        "Raw mountain honey",
+        "California almonds",
+        "Kashmiri walnuts",
+        "Cashews",
+        "Iranian pistachios",
+        "Peanuts",
+        "Pumpkin seeds",
+        "Sunflower seeds",
+        "Sesame seeds"
+      ],
+      "nutritionPer100g": {
+        "calories": 510,
+        "protein": "15.4g",
+        "fat": "32.8g",
+        "carbohydrates": "41.6g",
+        "fiber": "6.2g"
+      },
+      "images": [
+        "https://msrfoodsofficial.food/assets/images/products/1kg.webp"
+      ],
+      "shelfLife": "12 months",
+      "packaging": "Sealed jar",
+      "shipping": {
+        "eta": "3-5 working days",
+        "area": "Pakistan-wide",
+        "method": "TCS, Leopard Courier, Trax Logistics, PostEx"
+      },
+      "moq": 1
+    },
+    {
+      "id": "msr-hnm-250g",
+      "name": "MSR Honey Nut Mix 250g Starter Jar",
+      "sku": "MSR-HNM-250G",
+      "url": "https://msrfoodsofficial.food/products/honey-nut-mix-250g",
+      "price": 899,
+      "currency": "PKR",
+      "comparePrice": 1099,
+      "availability": "InStock",
+      "stockQuantity": 60,
+      "weight": "250g",
+      "badge": "New",
+      "description": "Our 250g Starter Jar — perfect for first-time buyers to experience the rich taste of MSR Honey Nut Mix at an accessible price.",
+      "ingredients": [
+        "Raw mountain honey",
+        "California almonds",
+        "Kashmiri walnuts",
+        "Cashews",
+        "Iranian pistachios",
+        "Peanuts",
+        "Pumpkin seeds",
+        "Sunflower seeds",
+        "Sesame seeds"
+      ],
+      "nutritionPer100g": {
+        "calories": 510,
+        "protein": "15.4g",
+        "fat": "32.8g",
+        "carbohydrates": "41.6g",
+        "fiber": "6.2g"
+      },
+      "images": [
+        "https://msrfoodsofficial.food/assets/images/products/250g.webp"
+      ],
+      "shelfLife": "12 months",
+      "packaging": "Sealed jar",
+      "shipping": {
+        "eta": "3-5 working days",
+        "area": "Pakistan-wide",
+        "method": "TCS, Leopard Courier, Trax Logistics, PostEx"
+      },
+      "moq": 1
+    }
+  ],
+  "shipping": {
+    "fee": "Calculated at checkout",
+    "freeThreshold": 5000,
+    "freeThresholdCurrency": "PKR",
+    "eta": "3-5 working days",
+    "couriers": ["TCS", "Leopard Courier", "Trax Logistics", "PostEx"],
+    "area": "Pakistan-wide"
+  },
+  "payment": ["Cash on Delivery"],
+  "contact": {
+    "phone": "+923368835501",
+    "whatsapp": "923368835501",
+    "email": "msrfoods.official@gmail.com",
+    "hours": "Monday–Saturday, 9:00 AM – 8:00 PM PKT"
+  }
+}

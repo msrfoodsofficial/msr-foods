@@ -1,0 +1,89 @@
+# MSR Foods
+
+> Premium Honey Nut Mix — Pure Taste. Natural Goodness.
+> Pakistan's finest artisanal honey nut mix, crafted from raw mountain honey and premium dry fruits. Pakistan-wide delivery via COD.
+
+## About
+
+MSR Foods is a Pakistani e-commerce brand founded in 2026, based in Kohat, Khyber Pakhtunkhwa, Pakistan. We specialise in handcrafted Honey Nut Mix — a premium superfood blend of raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, peanuts, pumpkin seeds, sunflower seeds, and sesame seeds.
+
+- Website: https://msrfoodsofficial.food
+- Founded: 2026
+- Location: Kohat, Khyber Pakhtunkhwa, Pakistan
+- Delivery: Pakistan-wide (3–5 working days)
+- Payment: Cash on Delivery (COD)
+- Currency: PKR (Pakistani Rupee)
+
+## Products
+
+- MSR Honey Nut Mix 500g — PKR 1,599 (was PKR 1,850) — In Stock (45 units) — Most Popular
+  URL: https://msrfoodsofficial.food/products/honey-nut-mix-500g
+- MSR Honey Nut Mix 1kg Family Pack — PKR 2,999 (was PKR 3,499) — In Stock (25 units) — Best Value
+  URL: https://msrfoodsofficial.food/products/honey-nut-mix-1kg
+- MSR Honey Nut Mix 250g Starter Jar — PKR 899 (was PKR 1,099) — In Stock (60 units) — New
+  URL: https://msrfoodsofficial.food/products/honey-nut-mix-250g
+
+## Ingredients
+
+Raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, peanuts, pumpkin seeds, sunflower seeds, sesame seeds.
+
+## Nutrition (per 100g)
+
+- Energy: 510 kcal
+- Protein: 15.4g
+- Fat: 32.8g
+- Carbohydrates: 41.6g
+- Dietary Fiber: 6.2g
+
+## Shipping & Delivery
+
+- Delivery area: Pakistan-wide
+- Estimated delivery: 3–5 working days
+- Free shipping on orders above PKR 5,000
+- Couriers: TCS, Leopard Courier, Trax Logistics, PostEx
+- Payment method: Cash on Delivery (COD)
+
+## Frequently Asked Questions
+
+- Q: Do you deliver across Pakistan?
+  A: Yes. We deliver Pakistan-wide via TCS, Leopard Courier, Trax Logistics, and PostEx within 3–5 working days.
+
+- Q: What payment methods do you accept?
+  A: We currently accept Cash on Delivery (COD) only.
+
+- Q: Is there free shipping?
+  A: Yes, free shipping on all orders above PKR 5,000.
+
+- Q: What sizes are available?
+  A: We offer three sizes — 250g Starter Jar (PKR 899), 500g (PKR 1,599), and 1kg Family Pack (PKR 2,999).
+
+- Q: Are the products natural?
+  A: Yes. All our products use raw mountain honey and premium dry fruits with no artificial additives or preservatives.
+
+- Q: How do I place an order?
+  A: Visit https://msrfoodsofficial.food, select your product and size, and complete checkout with Cash on Delivery.
+
+- Q: Can I track my order?
+  A: Yes. After dispatch you will receive a tracking number via WhatsApp or SMS.
+
+- Q: What is the shelf life?
+  A: 12 months from date of manufacture when stored in a cool, dry place.
+
+## Contact
+
+- Phone: +92 336 8835501
+- WhatsApp: +92 336 8835501 (wa.me/923368835501)
+- Email: msrfoods.official@gmail.com
+- Support hours: Monday–Saturday, 9:00 AM – 8:00 PM PKT
+
+## Social Media
+
+- Facebook: https://www.facebook.com/share/1ButraKks3/
+- Instagram: https://www.instagram.com/msrfoods.official
+- TikTok: https://www.tiktok.com/@msrfoodsoffical?lang=en
+
+## Machine-Readable Data
+
+- Product catalog (JSON): https://msrfoodsofficial.food/catalog.json
+- Sitemap: https://msrfoodsofficial.food/sitemap.xml
+- Schema.org JSON-LD: embedded in https://msrfoodsofficial.food

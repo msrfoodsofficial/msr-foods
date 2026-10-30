@@ -8,9 +8,16 @@
   <meta name="theme-color" content="#120f0a">
 
   <!-- Favicon & Web Icons -->
+  <!-- Primary: SVG for modern browsers -->
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
-  <link rel="alternate icon" type="image/webp" href="assets/images/logo.webp">
-  <link rel="apple-touch-icon" href="assets/images/logo.webp">
+  <!-- Fallback PNG for Google Search, older browsers, PWA -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon-512.png">
+  <!-- Apple Touch Icon (iOS home screen) -->
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/images/favicon-192.png">
+  <!-- ICO fallback for legacy crawlers (Google) -->
+  <link rel="shortcut icon" href="/favicon.ico">
 
   <!-- Fonts Preconnect & Stylesheet -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

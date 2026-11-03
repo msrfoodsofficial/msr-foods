@@ -1143,7 +1143,7 @@ views.about = () => ({
         "https://www.wikidata.org/wiki/Q141989418",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
-        "https://www.facebook.com/share/1ButraKks3/"
+        "https://www.facebook.com/people/MSR-Foods/61595442878318/"
       ],
       "foundingDate": "2026",
       "areaServed": {

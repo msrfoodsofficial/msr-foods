@@ -184,5 +184,5 @@ Delivery: 3–5 days, Pakistan-wide, COD
 Couriers: TCS, Leopard, Trax, PostEx
 Social:   Instagram: @msrfoods.official
           TikTok: @msrfoodsoffical
-          Facebook: /share/1ButraKks3/
+          Facebook: /people/MSR-Foods/61595442878318/
 ```

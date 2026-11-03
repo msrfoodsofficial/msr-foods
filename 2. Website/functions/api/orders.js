@@ -610,7 +610,7 @@ async function sendOrderEmails(order, env) {
               <!-- Reassurance / WhatsApp Help -->
               <div style="background: #ffffff; border: 1px dashed #d6a736; border-radius: 10px; padding: 14px 18px; text-align: center; font-size: 13px; color: #6b6355;">
                 Need help or wish to change your delivery address? Reply to this email or WhatsApp us anytime at 
-                <a href="https://wa.me/923099005999" style="color: #25D366; font-weight: 700; text-decoration: none;">+92 309 9005999</a>.
+                <a href="https://wa.me/923159935600" style="color: #25D366; font-weight: 700; text-decoration: none;">+92 315 9935600</a>.
               </div>
             </div>
 

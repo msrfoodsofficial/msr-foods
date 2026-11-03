@@ -174,7 +174,7 @@ fc586e0  feat: AEO+LLMO static semantic layer in website body
 Brand:    MSR Foods
 Tagline:  Pure Taste. Natural Goodness.
 Site:     https://msrfoodsofficial.food
-Phone:    +92 336 8835501
+Phone:    +92 315 9935600
 Email:    msrfoods.official@gmail.com
 Location: Kohat, KPK, Pakistan
 Currency: PKR

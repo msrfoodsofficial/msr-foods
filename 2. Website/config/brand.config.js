@@ -52,11 +52,11 @@ const BRAND_CONFIG = {
 
   // Store Contact Details
   contact: {
-    phone: "03368835501",
-    phoneIntl: "+923368835501",
-    whatsapp: "923368835501", // Set to "" to hide the WhatsApp quick order button
+    phone: "03159935600",
+    phoneIntl: "+923159935600",
+    whatsapp: "923159935600", // Set to "" to hide the WhatsApp quick order button
     email: "msrfoods.official@gmail.com",
-    supportHours: "Mon – Sat: 9:00 AM – 8:00 PM PKT",
+    supportHours: "24/7 Available (Open 24 Hours)",
     address: [
       "Kohat, Pakistan"
     ]

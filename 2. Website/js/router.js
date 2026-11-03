@@ -1024,7 +1024,7 @@ views.about = () => ({
           <div class="card-w reveal" style="--d:0.3s">
             <div class="ico-ring">${ICON.phone}</div>
             <h3>Customer Care</h3>
-            <p>Dedicated customer support team available <strong>Monday to Saturday, 9:00 AM – 8:00 PM PKT</strong> via direct phone (+92 336 8835501) and WhatsApp with live order tracking and transit replacement guarantee.</p>
+            <p>Dedicated customer support team available <strong>24/7 Available (Open 24 Hours / 7 Days)</strong> via direct phone (+92 315 9935600) and WhatsApp with live order tracking and transit replacement guarantee.</p>
           </div>
         </div>
       </div>
@@ -1115,7 +1115,7 @@ views.about = () => ({
       "name": "MSR Foods",
       "description": "MSR Foods is a premium Pakistani natural superfood brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes made from raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, and nutritious seeds. Delivering Pakistan-wide with Cash on Delivery.",
       "url": "https://msrfoodsofficial.food",
-      "telephone": "+923368835501",
+      "telephone": "+923159935600",
       "email": "msrfoods.official@gmail.com",
       "address": {
         "@type": "PostalAddress",
@@ -1132,9 +1132,9 @@ views.about = () => ({
       },
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        "opens": "09:00",
-        "closes": "20:00"
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
       },
       "priceRange": "PKR 899 - PKR 2999",
       "servesCuisine": "Natural Superfoods",
@@ -1793,7 +1793,7 @@ function openOrderReceiptDialog(orderId) {
     `Address: ${o.customer ? o.customer.address : o.addr}, ${o.customer ? o.customer.city : o.city}`,
     `--------------------------------------------------`,
     `Live Tracking Link: ${window.location.origin}${window.location.pathname}#/track/${o.id}`,
-    `Support Email: ${C.email || "msrfoods.official@gmail.com"} | WhatsApp: +92${(C.whatsapp || "3368835501").replace(/^92/, "")}`
+    `Support Email: ${C.email || "msrfoods.official@gmail.com"} | WhatsApp: +92${(C.whatsapp || "3159935600").replace(/^92/, "")}`
   ];
 
   const receiptText = receiptLines.join("\n");
@@ -1918,7 +1918,7 @@ function openNotifyModal(pid) {
           <label for="notifPhone" style="display:block;font-size:12px;color:var(--sand,#c4baa9);margin-bottom:5px;font-weight:500">
             Phone Number <span style="font-size:11px;color:var(--mute,#888);font-weight:normal">(Optional)</span>
           </label>
-          <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0336 8835501" style="width:100%;box-sizing:border-box">
+          <input type="tel" id="notifPhone" class="inp" placeholder="e.g. 0315 9935600" style="width:100%;box-sizing:border-box">
         </div>
 
         <button type="submit" id="notifSubmitBtn" class="btn btn-gold btn-block" style="padding:13px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">

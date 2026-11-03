@@ -17,7 +17,8 @@
     "social": {
       "facebook": "https://www.facebook.com/people/MSR-Foods/61595442878318/",
       "instagram": "https://www.instagram.com/msrfoods.official",
-      "tiktok": "https://www.tiktok.com/@msrfoodsoffical?lang=en"
+      "tiktok": "https://www.tiktok.com/@msrfoodsoffical?lang=en",
+      "youtube": "https://www.youtube.com/@MSRFoods-official-pk"
     }
   },
   "products": [
@@ -156,10 +157,17 @@
     "freeThreshold": 5000,
     "freeThresholdCurrency": "PKR",
     "eta": "3-5 working days",
-    "couriers": ["TCS", "Leopard Courier", "Trax Logistics", "PostEx"],
+    "couriers": [
+      "TCS",
+      "Leopard Courier",
+      "Trax Logistics",
+      "PostEx"
+    ],
     "area": "Pakistan-wide"
   },
-  "payment": ["Cash on Delivery"],
+  "payment": [
+    "Cash on Delivery"
+  ],
   "contact": {
     "phone": "+923159935600",
     "whatsapp": "923159935600",

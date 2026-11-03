@@ -956,38 +956,38 @@ function orderMessage(o) {
 }
 
 views.about = () => ({
-  title: `Our Story & About Us | MSR Foods — Pure Taste, Natural Goodness`,
+  title: `About MSR Foods — Our Story & Heritage | Pakistan's Premium Superfoods`,
   html: `
     <header class="page-head">
       <div class="wrap">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <a href="#/about">About Us</a> / <span>Our Brand Story</span></nav>
-        <span class="pill">Heritage & Founding Philosophy</span>
-        <h1 style="margin-top:14px">Our Story & Heritage</h1>
-        <p>Pure Taste. Natural Goodness. — How an unwavering commitment to honest nutrition created Pakistan's premier natural superfood brand.</p>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <span>About Us</span></nav>
+        <span class="pill">Heritage & Founding Vision</span>
+        <h1 style="margin-top:14px">About MSR Foods</h1>
+        <p>Pure Taste. Natural Goodness. — Reviving pure, honest natural superfoods across Pakistan.</p>
       </div>
     </header>
 
-    <!-- 1. The Genesis: Why We Began -->
-    <section class="sec sec-coal" aria-label="The Genesis of MSR Foods">
+    <!-- 1. The Genesis: Why We Began (Warm Light Section) -->
+    <section class="sec sec-sand" aria-label="The Genesis of MSR Foods">
       <div class="wrap about">
         <div class="reveal">
-          <span class="pill">Chapter 01 · The Genesis</span>
-          <h2 class="h2" style="margin-top:14px">When Did Real Food Become So Rare?</h2>
+          <span class="pill">Our Genesis</span>
+          <h2 class="h2" style="margin-top:14px">Rooted in Nature, Built on Integrity</h2>
           <div class="rule"></div>
-          <p class="lead">Walk down any grocery aisle or corner market in Pakistan, and you will see the same troubling reality: shelves crowded with hyper-processed snacks, refined white sugars, synthetic food flavorings, and cheap hydrogenated palm oils masquerading as daily energy. Even the commercial honey jars lining supermarket shelves are all too often heated, ultra-filtered, and secretly stretched with industrial high-fructose corn syrups.</p>
-          <p class="lead" style="margin-top:14px">We asked a simple, fundamental question: <em>Why should finding clean, pure, uncorrupted nourishment for our families feel like an impossible task in a country blessed with the world's most fertile valleys and mountain apiaries?</em></p>
-          <p class="lead" style="margin-top:14px">In 2026, in the historic city of Kohat, Khyber Pakhtunkhwa, <strong>MSR Foods</strong> was founded out of an uncompromising determination to change that narrative. We set out to resurrect the ancestral dietary wisdom of our land — pairing 100% cold-extracted raw mountain honey with slow-roasted royal nuts and nutrient-dense superfood seeds, crafted by hand without a single artificial chemical or shortcut.</p>
+          <p class="lead">Founded in 2026 in the historic city of Kohat, Khyber Pakhtunkhwa, <strong>MSR Foods</strong> was established with a singular, uncompromising purpose: to replace hyper-processed snacks, refined sugars, artificial essences, and adulterated food products with genuine, uncompromised nourishment crafted straight from nature.</p>
+          <p class="lead" style="margin-top:14px">Walk down modern grocery aisles in Pakistan, and you will find shelves crowded with industrial snacks, chemical syrups, and hydrogenated oils disguised as daily energy. We set out to create an honest Pakistani wellness house that honors our land's extraordinary agricultural heritage — combining pure cold-extracted mountain honey with export-grade royal dry fruits and nutrient-dense superfood seeds.</p>
+          <p class="lead" style="margin-top:14px">As MSR Foods grows and introduces new traditional staples, our founding oath remains permanent: zero synthetic chemicals, ethical small-batch preparation, and commercial-grade hygiene across every product that bears our name.</p>
           <ul class="checks">
-            <li>${ICON.check} <span><strong>Zero Hidden Fillers:</strong> 0% refined white sugar, 0% high-fructose corn syrup, 0% chemical preservatives or artificial colors.</span></li>
-            <li>${ICON.check} <span><strong>Artisanal Slow Dry-Roasting:</strong> Nuts gently roasted to activate natural aromatic oils and crunchy texture — never deep-fried in oil.</span></li>
-            <li>${ICON.check} <span><strong>Double-Seal Freshness Guarantee:</strong> Packed in food-grade jars with an airtight induction seal and tamper-evident outer band.</span></li>
+            <li>${ICON.check} <span><strong>Zero Hidden Fillers:</strong> 0% refined white sugar, 0% corn syrup, 0% chemical preservatives or synthetic food dyes.</span></li>
+            <li>${ICON.check} <span><strong>Artisanal Sourcing & Craft:</strong> Pure cold-extracted raw mountain honey and export-grade whole nuts dry-roasted without frying oils.</span></li>
+            <li>${ICON.check} <span><strong>Double-Seal Freshness Guarantee:</strong> Prepared in sanitary facilities with an airtight induction seal and tamper-evident outer band.</span></li>
           </ul>
         </div>
-        <div class="brand-tile reveal" style="--d:.2s">
-          <img src="${window.BRAND_CONFIG.logo.src}" alt="MSR Foods Official Logo" width="300" height="180" style="max-width:280px;height:auto;display:block;margin:0 auto">
+        <div class="brand-tile reveal" style="--d:.2s;background:var(--white)">
+          <img src="${window.BRAND_CONFIG.logo.src}" alt="MSR Foods Official Logo" width="220" height="220" style="max-width:200px;height:auto;aspect-ratio:1/1;display:block;margin:0 auto;border-radius:var(--r-md);box-shadow:0 10px 30px rgba(0,0,0,0.12)">
           <div style="margin-top:24px;border-top:1px solid var(--hair);padding-top:20px;text-align:center">
-            <h3 style="font:600 1.35rem var(--serif);color:var(--gold-hi)">Pure Taste. Natural Goodness.</h3>
-            <p style="margin-top:8px;font-size:14.5px;color:var(--mute-dark)">Headquartered in Kohat, Khyber Pakhtunkhwa, Pakistan<br>Founded in 2026 · Serving All Provinces Nationwide</p>
+            <h3 style="font:600 1.35rem var(--serif);color:var(--gold-lo)">Pure Taste. Natural Goodness.</h3>
+            <p style="margin-top:8px;font-size:14.5px;color:var(--mute-light)">Headquartered in Kohat, Khyber Pakhtunkhwa, Pakistan<br>Founded in 2026 · Delivering Nationwide</p>
             <div style="display:flex;gap:10px;justify-content:center;margin-top:18px">
               <a class="btn btn-gold btn-sm" href="#/shop">Shop Products</a>
               <a class="btn btn-line btn-sm" href="#/contact">Get in Touch</a>
@@ -997,181 +997,88 @@ views.about = () => ({
       </div>
     </section>
 
-    <!-- 2. Sacred Sourcing: The 9 Noble Ingredients -->
-    <section class="sec sec-black" aria-label="Our 9 Pure Ingredients">
+    <!-- 2. The Core Pillars of MSR Foods (Cream Surface) -->
+    <section class="sec sec-cream" aria-label="Our Core Pillars">
       <div class="wrap">
         <div class="sec-head center reveal">
-          <span class="pill">Chapter 02 · Sacred Sourcing</span>
-          <h2 class="h2" style="margin-top:14px">Nine Treasures. Zero Compromises.</h2>
+          <span class="pill">Our Core Commitments</span>
+          <h2 class="h2" style="margin-top:14px">The Pillars of MSR Foods</h2>
           <div class="rule"></div>
-          <p class="lead">We traveled from the untamed wild hives of northern Pakistan to the world’s most renowned orchards to curate 9 pure superfoods in perfect nutritional balance.</p>
-        </div>
-        <div class="grid3">
-          <div class="ing reveal" style="--d:0s">
-            <div class="ing-img"><img src="assets/images/ingredients/honey.webp" alt="Raw Mountain Honey" loading="lazy"></div>
-            <h3>Raw Mountain Honey</h3>
-            <p>Cold-extracted from remote northern Pakistani apiaries. Never boiled or ultra-filtered; preserves living enzymes, antimicrobial inhibine, and rich wild blossom aromas.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.08s">
-            <div class="ing-img"><img src="assets/images/ingredients/almonds.webp" alt="California Almonds" loading="lazy"></div>
-            <h3>California Almonds</h3>
-            <p>Export-grade whole almonds slow dry-roasted to deliver crisp crunch, neuro-protective Vitamin E, riboflavin, and healthy monounsaturated fats for sustained stamina.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.16s">
-            <div class="ing-img"><img src="assets/images/ingredients/walnuts.webp" alt="Kashmiri Walnuts" loading="lazy"></div>
-            <h3>Kashmiri Walnuts</h3>
-            <p>Prized sun-dried wild mountain walnuts, nature’s richest plant source of Alpha-Linolenic Acid (ALA Omega-3) to fuel brain performance, memory, and heart health.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.24s">
-            <div class="ing-img"><img src="assets/images/ingredients/pistachios.webp" alt="Iranian Pistachios" loading="lazy"></div>
-            <h3>Iranian Pistachios</h3>
-            <p>Vibrant emerald nuts packed with eye-protecting lutein, zeaxanthin, dietary fiber, and bioavailable plant protein that supports muscular vitality.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.32s">
-            <div class="ing-img"><img src="assets/images/ingredients/cashews.webp" alt="Golden Cashews" loading="lazy"></div>
-            <h3>Golden Cashews</h3>
-            <p>Creamy, slow-roasted whole cashew kernels providing essential trace minerals including copper, magnesium, and iron for cellular vigor and immune resilience.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.4s">
-            <div class="ing-img"><img src="assets/images/ingredients/peanuts.webp" alt="Crisp Peanuts" loading="lazy"></div>
-            <h3>Crisp Roasted Peanuts</h3>
-            <p>Carefully selected and dry-roasted to golden perfection to deliver clean amino acids, biotin, and satisfying crunch without any added cooking oil.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.48s">
-            <div class="ing-img"><img src="assets/images/ingredients/pumpkin_seeds.webp" alt="Raw Pumpkin Seeds" loading="lazy"></div>
-            <h3>Raw Pumpkin Seeds</h3>
-            <p>Nutrient-dense bioactive green pepitas brimming with elemental zinc and magnesium, essential for immune defense, hormone regulation, and restorative sleep.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.56s">
-            <div class="ing-img"><img src="assets/images/ingredients/sunflower_seeds.webp" alt="Sunflower Seeds" loading="lazy"></div>
-            <h3>Golden Sunflower Seeds</h3>
-            <p>Rich in selenium and Vitamin E to defend cellular walls against oxidative stress and nourish vibrant skin, hair, and vascular health.</p>
-          </div>
-          <div class="ing reveal" style="--d:0.64s">
-            <div class="ing-img"><img src="assets/images/ingredients/sesame_seeds.webp" alt="White Sesame Seeds" loading="lazy"></div>
-            <h3>White Sesame Seeds</h3>
-            <p>Traditional powerhouse seeds packed with natural plant calcium, sesamin lignans, and heart-healthy lipids for bone density and joint lubrication.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. The Artisanal Standard: 3-Step Process -->
-    <section class="sec sec-sand" aria-label="Our Artisanal Crafting Method">
-      <div class="wrap">
-        <div class="sec-head center reveal">
-          <span class="pill">Chapter 03 · The Artisanal Standard</span>
-          <h2 class="h2" style="margin-top:14px">How We Craft Every Single Jar</h2>
-          <div class="rule"></div>
-          <p class="lead">Every jar of MSR Honey Nut Mix represents hours of patient, precision craftsmanship from orchard and hive to your dining table.</p>
-        </div>
-        <div class="grid3">
-          <div class="card-w reveal" style="--d:0s;text-align:center">
-            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">01</div>
-            <h3 style="font-size:1.45rem;margin-bottom:12px">Harvest & Hand-Sorting</h3>
-            <p style="color:var(--mute-light);font-size:15.5px;line-height:1.65">We inspect every single batch of nuts, sorting out broken, undersized, or blemished kernels. Only export-quality nuts and raw honey directly extracted from certified beekeepers pass into our crafting facility.</p>
-          </div>
-          <div class="card-w reveal" style="--d:0.1s;text-align:center">
-            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">02</div>
-            <h3 style="font-size:1.45rem;margin-bottom:12px">Calibrated Dry-Roasting</h3>
-            <p style="color:var(--mute-light);font-size:15.5px;line-height:1.65">Nuts and seeds are gently dry-roasted separately at calibrated low temperatures. No frying, no oils. This awakens aromatic natural oils, locks in crispness, and preserves delicate heat-sensitive phytonutrients before hand-folding into pure honey.</p>
-          </div>
-          <div class="card-w reveal" style="--d:0.2s;text-align:center">
-            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">03</div>
-            <h3 style="font-size:1.45rem;margin-bottom:12px">Double-Seal & Dispatch</h3>
-            <p style="color:var(--mute-light);font-size:15.5px;line-height:1.65">Jars are filled under strict commercial hygienic conditions, sealed with an airtight induction barrier and outer tamper band, and dispatched nationwide via TCS, Leopard, Trax, and PostEx with Cash on Delivery arriving in 3–5 days.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. The MSR Quality Oath: 4 Core Pillars -->
-    <section class="sec sec-cream" aria-label="Our Core Commitments">
-      <div class="wrap">
-        <div class="sec-head center reveal">
-          <span class="pill">Chapter 04 · Our Core Pillars</span>
-          <h2 class="h2" style="margin-top:14px">The MSR Quality Oath</h2>
-          <div class="rule"></div>
-          <p class="lead">The four immutable commitments that guide every batch, jar, and customer relationship across Pakistan.</p>
+          <p class="lead">The four enduring standards that guide every batch, product line, and customer relationship across Pakistan.</p>
         </div>
         <div class="grid4">
           <div class="card-w reveal" style="--d:0s">
             <div class="ico-ring">${ICON.leaf}</div>
-            <h3>100% Pure & Real</h3>
-            <p>Zero refined sugars, zero artificial colors, zero corn syrup, zero preservatives. A completely transparent 9-ingredient recipe you can trust with your eyes closed.</p>
-          </div>
-          <div class="card-w reveal" style="--d:0.1s">
-            <div class="ico-ring">${ICON.shield}</div>
-            <h3>Commercial Safety</h3>
-            <p>Commercial-grade hygienic preparation, certified food-safe containers, airtight induction seals, and rigorous batch inspection to ensure freshness for 12 months.</p>
-          </div>
-          <div class="card-w reveal" style="--d:0.2s">
-            <div class="ico-ring">${ICON.phone}</div>
-            <h3>24/7 Human Support</h3>
-            <p>Direct access to dedicated human assistance <strong>24/7 Available (Open 24 Hours / 7 Days)</strong> via phone (<a href="tel:+923159935600" style="color:inherit;font-weight:600">+92 315 9935600</a>) and WhatsApp with transit replacement guarantee.</p>
-          </div>
-          <div class="card-w reveal" style="--d:0.3s">
-            <div class="ico-ring">${ICON.truck}</div>
-            <h3>Pakistan-Wide Reach</h3>
-            <p>Fast, dependable courier coverage across Karachi, Lahore, Islamabad, Rawalpindi, Peshawar, Quetta, Multan, Kohat, and all remote towns with Cash on Delivery.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. Real Fuel For Real Life: Who We Craft For -->
-    <section class="sec sec-coal" aria-label="Who We Craft For">
-      <div class="wrap">
-        <div class="sec-head center reveal">
-          <span class="pill">Chapter 05 · The Daily Ritual</span>
-          <h2 class="h2" style="margin-top:14px">Who Thrives on MSR Foods?</h2>
-          <div class="rule"></div>
-          <p class="lead">Nature's most concentrated nutrition, designed to power every chapter of your day.</p>
-        </div>
-        <div class="grid4">
-          <div class="card-w reveal" style="--d:0s">
-            <div class="ico-ring">${ICON.zap}</div>
-            <h3>Athletes & Fitness</h3>
-            <p>15.4g bioavailable plant protein and healthy fats per 100g. Clean glycogen replenishment for sustained workout stamina and muscle tissue recovery without synthetic powders.</p>
+            <h3 style="color:var(--ink)">100% Pure & Real</h3>
+            <p style="color:var(--mute-light)">We believe true wellness requires no disguise. Every MSR Foods product is 100% natural, free from chemical preservatives, artificial sweeteners, bleaching agents, or synthetic additives.</p>
           </div>
           <div class="card-w reveal" style="--d:0.1s">
             <div class="ico-ring">${ICON.sun}</div>
-            <h3>Students & Thinkers</h3>
-            <p>Kashmiri walnut Omega-3s, almond Vitamin E, and steady natural fructose that sustain neural focus and memory consolidation through demanding study hours without sugar crashes.</p>
+            <h3 style="color:var(--ink)">Ancestral Wellness</h3>
+            <p style="color:var(--mute-light)">Rooted in the timeless wisdom of traditional Pakistani nutrition — pure mountain honey, wholesome nuts, functional seeds, and traditional superfoods crafted to energize modern daily lifestyles.</p>
           </div>
           <div class="card-w reveal" style="--d:0.2s">
-            <div class="ico-ring">${ICON.heart}</div>
-            <h3>Mothers & Women</h3>
-            <p>Rich in bioavailable folates, elemental zinc, iron, and hormonal-supporting seed lignans that nourish expectant mothers, nursing wellness, and metabolic balance.</p>
+            <div class="ico-ring">${ICON.shield}</div>
+            <h3 style="color:var(--ink)">Commercial Purity</h3>
+            <p style="color:var(--mute-light)">Manufactured under strict commercial-grade hygiene protocols. Every container is protected by an airtight induction seal and tamper-evident outer band for 12 months of peak freshness.</p>
           </div>
           <div class="card-w reveal" style="--d:0.3s">
-            <div class="ico-ring">${ICON.check}</div>
-            <h3>Families & Elders</h3>
-            <p>Easily digestible natural vitality, heart-healthy monounsaturated fats, and joint-lubricating nutrients that both growing children and cherished grandparents love.</p>
+            <div class="ico-ring">${ICON.phone}</div>
+            <h3 style="color:var(--ink)">24/7 Human Care</h3>
+            <p style="color:var(--mute-light)">Dedicated customer care available <strong>24/7 (Open 24 Hours / 7 Days)</strong> via phone (<a href="tel:+923159935600" style="color:var(--gold-lo);font-weight:600">+92 315 9935600</a>) and WhatsApp with nationwide Cash on Delivery and transit guarantee.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 6. Mission Statement & Founder's Quote -->
+    <!-- 3. Our Growing Product Vision (Warm Sand Surface) -->
+    <section class="sec sec-sand" aria-label="Our Product Philosophy">
+      <div class="wrap">
+        <div class="sec-head center reveal">
+          <span class="pill">Product Philosophy</span>
+          <h2 class="h2" style="margin-top:14px">Wholesome Nutrition For Every Day</h2>
+          <div class="rule"></div>
+          <p class="lead">MSR Foods is building a comprehensive natural superfood house for Pakistani families, athletes, and health-conscious households.</p>
+        </div>
+        <div class="grid3">
+          <div class="card-w reveal" style="--d:0s">
+            <div style="font:700 2.4rem var(--serif);color:var(--gold-lo);margin-bottom:8px">🍯</div>
+            <h3 style="color:var(--ink);font-size:1.35rem;margin-bottom:10px">Honey Nut Blends</h3>
+            <p style="color:var(--mute-light);font-size:15px;line-height:1.65">Our signature creation: cold-extracted raw mountain honey paired with slow dry-roasted royal nuts and active seeds. Clean daily energy, natural stamina, and essential micronutrients without sugar crashes.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.1s">
+            <div style="font:700 2.4rem var(--serif);color:var(--gold-lo);margin-bottom:8px">🌿</div>
+            <h3 style="color:var(--ink);font-size:1.35rem;margin-bottom:10px">Sunnah & Ancient Superfoods</h3>
+            <p style="color:var(--mute-light);font-size:15px;line-height:1.65">Reviving sacred, traditional superfoods including Talbina (barley & milk nutrition), pure single-origin mountain honey jars, and targeted seed cycling blends crafted for restorative vitality.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.2s">
+            <div style="font:700 2.4rem var(--serif);color:var(--gold-lo);margin-bottom:8px">✨</div>
+            <h3 style="color:var(--ink);font-size:1.35rem;margin-bottom:10px">Pure Farm Staples</h3>
+            <p style="color:var(--mute-light);font-size:15px;line-height:1.65">Artisanal farm-fresh pantry staples including traditional Desi Ghee and natural seed protein mixes — uncompromised purity crafted to nourish growing children, parents, and elders alike.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Founder's Vision: Tasteful Dark Accent Band -->
     <section class="sec sec-coal" aria-label="Founder's Vision" style="border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)">
       <div class="wrap" style="max-width:920px;text-align:center">
         <div class="reveal">
           <div style="font:italic 700 4.2rem/1 var(--serif);color:var(--gold);margin-bottom:16px">“</div>
           <blockquote style="font:italic 400 clamp(1.4rem, 2.5vw, 2.1rem)/1.6 var(--serif);color:var(--cream);margin:0 0 24px;border:none;padding:0;background:transparent">
-            We didn’t start MSR Foods to make just another jar on a supermarket shelf. We started it to prove that Pakistan can produce world-class natural superfoods — pure, untampered, and deeply nourishing. When you open an MSR jar, you are tasting honest nature, crafted with pride.
+            We didn’t start MSR Foods to make just another product on a supermarket shelf. We started it to prove that Pakistan can produce world-class natural superfoods — pure, untampered, and deeply nourishing. When you open an MSR jar, you are tasting honest nature, crafted with pride.
           </blockquote>
-          <div style="font-weight:600;font-size:16.5px;color:var(--gold-hi)">MSR Foods Leadership & Culinary Crafting Team</div>
+          <div style="font-weight:600;font-size:16.5px;color:var(--gold-hi)">MSR Foods Leadership & Crafting Team</div>
           <div style="font-size:14px;color:var(--mute-dark);margin-top:6px">Kohat, Khyber Pakhtunkhwa, Pakistan · Established 2026</div>
         </div>
       </div>
     </section>
 
-    <!-- 7. Official Brand Disambiguation & Entity Authority -->
-    <section class="sec sec-sand" aria-label="Official Brand Authority">
+    <!-- 5. Official Brand Disambiguation & Entity Authority (Cream Surface) -->
+    <section class="sec sec-cream" aria-label="Official Brand Authority">
       <div class="wrap" style="max-width:960px">
         <div class="card-w reveal" style="background:var(--white);border-left:4px solid var(--gold);padding:30px 32px">
-          <h3 style="font-size:1.35rem;margin-bottom:10px;color:var(--ink)">Official Brand Identity & Ordering Notice</h3>
+          <h3 style="font-size:1.35rem;margin-bottom:10px;color:var(--ink)">Official Brand Identity & Direct Ordering Notice</h3>
           <p style="color:var(--mute-light);font-size:15px;line-height:1.7;margin:0">
             <strong>MSR Foods</strong> is an independent, specialized Pakistani natural superfoods company founded in 2026 in Kohat, Khyber Pakhtunkhwa (Wikidata Entity: <a href="https://www.wikidata.org/wiki/Q141989418" target="_blank" rel="noopener" style="color:var(--gold-lo);font-weight:600">Q141989418</a>). We are completely independent and <strong>NOT</strong> affiliated with, connected to, or related to foreign trading entities such as "MSR Foodstuff Trading LLC" (UAE/India/msrfoodstuff.net) or "MSR Fruits". Genuine MSR Foods products are sold exclusively through our official website (<a href="https://msrfoodsofficial.food" style="color:var(--gold-lo);font-weight:600">msrfoodsofficial.food</a>) and authorized channels, delivered with Cash on Delivery nationwide.
           </p>
@@ -1179,13 +1086,13 @@ views.about = () => ({
       </div>
     </section>
 
-    <!-- 8. LocalBusiness & AboutPage JSON-LD Schemas -->
+    <!-- 6. LocalBusiness & AboutPage JSON-LD Schemas -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": ["LocalBusiness", "FoodEstablishment", "OnlineStore"],
       "name": "MSR Foods",
-      "description": "MSR Foods is a premium Pakistani natural superfood brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes made from raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, and nutritious seeds. Delivering Pakistan-wide with Cash on Delivery.",
+      "description": "MSR Foods is a premier Pakistani natural superfood brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes made from raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, and nutritious seeds. Delivering Pakistan-wide with Cash on Delivery.",
       "url": "https://msrfoodsofficial.food",
       "telephone": "+923159935600",
       "email": "msrfoods.official@gmail.com",
@@ -1213,6 +1120,7 @@ views.about = () => ({
       "hasMap": "https://maps.google.com/?q=Kohat+KPK+Pakistan",
       "sameAs": [
         "https://www.wikidata.org/wiki/Q141989418",
+        "https://www.youtube.com/@MSRFoods-official-pk",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
         "https://www.facebook.com/people/MSR-Foods/61595442878318/"
@@ -1231,7 +1139,7 @@ views.about = () => ({
       "@type": "AboutPage",
       "name": "About MSR Foods — Our Story & Heritage",
       "url": "https://msrfoodsofficial.food/#/about",
-      "description": "Discover the story of MSR Foods, our founding vision in Kohat, our sacred 9-ingredient sourcing standard, and our commitment to pure natural superfoods in Pakistan.",
+      "description": "Discover the story of MSR Foods, our founding vision in Kohat, our sacred sourcing standards, and our commitment to pure natural superfoods across Pakistan.",
       "mainEntity": {
         "@type": "Organization",
         "name": "MSR Foods",
@@ -1240,7 +1148,7 @@ views.about = () => ({
     }
     <\/script>
 
-    <!-- 9. CTA Section -->
+    <!-- 7. CTA Section -->
     ${secCTA()}
   `
 });

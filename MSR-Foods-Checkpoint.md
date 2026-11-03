@@ -148,10 +148,11 @@ fc586e0  feat: AEO+LLMO static semantic layer in website body
 
 ### Later (Authority Building)
 7. Wikidata entity for "MSR Foods" (Q141989418) ✅
-8. Official Brand Story & About Us merge & rewrite (`views.about` & `secAbout`) ✅
-9. Press mentions in food/health blogs
-10. Expand product catalog → add desi ghee, talbina, seed mixes
-11. International expansion schema update (areaServed)
+8. Official Brand Story & About Us redesigned with warm surfaces, brand pillars & new logo ✅
+9. Official YouTube Channel integrated: https://www.youtube.com/@MSRFoods-official-pk ✅
+10. Press mentions in food/health blogs
+11. Expand product catalog → add desi ghee, talbina, seed mixes
+12. International expansion schema update (areaServed)
 
 ---
 

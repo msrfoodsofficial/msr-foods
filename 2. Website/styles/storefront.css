@@ -645,6 +645,7 @@
 .card-w h3 {
   font-size: 1.4rem;
   margin-bottom: 10px;
+  color: var(--ink);
 }
 
 .card-w p {

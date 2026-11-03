@@ -27,9 +27,9 @@ const BRAND_CONFIG = {
   logo: {
     type: "image", // "image" or "text"
     src: "assets/images/logo.webp",
-    alt: "MSR Brand - Quality Built For You",
+    alt: "MSR Foods — Quality Built For You",
     textFallback: "MSR FOODS",
-    width: 105,
+    width: 62,
     height: 62
   },
 
@@ -88,7 +88,7 @@ const BRAND_CONFIG = {
     facebook: "https://www.facebook.com/people/MSR-Foods/61595442878318/",
     instagram: "https://www.instagram.com/msrfoods.official",
     tiktok: "https://www.tiktok.com/@msrfoodsoffical?lang=en",
-    youtube: ""
+    youtube: "https://www.youtube.com/@MSRFoods-official-pk"
   },
 
   // Customer Reviews

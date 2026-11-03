@@ -66,6 +66,7 @@ function shell() {
     ["shop", "Shop", "#/shop"],
     ["track", "Track Order", "#/track"],
     ["about", "About Us", "#/about"],
+    ["blog", "Blog", "#/blog"],
     ["contact", "Contact", "#/contact"]
   ];
 
@@ -149,6 +150,7 @@ function shell() {
             <li><a href="#/">Home</a></li>
             <li><a href="#/shop">Shop</a></li>
             <li><a href="#/about">About Us</a></li>
+            <li><a href="#/blog">Blog</a></li>
             <li><a href="#/contact">Contact Us</a></li>
           </ul>
         </div>
@@ -190,6 +192,12 @@ function runSearch(q) {
       u: `#/product/${p.slug}`,
       k: `${p.name} ${p.weight} ${p.subtitle} ${p.shortDesc} buy order`
     })),
+    ...(window.BLOG_POSTS || []).map(b => ({
+      t: b.title,
+      d: `${b.category} · ${b.readTime}`,
+      u: `#/blog/${b.slug}`,
+      k: `${b.title} ${b.category} ${b.excerpt} blog article guide`
+    })),
     ...(window.INGREDIENTS || []).map(i => ({
       t: `${i.name} (Ingredient)`,
       d: i.desc,
@@ -197,6 +205,8 @@ function runSearch(q) {
       k: `${i.name} ingredient raw nut dry fruit`
     })),
     { t: "Shop Products", d: "Explore full store collection", u: "#/shop", k: "shop buy items catalog" },
+    { t: "Health & Nutrition Blog", d: "Superfoods, gym protein, PCOS & wellness guides", u: "#/blog", k: "blog articles guides health nutrition fitness" },
+    { t: "About MSR Foods", d: "Our story, quality standards & founding values", u: "#/about", k: "about story origin values brand kpk kohat" },
     { t: "Contact & Support", d: "WhatsApp, phone and email", u: "#/contact", k: "contact help support phone whatsapp" },
     { t: "Shipping & Delivery", d: "Flat rate nationwide delivery", u: "#/policy/shipping", k: "shipping delivery charges fee couriers" }
   ];
@@ -328,6 +338,7 @@ function route() {
   let v = null;
   if (key === "policy") v = views.policy(parts[1]);
   else if (key === "product") v = views.product(parts[1]);
+  else if (key === "blog") v = parts[1] ? views.blogPost(parts[1]) : views.blog();
   else if (views[key]) v = views[key](parts[1]);
   else v = views.home();
 
@@ -340,7 +351,7 @@ function route() {
 
   // Highlight active navigation links
   $$(".nav a, .menu-links a").forEach(a => {
-    a.classList.toggle("on", a.getAttribute("href") === location.hash || (location.hash === "" && a.dataset.nav === "home"));
+    a.classList.toggle("on", a.getAttribute("href") === location.hash || (location.hash === "" && a.dataset.nav === "home") || (location.hash.startsWith("#/blog") && a.dataset.nav === "blog"));
   });
 
   window.scrollTo({ top: 0, behavior: "instant" });

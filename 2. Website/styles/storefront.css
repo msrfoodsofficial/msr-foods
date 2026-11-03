@@ -2230,3 +2230,31 @@
     margin-top: 0;
   }
 }
+
+/* Blog */
+.blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; }
+.blog-card { background: var(--bg-card); border: 1px solid rgba(214,167,54,0.12); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: border-color 0.25s, transform 0.25s; }
+.blog-card:hover { border-color: rgba(214,167,54,0.35); transform: translateY(-3px); }
+.blog-card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+.blog-card h3 { font: 600 1.1rem var(--serif); color: var(--cream); margin-bottom: 10px; line-height: 1.35; }
+.blog-card p { color: var(--mute-dark); font-size: 14.5px; line-height: 1.6; flex: 1; }
+.blog-meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--sand); margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.blog-card .btn { margin-top: 18px; align-self: flex-start; }
+.prose h2 { font: 600 1.6rem var(--serif); color: var(--gold-hi); margin: 36px 0 14px; }
+.prose h3 { font: 600 1.2rem var(--sans); color: var(--cream); margin: 28px 0 10px; }
+.prose p { color: var(--mute-dark); line-height: 1.75; margin-bottom: 16px; font-size: 16px; }
+.prose ul, .prose ol { color: var(--mute-dark); line-height: 1.75; padding-left: 22px; margin-bottom: 16px; }
+.prose li { margin-bottom: 8px; font-size: 15.5px; }
+.prose a { color: var(--gold-hi); text-decoration: underline; }
+.prose strong { color: var(--cream); }
+.prose blockquote { border-left: 3px solid var(--gold); padding: 12px 20px; margin: 24px 0; background: rgba(214,167,54,0.06); border-radius: 0 8px 8px 0; font-style: italic; color: var(--sand); }
+@media (max-width: 640px) { .blog-grid { grid-template-columns: 1fr; } }
+
+/* Light Page Context Adaptations for Readability */
+.page.light .prose h2 { color: var(--gold-lo); }
+.page.light .prose h3 { color: var(--ink); }
+.page.light .prose p, .page.light .prose ul, .page.light .prose ol, .page.light .prose li { color: var(--mute-light); }
+.page.light .prose strong { color: var(--ink); }
+.page.light .prose a { color: var(--gold-lo); }
+.page.light .prose blockquote { color: var(--mute-light); background: rgba(214,167,54,0.12); border-left-color: var(--gold-lo); }
+

@@ -955,21 +955,538 @@ function orderMessage(o) {
 }
 
 views.about = () => ({
-  title: `About Us | ${window.BRAND_CONFIG.brand.fullName}`,
+  title: `About MSR Foods | Pure Taste. Natural Goodness. — Pakistan's Premium Superfood Brand`,
   html: `
     <header class="page-head">
       <div class="wrap">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <span>About Us</span></nav>
-        <h1>About ${window.BRAND_CONFIG.brand.fullName}</h1>
-        <p>${window.BRAND_CONFIG.brand.slogan}</p>
+        <span class="pill">Our Heritage & Mission</span>
+        <h1 style="margin-top:14px">About MSR Foods</h1>
+        <p>Pure Taste. Natural Goodness. — Pakistan's Premium Superfood Brand</p>
       </div>
     </header>
-    ${secAbout(true)}
-    ${secWelcome()}
-    ${secWhy()}
+
+    <!-- 1. Brand Story Section -->
+    <section class="sec sec-coal" aria-label="Brand Story">
+      <div class="wrap about">
+        <div class="reveal">
+          <span class="pill">The Genesis</span>
+          <h2 class="h2" style="margin-top:14px">Rooted in Nature, Built on Integrity</h2>
+          <div class="rule"></div>
+          <p class="lead">Founded in 2026 in Kohat, Khyber Pakhtunkhwa, MSR Foods was born out of a simple yet uncompromising realization: Pakistan's snack aisles were flooded with hyper-processed snacks, refined sugars, artificial flavorings, and hydrogenated oils masked as healthy choices.</p>
+          <p class="lead" style="margin-top:14px">We set out to create an honest alternative: handcrafted superfood blends that honor nature's purest gifts. By marrying cold-extracted raw mountain honey with hand-selected, crunch-roasted dry fruits and powerhouse seeds, MSR Foods delivers real vitality, steady stamina, and restorative wellness in every single jar.</p>
+          <p class="lead" style="margin-top:14px">Our mission is straightforward: to elevate everyday nutrition across Pakistan by offering clean, preservative-free, premium superfoods that nourish body, mind, and soul.</p>
+          <ul class="checks">
+            <li>${ICON.check} <span><strong>Zero Artificial Fillers:</strong> No synthetic additives, coloring agents, preservatives, or high-fructose corn syrups.</span></li>
+            <li>${ICON.check} <span><strong>Artisanal Small-Batch Roasting:</strong> Nuts roasted with gentle precision to retain natural oils and crunch.</span></li>
+            <li>${ICON.check} <span><strong>Pakistan-Wide Doorstep Reach:</strong> Fast, dependable courier delivery with Cash on Delivery nationwide.</span></li>
+          </ul>
+        </div>
+        <div class="brand-tile reveal" style="--d:.2s">
+          <img src="${window.BRAND_CONFIG.logo.src}" alt="MSR Foods Logo">
+          <div style="margin-top:24px;border-top:1px solid var(--hair);padding-top:20px;text-align:center">
+            <h3 style="font:600 1.3rem var(--serif);color:var(--gold-hi)">Pure Taste. Natural Goodness.</h3>
+            <p style="margin-top:8px;font-size:14.5px;color:var(--mute-dark)">Headquartered in Kohat, Khyber Pakhtunkhwa, Pakistan<br>Founded in 2026 · Serving All Provinces Nationwide</p>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:18px">
+              <a class="btn btn-gold btn-sm" href="#/shop">Explore Products</a>
+              <a class="btn btn-line btn-sm" href="#/contact">Contact Us</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. E-E-A-T Expertise Section -->
+    <section class="sec sec-sand" aria-label="Why Trust MSR Foods">
+      <div class="wrap">
+        <div class="sec-head center reveal">
+          <span class="pill">E-E-A-T Excellence</span>
+          <h2 class="h2" style="margin-top:14px">Why Trust MSR Foods?</h2>
+          <div class="rule"></div>
+          <p class="lead">Built on uncompromising quality standards, certified sourcing, and total transparency from hive and harvest to your table.</p>
+        </div>
+        <div class="grid4">
+          <div class="card-w reveal" style="--d:0s">
+            <div class="ico-ring">${ICON.leaf}</div>
+            <h3>Quality Sourcing</h3>
+            <p>We source export-grade <strong>California almonds</strong> for crisp texture, prized <strong>Kashmiri walnuts</strong> rich in plant-based Omega-3s, and premium <strong>Iranian pistachios</strong> paired with raw, unprocessed mountain honey from northern apiaries.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.1s">
+            <div class="ico-ring">${ICON.shield}</div>
+            <h3>Quality Control</h3>
+            <p>Manufactured under strict commercial-grade hygienic protocols. Every clear jar features a double freshness barrier: an airtight induction seal and a tamper-evident neck band to preserve delicate nutrients.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.2s">
+            <div class="ico-ring">${ICON.check}</div>
+            <h3>Total Transparency</h3>
+            <p>No proprietary secrets or hidden fillers. We publish our complete 9-ingredient list, net weights, and verified nutrition panel: 15.4g bioavailable protein, 510 kcal, and rich healthy fats per 100g.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.3s">
+            <div class="ico-ring">${ICON.phone}</div>
+            <h3>Customer Care</h3>
+            <p>Dedicated customer support team available <strong>Monday to Saturday, 9:00 AM – 8:00 PM PKT</strong> via direct phone (+92 336 8835501) and WhatsApp with live order tracking and transit replacement guarantee.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Our Process Section -->
+    <section class="sec sec-black" aria-label="Our Process">
+      <div class="wrap">
+        <div class="sec-head center reveal">
+          <span class="pill">Artisanal Method</span>
+          <h2 class="h2" style="margin-top:14px">Our 3-Step Process</h2>
+          <div class="rule"></div>
+          <p class="lead">From pristine mountain apiaries and certified orchards straight into your hands.</p>
+        </div>
+        <div class="grid3">
+          <div class="ing reveal" style="--d:0s;padding:32px 28px;text-align:center">
+            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">01</div>
+            <h3 style="font-size:1.45rem;color:var(--cream);margin-bottom:12px">Source</h3>
+            <p style="color:var(--mute-dark);font-size:15px;line-height:1.65">We select peak-harvest whole California almonds, sun-dried Kashmiri walnuts, buttery cashews, pistachios, peanuts, and nutritious trio-seeds (pumpkin, sunflower, sesame) alongside raw mountain honey.</p>
+          </div>
+          <div class="ing reveal" style="--d:0.1s;padding:32px 28px;text-align:center">
+            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">02</div>
+            <h3 style="font-size:1.45rem;color:var(--cream);margin-bottom:12px">Craft</h3>
+            <p style="color:var(--mute-dark);font-size:15px;line-height:1.65">Each nut and seed undergoes gentle, precision dry-roasting to release aromatic oils and deliver signature crunch, then gets hand-folded into golden honey in balanced, nutrient-dense proportions.</p>
+          </div>
+          <div class="ing reveal" style="--d:0.2s;padding:32px 28px;text-align:center">
+            <div style="font:700 2.8rem var(--serif);color:var(--gold-hi);margin-bottom:12px">03</div>
+            <h3 style="font-size:1.45rem;color:var(--cream);margin-bottom:12px">Seal & Deliver</h3>
+            <p style="color:var(--mute-dark);font-size:15px;line-height:1.65">Packaged under strict sanitary controls with a double hygiene seal. Fast nationwide dispatch via TCS, Leopard, Trax, and PostEx with Cash on Delivery arriving safely at your door in 3–5 days.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Values / Credentials Grid -->
+    <section class="sec sec-cream" aria-label="Brand Values">
+      <div class="wrap">
+        <div class="sec-head center reveal">
+          <span class="pill">Core Pillars</span>
+          <h2 class="h2" style="margin-top:14px">Our Core Commitments</h2>
+          <div class="rule"></div>
+          <p class="lead">The four enduring values that guide every batch, jar, and customer relationship.</p>
+        </div>
+        <div class="grid4">
+          <div class="card-w reveal" style="--d:0s">
+            <div class="ico-ring">${ICON.leaf}</div>
+            <h3>100% Natural</h3>
+            <p>Unadulterated raw mountain honey and whole nuts. Zero corn syrups, artificial stabilizers, or bleached sugars.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.1s">
+            <div class="ico-ring">${ICON.shield}</div>
+            <h3>Commercial Grade</h3>
+            <p>Standardized hygienic preparation, food-grade airtight containers, and double sealing for long-lasting freshness.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.2s">
+            <div class="ico-ring">${ICON.truck}</div>
+            <h3>Pakistan-Wide</h3>
+            <p>Reliable courier network covering Karachi, Lahore, Islamabad, Peshawar, Quetta, Kohat, and all interior towns with COD.</p>
+          </div>
+          <div class="card-w reveal" style="--d:0.3s">
+            <div class="ico-ring">${ICON.heart}</div>
+            <h3>Customer First</h3>
+            <p>Responsive human support, 48-hour damaged transit replacement guarantee, and dedicated WhatsApp order assistance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Mission Statement with Large Quote Styling -->
+    <section class="sec sec-coal" aria-label="Mission Statement" style="border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)">
+      <div class="wrap" style="max-width:880px;text-align:center">
+        <div class="reveal">
+          <div style="font:italic 700 4rem/1 var(--serif);color:var(--gold);margin-bottom:16px">“</div>
+          <blockquote style="font:italic 400 clamp(1.4rem, 2.5vw, 2.1rem)/1.6 var(--serif);color:var(--cream);margin:0 0 24px;border:none;padding:0;background:transparent">
+            Our mission at MSR Foods is to reconnect Pakistani families and athletes with the uncorrupted power of pure natural nutrition — one honest, handcrafted jar at a time.
+          </blockquote>
+          <div style="font-weight:600;font-size:16px;color:var(--gold-hi)">MSR Foods Leadership & Crafting Team</div>
+          <div style="font-size:14px;color:var(--mute-dark);margin-top:4px">Kohat, Khyber Pakhtunkhwa, Pakistan · Established 2026</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. LocalBusiness & AboutPage JSON-LD Schemas -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": ["LocalBusiness", "FoodEstablishment", "OnlineStore"],
+      "name": "MSR Foods",
+      "description": "MSR Foods is a premium Pakistani natural superfood brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes made from raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, and nutritious seeds. Delivering Pakistan-wide with Cash on Delivery.",
+      "url": "https://msrfoodsofficial.food",
+      "telephone": "+923368835501",
+      "email": "msrfoods.official@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Main Commercial Center, Bannu Road",
+        "addressLocality": "Kohat",
+        "addressRegion": "Khyber Pakhtunkhwa",
+        "postalCode": "26000",
+        "addressCountry": "PK"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 33.5869,
+        "longitude": 71.4460
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "20:00"
+      },
+      "priceRange": "PKR 899 - PKR 2999",
+      "servesCuisine": "Natural Superfoods",
+      "hasMap": "https://maps.google.com/?q=Kohat+KPK+Pakistan",
+      "sameAs": [
+        "https://www.instagram.com/msrfoods.official/",
+        "https://www.tiktok.com/@msrfoodsoffical",
+        "https://www.facebook.com/share/1ButraKks3/"
+      ],
+      "foundingDate": "2026",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Pakistan"
+      }
+    }
+    <\/script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "name": "About MSR Foods",
+      "url": "https://msrfoodsofficial.food/#/about",
+      "description": "Learn about MSR Foods, our founding story, quality standards, and commitment to pure natural superfoods in Pakistan.",
+      "mainEntity": {
+        "@type": "Organization",
+        "name": "MSR Foods",
+        "url": "https://msrfoodsofficial.food"
+      }
+    }
+    <\/script>
+
+    <!-- 7. CTA Section -->
     ${secCTA()}
   `
 });
+
+// ==========================================
+// BLOG SYSTEM
+// ==========================================
+
+const BLOG_POSTS = [
+  {
+    slug: "natural-protein-sources-gym-pakistan",
+    title: "Best Natural Protein Sources for Gym in Pakistan (2026 Guide)",
+    category: "Fitness & Nutrition",
+    date: "November 2026",
+    dateISO: "2026-11-01",
+    readTime: "5 min read",
+    excerpt: "Discover the top natural protein sources available in Pakistan for gym-goers and athletes who want to build muscle without artificial supplements.",
+    body: `
+      <p>In Pakistan's burgeoning fitness community, a common myth persists: that building lean muscle mass, recovering from intense resistance training, and achieving peak athletic performance is impossible without imported synthetic whey protein powders. Yet, experienced athletes and sports nutritionists know that whole-food, bioavailable nutrition remains the true gold standard for long-term health and sustainable gains.</p>
+
+      <p>Synthetic supplements sold in local markets frequently pose challenges, ranging from counterfeit batches and hidden heavy metals to digestive distress, bloating, and steep price volatility. By contrast, natural Pakistani superfoods offer dense amino acid profiles accompanied by vital enzymes, micronutrients, and healthy fats that artificial isolates simply cannot match.</p>
+
+      <h2>Why Whole-Food Protein Outperforms Synthetic Supplements</h2>
+      <p>Whole-food protein sources provide complete nutrient matrices. When you consume natural protein, your digestive system absorbs amino acids alongside co-factors such as magnesium, zinc, B-complex vitamins, and essential fatty acids. This natural synergy enhances muscle protein synthesis (MPS) while supporting liver function, hormonal balance, and long-term gut integrity.</p>
+
+      <blockquote>Natural nutrition does not just rebuild muscle fibers after a workout; it strengthens your hormonal foundation and immune resilience from within.</blockquote>
+
+      <h2>The Top Natural Protein Sources Available in Pakistan</h2>
+      <p>Here are the most effective, nutrient-dense natural protein staples you can easily incorporate into your daily routine:</p>
+      <ul>
+        <li><strong>Dry Fruits and Powerhouse Seeds:</strong> Almonds, walnuts, pistachios, cashews, and pumpkin seeds are unmatched sources of plant protein, L-arginine (which boosts blood flow and nitric oxide), and anti-inflammatory Omega-3 fatty acids.</li>
+        <li><strong>Desi Farm Eggs:</strong> Offering the highest biological value of any whole food, eggs deliver 6 to 7 grams of complete protein per unit alongside choline for neurological focus.</li>
+        <li><strong>Daal & Legumes (Lentils, Chickpeas & Black Gram):</strong> A traditional Pakistani staple providing 18 to 22 grams of protein per cooked cup, abundant in dietary fiber and slow-burning complex carbohydrates.</li>
+        <li><strong>Raw Mountain Honey:</strong> While not a direct protein source, pure honey provides the precise enzymatic monosaccharides required to spike insulin just enough to shuttle amino acids directly into depleted muscle cells post-workout.</li>
+      </ul>
+
+      <h2>The Role of MSR Honey Nut Mix in Athletic Nutrition</h2>
+      <p>One of the most practical and potent natural options for Pakistani lifters is <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a>. Delivering a remarkable <strong>15.4 grams of bioavailable protein per 100g</strong>, this handcrafted blend brings together dry-roasted California almonds, Kashmiri walnuts, Iranian pistachios, cashews, peanuts, and cold-extracted mountain honey with pumpkin, sunflower, and sesame seeds.</p>
+
+      <p>Beyond protein, the mix delivers zinc and magnesium—two critical minerals that support natural testosterone production, deep sleep, and muscular contraction. Unlike sticky commercial snack bars filled with glucose syrup and maltodextrin, MSR Honey Nut Mix contains zero artificial preservatives or refined sugars.</p>
+
+      <h2>How to Use Honey Nut Mix Around Your Workouts</h2>
+      <h3>Pre-Workout Fuel (30 to 45 Minutes Before Training)</h3>
+      <p>Take 1 to 2 tablespoons of MSR Honey Nut Mix directly or stirred into black coffee. The natural fructose and glucose from the raw honey provide immediate and steady cellular fuel, while the healthy fats sustain your stamina through intense lifting sets without a sugar crash.</p>
+
+      <h3>Post-Workout Recovery Window</h3>
+      <p>Pair 2 tablespoons of Honey Nut Mix with a cup of warm milk, Greek yogurt, or boiled egg whites within 45 minutes of finishing your workout. The honey swiftly replenishes depleted glycogen stores, driving the 15.4g plant protein and essential amino acids straight into recovering muscle fibers.</p>
+
+      <p>Fueling your physique naturally in Pakistan does not require compromising on results. By anchoring your nutrition in proven whole foods and clean artisanal superfoods like <a href="#/shop">MSR Honey Nut Mix</a>, you build lasting strength, stamina, and vitality.</p>
+    `
+  },
+  {
+    slug: "pcos-natural-treatment-seeds-nuts-pakistan",
+    title: "PCOS Natural Treatment: How Seeds and Nuts Help Balance Hormones in Pakistan",
+    category: "Women's Health",
+    date: "November 2026",
+    dateISO: "2026-11-02",
+    readTime: "6 min read",
+    excerpt: "Learn how seed cycling, essential fatty acids, and natural nuts help manage PCOS symptoms and restore hormonal balance for Pakistani women.",
+    body: `
+      <p>Polycystic Ovary Syndrome (PCOS) has become one of the most widespread endocrine disorders among Pakistani women, with recent clinical estimates suggesting that nearly one in every four or five women of reproductive age is affected. Characterized by irregular menstrual cycles, persistent acne, hair thinning, weight fluctuations, and chronic fatigue, PCOS is deeply tied to underlying hormonal imbalances and insulin resistance.</p>
+
+      <p>While pharmaceutical interventions are frequently prescribed, functional medicine and clinical nutrition increasingly emphasize the powerful role of lifestyle adjustments—specifically targeted dietary therapies using nutrient-rich seeds, healthy fats, and unrefined natural foods.</p>
+
+      <h2>Understanding the Root Causes of PCOS</h2>
+      <p>At its core, PCOS is driven by two interrelated metabolic factors: chronic low-grade inflammation and hyperinsulinemia (excess insulin in the bloodstream). Elevated insulin levels stimulate the ovaries to produce excess androgens (male hormones such as testosterone), which interrupt normal ovulation and trigger physical symptoms like hirsutism and breakouts.</p>
+
+      <p>To reverse this cycle, the body requires micronutrients that enhance insulin receptor sensitivity, bind to excess hormones, and systematically quench cellular inflammation.</p>
+
+      <h2>The Power of Seed Cycling for Hormonal Harmony</h2>
+      <p>Seed cycling is an evidence-supported nutritional protocol that uses specific seed varieties across the two phases of the menstrual cycle to nurture natural estrogen and progesterone rhythms:</p>
+
+      <h3>Phase 1: The Follicular Phase (Days 1 to 14)</h3>
+      <p>From the first day of your period until ovulation, the body requires gentle estrogen support. <strong>Pumpkin seeds</strong> and flax seeds are the champions of this phase. Pumpkin seeds are exceptionally high in bioavailable zinc, which supports progesterone production for the upcoming second phase and prevents testosterone from converting into harmful dihydrotestosterone (DHT).</p>
+
+      <h3>Phase 2: The Luteal Phase (Days 15 to 28)</h3>
+      <p>Following ovulation until the next cycle begins, the body needs progesterone to maintain a healthy uterine lining. <strong>Sunflower seeds</strong> (rich in Vitamin E and selenium) and <strong>sesame seeds</strong> (packed with unique lignans that block excess estrogen accumulation) help maintain optimum luteal balance and minimize common PMS mood swings and water retention.</p>
+
+      <blockquote>By nourishing the endocrine system with targeted seeds, women provide their bodies with the exact raw lipid building blocks needed for hormonal synthesis.</blockquote>
+
+      <h2>Why Nuts and Mountain Honey Aid PCOS Recovery</h2>
+      <p>In addition to seeds, whole tree nuts play a crucial role. <strong>Kashmiri walnuts</strong> are one of the world's richest plant sources of alpha-linolenic acid (ALA), an essential Omega-3 fatty acid shown to reduce luteinizing hormone (LH) hypersecretion and lower serum triglycerides in women with PCOS.</p>
+
+      <p>Furthermore, replacing refined white sugar with pure, unprocessed <a href="#/about">raw mountain honey</a> provides valuable polyphenols and flavonoids without provoking the sharp insulin spikes that exacerbate androgen production. Honey acts as a natural prebiotic, supporting the estrobolome—the gut bacteria dedicated to metabolizing and eliminating used estrogens.</p>
+
+      <h2>Integrating MSR Honey Nut Mix into Your Daily Routine</h2>
+      <p>Consistently sourcing fresh, unsalted, high-grade seeds and nuts can be time-consuming. <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> brings together the core ingredients of hormonal wellness in a single, delicious spoonful: pumpkin seeds, sunflower seeds, and sesame seeds alongside golden-roasted California almonds, Kashmiri walnuts, cashews, and raw honey.</p>
+
+      <ul>
+        <li><strong>Morning Ritual:</strong> Take one generous tablespoon of MSR Honey Nut Mix each morning alongside a glass of warm water or cinnamon tea to kickstart insulin sensitivity.</li>
+        <li><strong>Breakfast Booster:</strong> Fold a spoonful into rolled oats or unsweetened yogurt to add crunch and sustained satiety without glucose spikes.</li>
+        <li><strong>Chai Sugar Replacement:</strong> Swap refined table sugar in your evening routine for a spoonful of raw honey and seeds to satisfy sweet cravings cleanly.</li>
+      </ul>
+
+      <p>Overcoming PCOS is a journey of patient, consistent self-care. By nourishing your body with authentic whole foods like <a href="#/shop">MSR Foods natural superfood blends</a>, you take control of your hormonal well-being naturally and sustainably.</p>
+    `
+  },
+  {
+    slug: "what-is-talbina-talbeena-benefits-pakistan",
+    title: "What is Talbina (Talbeena)? Benefits, Recipe and Where to Buy in Pakistan",
+    category: "Prophetic Nutrition",
+    date: "November 2026",
+    dateISO: "2026-11-03",
+    readTime: "5 min read",
+    excerpt: "Explore the ancient healing wisdom of Talbina, its science-backed health benefits, simple home recipe, and why pure raw honey is the essential heart of the dish.",
+    body: `
+      <p>In the rich tradition of Islamic holistic healing (Tibb-e-Nabawi), few foods hold as venerable a status as <strong>Talbina</strong> (also spelled <em>Talbeena</em>). Mentioned in classical Hadith literature as a comforting remedy for physical illness and emotional grief, this humble dish has captured the attention of modern nutritional science for its extraordinary therapeutic properties.</p>
+
+      <p>Derived from the Arabic word <em>laban</em> (meaning milk), Talbina refers to a warm, nourishing porridge prepared from finely ground whole barley flour, simmered in pure milk, and sweetened with raw natural honey.</p>
+
+      <h2>The Hadith & Prophetic Healing Heritage</h2>
+      <p>The healing significance of Talbina is established in authentic traditions. Hazrat Aisha (Radi Allahu Anha) narrated that whenever someone in her family fell ill or when a bereavement occurred, she would instruct that a pot of Talbina be prepared. She quoted the Messenger of Allah (Peace Be Upon Him) saying:</p>
+
+      <blockquote>“The Talbina soothes the heart of the sick person and relieves him of some of his sorrow and grief.” — Sahih al-Bukhari & Sahih Muslim</blockquote>
+
+      <p>For centuries across the Muslim world and Pakistan, mothers and traditional physicians prepared Talbina to restore convalescing patients, strengthen new mothers, and soothe anxious minds during times of hardship.</p>
+
+      <h2>What Modern Science Says About Talbina</h2>
+      <p>Modern clinical studies into whole-grain barley (<em>Hordeum vulgare</em>) reveal why this ancient dish possesses such profound healing qualities:</p>
+
+      <ul>
+        <li><strong>Natural Antidepressant Action:</strong> Barley is exceptionally dense in L-tryptophan (the precursor to serotonin), magnesium, and vitamin B6. These nutrients regulate the central nervous system, calming anxiety and easing mild depressive states.</li>
+        <li><strong>Superior Gut Health & Digestion:</strong> Barley is packed with beta-glucan, a prebiotic soluble fiber that coats the stomach lining, heals gastrointestinal inflammation, and nourishes the microbiome.</li>
+        <li><strong>Cardiovascular Protection:</strong> Clinical research confirms that beta-glucan binds to bile acids in the intestinal tract, significantly lowering total and LDL cholesterol levels.</li>
+        <li><strong>Steady Glycemic Control:</strong> Unlike refined wheat porridge or white oats, whole barley has a low glycemic index, providing steady, sustained energy without rapid blood sugar spikes.</li>
+      </ul>
+
+      <h2>Authentic Homemade Talbina Recipe</h2>
+      <p>Preparing authentic Talbina at home requires just a few minutes and three fundamental wholesome ingredients:</p>
+      <ol>
+        <li><strong>Ingredients:</strong> 2 tablespoons of 100% whole ground barley flour (<em>jau ka atta</em>), 1.5 cups of fresh milk (or almond milk), and 1 to 2 teaspoons of pure raw mountain honey.</li>
+        <li><strong>Step 1 (Whisking):</strong> Place the ground barley flour into a small saucepan. Slowly pour in cold milk while whisking briskly to ensure a silky texture free of lumps.</li>
+        <li><strong>Step 2 (Gentle Simmer):</strong> Place over medium-low heat. Stir continuously for 10 to 12 minutes until the mixture thickens into a comforting porridge consistency.</li>
+        <li><strong>Step 3 (The Vital Rule of Honey):</strong> Remove the pan from heat and allow it to cool slightly (under 50°C) before stirring in pure raw honey. Boiling raw honey damages its live enzymes and antimicrobial compounds.</li>
+      </ol>
+
+      <h2>Why Raw Honey & Nuts Transform Talbina</h2>
+      <p>Raw mountain honey is the true soul of Talbina. Commercial processed honey—often adulterated with sugar syrup—dilutes the therapeutic power of the dish. Sourcing unpasteurized, cold-extracted mountain honey preserves vital enzymes and natural antimicrobials.</p>
+
+      <p>To turn your morning Talbina into the ultimate nutritional powerhouse, Pakistani families frequently crown their warm bowl with a generous spoonful of crunchy dry fruits. Stirring <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> directly into warm Talbina adds roasted almonds, Kashmiri walnuts, Iranian pistachios, and nutrient-dense seeds drenched in raw honey, creating a complete superfood meal.</p>
+
+      <p>Stay tuned as MSR Foods prepares to launch our own dedicated, stone-milled Talbina line in the near future. In the meantime, you can experience pure artisanal goodness by pairing your home recipes with our signature <a href="#/shop">MSR Honey Nut Mix jars</a>.</p>
+    `
+  },
+  {
+    slug: "brain-food-students-pakistan-energy-focus",
+    title: "Top Brain Foods for Students in Pakistan: Boost Energy and Focus Naturally",
+    category: "Focus & Mind",
+    date: "November 2026",
+    dateISO: "2026-11-04",
+    readTime: "5 min read",
+    excerpt: "Discover the best natural brain-boosting foods for Pakistani students facing exam stress, fatigue, and memory challenges without harmful energy drinks.",
+    body: `
+      <p>Whether preparing for Matric, FSc, O/A Levels, MDCAT, CSS examinations, or demanding university semester finals, Pakistani students operate under intense cognitive demands. Long study hours, late-night revisions, and intense competition often push students toward sugary energy drinks, hyper-caffeinated sodas, and processed junk snacks.</p>
+
+      <p>While these artificial fixes offer a fleeting burst of alertness, they inevitably lead to severe mental crashes, brain fog, erratic sleep cycles, and elevated anxiety. True cognitive stamina—sharp recall, prolonged focus, and calm mental clarity—requires genuine neuro-nutritional fuel.</p>
+
+      <h2>The Hidden Dangers of Commercial Energy Drinks</h2>
+      <p>Commercial energy beverages popular in local Pakistani convenience stores deliver excessive doses of synthetic caffeine, artificial taurine, and up to 35 grams of refined sugar per can. This creates an immediate spike in blood glucose followed by an insulin surge that leaves brain neurons starved of fuel within two hours.</p>
+
+      <blockquote>Your brain consumes over twenty percent of your body's total metabolic energy. Feeding it artificial chemicals during exam preparation impairs long-term memory retention and synaptic speed.</blockquote>
+
+      <p>Replacing synthetic stimulants with clean, nutrient-dense whole foods stabilizes cerebral blood flow and supports neurotransmitter synthesis when it matters most.</p>
+
+      <h2>The Essential Brain Foods for Pakistani Students</h2>
+      <h3>1. Kashmiri Walnuts (The Ultimate Brain Nut)</h3>
+      <p>Shaped uncannily like the human cerebrum, walnuts are nature's premier neuro-nut. They are loaded with alpha-linolenic acid (ALA), a plant-based Omega-3 fatty acid vital for maintaining the fluidity of brain cell membranes. Clinical trials link regular walnut consumption with faster information processing speed, sharper memory retention, and heightened cognitive flexibility.</p>
+
+      <h3>2. California Almonds (Vitamin E & Neuro-Protection)</h3>
+      <p>A cherished tradition across Pakistan is eating almonds for memory. Modern neuroscience validates this ancestral wisdom: almonds are extraordinarily rich in alpha-tocopherol (Vitamin E), a potent fat-soluble antioxidant that protects brain cells from the oxidative stress caused by sleep deprivation and intellectual strain.</p>
+
+      <h3>3. Raw Mountain Honey (Sustained Neural Glucose)</h3>
+      <p>Unlike refined white sugar, <a href="#/about">raw mountain honey</a> contains a balanced natural ratio of glucose and fructose alongside trace minerals and active bioflavonoids. The liver releases glycogen from natural honey slowly into the bloodstream, supplying a steady stream of glucose to the brain over four to five hours without mental crashes.</p>
+
+      <h3>4. Pumpkin and Sesame Seeds (Zinc & Magnesium for Focus)</h3>
+      <p>Pumpkin seeds are packed with zinc, a crucial mineral for synaptic communication and memory consolidation. Sesame and sunflower seeds contribute magnesium and B-complex vitamins that regulate the central nervous system, helping calm exam jitters and prevent stress headaches.</p>
+
+      <h2>The Smart Daily Routine for Students</h2>
+      <p>For Pakistani students juggling demanding timetables, preparing elaborate snacks is rarely realistic. That is why having a jar of <a href="#/product/honey-nut-mix-250g">MSR Honey Nut Mix (250g Starter Jar)</a> on your study desk makes a tangible difference:</p>
+
+      <ul>
+        <li><strong>Morning Focus Booster:</strong> Take one tablespoon of MSR Honey Nut Mix alongside a glass of milk or warm green tea before heading to morning lectures or exam halls.</li>
+        <li><strong>Late-Night Revision Fuel:</strong> When 11:00 PM hunger strikes during study sessions, skip fried chips and instant noodles. A single spoonful of crunchy honey-roasted nuts satisfies hunger cleanly while nourishing cognitive stamina.</li>
+        <li><strong>Exam Day Pocket Snack:</strong> Keep a small portion handy for mid-exam breaks to keep mental fatigue at bay without needing carbonated energy drinks.</li>
+      </ul>
+
+      <p>Fuel your mind with clean, authentic superfoods crafted right here in Pakistan. Invest in your focus, conquer exam stress, and discover the difference natural nutrition makes with <a href="#/shop">MSR Foods</a>.</p>
+    `
+  },
+  {
+    slug: "benefits-dry-fruits-honey-pakistan",
+    title: "7 Science-Backed Benefits of Dry Fruits with Honey for Pakistani Health",
+    category: "Everyday Wellness",
+    date: "November 2026",
+    dateISO: "2026-11-05",
+    readTime: "6 min read",
+    excerpt: "Uncover the 7 powerful, science-backed health benefits of combining raw honey with premium dry fruits for long-lasting energy, immunity, and heart wellness.",
+    body: `
+      <p>For generations across Pakistan and South Asia, grandmotherly wisdom has celebrated the combination of pure honey and golden dry fruits as the ultimate restorative tonic. Today, modern clinical nutritional science confirms what our elders practiced: pairing raw, unpasteurized honey with mineral-rich nuts and seeds unlocks a remarkable biological synergy that magnifies their individual health benefits.</p>
+
+      <p>When healthy unsaturated fatty acids, plant proteins, and dietary fiber meet the natural enzymes and antioxidants of cold-extracted honey, the body absorbs micronutrients with maximum efficiency. Here are seven evidence-backed benefits of incorporating this natural superfood into your daily life.</p>
+
+      <h2>1. Robust Immune Defense & Cellular Protection</h2>
+      <p>Raw mountain honey contains active glucose oxidase enzymes that produce natural, mild hydrogen peroxide, conferring potent antibacterial and antiviral properties. When combined with the high zinc, selenium, and copper content found in almonds, pumpkin seeds, and pistachios, your immune system receives the essential micronutrients required to synthesize white blood cells and fight seasonal Pakistani winter ailments.</p>
+
+      <h2>2. Comprehensive Cardiovascular & Cholesterol Support</h2>
+      <p>Contrary to common dietary fears about fats, the monounsaturated and polyunsaturated fatty acids in almonds, cashews, and walnuts actively protect the heart. Regular intake of these healthy fats lowers low-density lipoprotein (LDL or "bad") cholesterol while elevating beneficial HDL cholesterol. Furthermore, the pinocembrin antioxidants in raw honey protect vascular endothelial walls from oxidative arterial plaque buildup.</p>
+
+      <h2>3. Sharpened Brain Function & Memory Preservation</h2>
+      <p>Nuts—particularly Kashmiri walnuts and almonds—are rich in Omega-3 fatty acids and Vitamin E, which shield delicate neural tissues from age-related degradation. The steady release of natural fructose from honey supplies consistent energy to cerebral synapses, improving mental focus and reducing mid-day fatigue.</p>
+
+      <h2>4. Hormonal Balance & Metabolic Regulation</h2>
+      <p>For Pakistani women navigating hormonal conditions like PCOS, seed blends containing pumpkin, sunflower, and sesame seeds provide rich stores of lignans, magnesium, and essential fatty acids. These compounds help regulate estrogen-to-progesterone ratios, promote healthy ovulatory cycles, and calm systemic inflammation.</p>
+
+      <blockquote>When nature's purest ingredients are preserved without industrial refining, every spoonful acts as functional medicine for the human body.</blockquote>
+
+      <h2>5. Clean, Sustained All-Day Energy Without Crashes</h2>
+      <p>Refined sweets, biscuits, and industrial snacks cause violent blood sugar spikes followed by lethargy and cravings. The natural carbohydrate structure of raw honey, slowed by the fiber and healthy fats of roasted nuts, provides a smooth, gradual release of energy that fuels workouts, office hours, and household tasks for hours.</p>
+
+      <h2>6. Radiant Skin Glow & Anti-Aging Nutrition</h2>
+      <p>Dry, polluted urban air in cities like Lahore, Karachi, and Peshawar takes a heavy toll on skin health. The abundant Vitamin E, zinc, and polyphenolic flavonoids in honey-coated nuts combat free-radical oxidative damage, locking in moisture and stimulating collagen production from within for a natural, healthy complexion.</p>
+
+      <h2>7. Natural Weight Management & Craving Control</h2>
+      <p>Because nuts are packed with protein and dietary fiber, they stimulate the release of satiety hormones like cholecystokinin (CCK) and peptide YY. Just one or two spoonfuls of honey-soaked dry fruits satisfy sweet cravings while keeping you full for hours, preventing mindless overeating.</p>
+
+      <h2>The Gold Standard: MSR Honey Nut Mix</h2>
+      <p>At <a href="#/about">MSR Foods</a>, we handcraft Pakistan's finest honey nut blend, bringing together raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, peanuts, and trio-seeds (pumpkin, sunflower, sesame) under strict hygienic standards.</p>
+
+      <p>Every jar is double-sealed for freshness and delivered directly to your doorstep anywhere in Pakistan with Cash on Delivery. Discover our convenient 250g, 500g, and 1kg family sizes today at the <a href="#/shop">MSR Foods Online Store</a>.</p>
+    `
+  }
+];
+
+if (typeof window !== "undefined") {
+  window.BLOG_POSTS = BLOG_POSTS;
+}
+
+views.blog = () => ({
+  title: `Health & Nutrition Blog | MSR Foods Pakistan`,
+  html: `
+    <header class="page-head">
+      <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <span>Blog</span></nav>
+        <span class="pill">Wellness & Nutrition</span>
+        <h1 style="margin-top:14px">Health & Nutrition Blog</h1>
+        <p>Evidence-based superfood guides, natural nutrition tips, and wellness insights from Pakistan's premium superfood brand.</p>
+      </div>
+    </header>
+    <section class="page-dark sec" style="padding-top:40px">
+      <div class="wrap">
+        <div class="blog-grid">
+          ${BLOG_POSTS.map(post => `
+            <article class="blog-card reveal">
+              <div class="blog-card-body">
+                <div class="blog-meta">
+                  <span class="pill">${post.category}</span>
+                  <span>${post.date}</span>
+                  <span>·</span>
+                  <span>${post.readTime}</span>
+                </div>
+                <h3><a href="#/blog/${post.slug}" style="color:inherit;text-decoration:none">${post.title}</a></h3>
+                <p>${post.excerpt}</p>
+                <a class="btn btn-line btn-sm" href="#/blog/${post.slug}">Read Article ${ICON.arrow}</a>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </div>
+    </section>
+    ${secTrustStrip()}
+    ${secCTA()}
+  `
+});
+
+views.blogPost = (slug) => {
+  const post = BLOG_POSTS.find(p => p.slug === slug);
+  if (!post) return views.blog();
+  return {
+    title: `${post.title} | MSR Foods`,
+    html: `
+      <header class="page-head">
+        <div class="wrap">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <a href="#/blog">Blog</a> / <span>${post.title}</span></nav>
+          <span class="pill" style="margin-top:14px">${post.category}</span>
+          <h1 style="margin-top:14px">${post.title}</h1>
+          <p style="color:var(--mute-dark);margin-top:8px">${post.date} · ${post.readTime}</p>
+        </div>
+      </header>
+      <section class="page light">
+        <div class="wrap">
+          <div class="prose">${post.body}</div>
+          <!-- Article JSON-LD schema -->
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "${post.title}",
+            "datePublished": "${post.dateISO}",
+            "author": {"@type":"Organization","name":"MSR Foods"},
+            "publisher": {"@type":"Organization","name":"MSR Foods","url":"https://msrfoodsofficial.food"},
+            "url": "https://msrfoodsofficial.food/#/blog/${post.slug}",
+            "description": "${post.excerpt}"
+          }
+          <\/script>
+          <!-- Related products CTA -->
+          <div style="margin-top:48px;padding:32px;background:var(--bg-surface);border-radius:16px;border:1px solid rgba(214,167,54,0.2);text-align:center">
+            <span class="pill">Featured Product</span>
+            <h2 class="h2" style="margin-top:14px">MSR Honey Nut Mix</h2>
+            <p class="lead">Experience the natural superfood we referenced in this article.</p>
+            <div style="display:flex;gap:14px;justify-content:center;margin-top:24px;flex-wrap:wrap">
+              <a class="btn btn-gold" href="#/shop">Shop Now</a>
+              <a class="btn btn-line" href="#/blog">More Articles</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    `
+  };
+};
 
 views.contact = () => {
   const C = window.BRAND_CONFIG.contact;

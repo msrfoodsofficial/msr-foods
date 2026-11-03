@@ -1,5 +1,6 @@
 {
-  "instructions": "Go to https://www.wikidata.org/wiki/Special:NewItem to create the entity, then add these properties",
+  "entity_id": "Q141989418",
+  "wikidata_url": "https://www.wikidata.org/wiki/Q141989418",
   "entity": {
     "label_en": "MSR Foods",
     "label_ur": "ایم ایس آر فوڈز",

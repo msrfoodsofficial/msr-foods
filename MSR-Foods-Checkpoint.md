@@ -56,12 +56,34 @@ Files now live at `msrfoodsofficial.food`:
   - 3 customer review articles with `Review` microdata
   - `<address>` with full NAP (Name/Address/Phone/Email/Social)
 
+### 6. E-E-A-T About Page, Blog System & Wikidata Entry (`commit f4b9570`)
+- Full E-E-A-T About Page with LocalBusiness + AboutPage JSON-LD schemas
+- Blog engine (`BLOG_POSTS`, `views.blog`, `views.blogPost` with Article JSON-LD)
+- `wikidata-entry.json`: complete Wikidata submission guide & QuickStatements
+
+### 7. Documentation Commit (`commit 9afa485`)
+- Tracked SEO & GEO Strategy and Checkpoint in git repository
+
+### 8. Target Audience Articles & Navigation Refinement (`commit a34ff3e`) ✅ LATEST
+- **5 New High-Intent Articles Added** (all focused on MSR Honey Nut Mix):
+  1. `honey-nut-mix-pregnancy-benefits-pakistan` — Maternal & Fetal Health (Folate, Plant Iron, DHA precursors)
+  2. `quick-healthy-energy-busy-moms-pakistan` — Busy Mothers 60-Second Nutrition Fix
+  3. `honey-nut-mix-for-runners-pakistan-endurance` — Runners & Endurance Fuel (Dual-transporter carbs, joint protection)
+  4. `best-hiking-trail-snack-pakistan-honey-nuts` — Alpine Hikers & Trekkers (Calorie density, cramp defense)
+  5. `natural-immunity-booster-honey-nuts-pakistan` — Natural Immunity Booster (Winter smog & flu defense)
+- **Talbina Article Hidden:** Preserved in code comments for future Talbina product launch.
+- **Top Menu Refined:** Removed "Blog" link from top header nav & mobile drawer (retained in footer and site search).
+- **llms.txt Updated:** Expanded keyword targets, demographic briefs, and FAQs across both `2. Website/` and `1. Admin/`.
+
 ---
 
 ## 🔢 Git Commit History (this session)
 
 ```
-fc586e0  feat: AEO+LLMO static semantic layer in website body          ← LATEST
+a34ff3e  feat: add 5 target audience articles, hide talbina, hide blog from top menu   ← LATEST
+9afa485  docs: add SEO & GEO strategy roadmap and project checkpoint
+f4b9570  feat: E-E-A-T about page, blog system (5 articles), wikidata entry, blog CSS + routing
+fc586e0  feat: AEO+LLMO static semantic layer in website body
 2995496  feat: full SEO/GEO for storefront (all files to 2. Website)
 3574c2a  fix: upgrade llms.txt — premium brand positioning
 0f0647f  feat: full SEO/GEO optimization (Admin — superseded)

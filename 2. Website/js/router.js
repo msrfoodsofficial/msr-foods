@@ -1140,6 +1140,7 @@ views.about = () => ({
       "servesCuisine": "Natural Superfoods",
       "hasMap": "https://maps.google.com/?q=Kohat+KPK+Pakistan",
       "sameAs": [
+        "https://www.wikidata.org/wiki/Q141989418",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
         "https://www.facebook.com/share/1ButraKks3/"

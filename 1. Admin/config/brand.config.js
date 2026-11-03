@@ -26,10 +26,10 @@ const BRAND_CONFIG = {
   // Logo Configuration
   logo: {
     type: "image", // "image" or "text"
-    src: "assets/images/logo.webp",
+    src: "assets/images/logo.webp?v=32",
     alt: "MSR Foods — Quality Built For You",
     textFallback: "MSR FOODS",
-    width: 62,
+    width: 108,
     height: 62
   },
 

@@ -147,10 +147,11 @@ fc586e0  feat: AEO+LLMO static semantic layer in website body
 6. **Chatbot** — Tidio/Crisp widget (easy) or Gemini API chatbot (advanced)
 
 ### Later (Authority Building)
-7. Wikidata entity for "MSR Foods"
-8. Press mentions in food/health blogs
-9. Expand product catalog → add desi ghee, talbina, seed mixes
-10. International expansion schema update (areaServed)
+7. Wikidata entity for "MSR Foods" (Q141989418) ✅
+8. Official Brand Story & About Us merge & rewrite (`views.about` & `secAbout`) ✅
+9. Press mentions in food/health blogs
+10. Expand product catalog → add desi ghee, talbina, seed mixes
+11. International expansion schema update (areaServed)
 
 ---
 

@@ -321,6 +321,23 @@ function placeOrder(e) {
 
   saveOrder(order);
 
+  // GA4 Purchase Conversion Tracking
+  if (typeof gtag === "function") {
+    try {
+      gtag("event", "purchase", {
+        transaction_id: order.id,
+        value: order.total,
+        currency: "PKR",
+        items: (order.items || []).map(i => ({
+          item_id: i.id || i.sku || i.slug,
+          item_name: i.name,
+          price: i.price,
+          quantity: i.qty
+        }))
+      });
+    } catch (e) {}
+  }
+
   // Clear cart
   cart.items = {};
   saveCart();
@@ -347,6 +364,17 @@ function route() {
   if (app) app.innerHTML = v.html;
   document.title = v.title;
   document.body.classList.toggle("has-mbar", !!v.mbar);
+
+  // GA4 SPA Virtual Pageview Tracking
+  if (typeof gtag === "function") {
+    try {
+      gtag("event", "page_view", {
+        page_title: v.title || document.title,
+        page_location: location.href,
+        page_path: "/" + h
+      });
+    } catch (e) {}
+  }
 
   // Highlight active navigation links
   $$(".nav a, .menu-links a").forEach(a => {

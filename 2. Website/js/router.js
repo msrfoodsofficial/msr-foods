@@ -1266,6 +1266,242 @@ const BLOG_POSTS = [
     `
   },
   {
+    slug: "honey-nut-mix-pregnancy-benefits-pakistan",
+    title: "Honey Nut Mix During Pregnancy: Why It’s Vital for Mother & Baby in Pakistan",
+    category: "Maternal Health",
+    date: "November 2026",
+    dateISO: "2026-11-06",
+    readTime: "6 min read",
+    excerpt: "Learn why raw mountain honey and premium roasted dry fruits provide vital folate, bioavailable iron, and DHA precursors for expectant mothers and fetal development in Pakistan.",
+    body: `
+      <p>Pregnancy is a period of profound physiological transformation. In Pakistan, where maternal nutrition often faces significant hurdles—over 50% of pregnant women experience gestational anemia and chronic micronutrient deficiencies according to the National Nutrition Survey—prioritizing dense, clean, and bioavailable nutrition is essential for both mother and growing baby.</p>
+
+      <p>Between morning sickness, fluctuating blood sugar levels, severe fatigue, and digestive sensitivity, expecting mothers need whole foods that deliver maximum nourishment without burdening digestion. Pairing pure, raw mountain honey with slow-roasted premium dry fruits and nutrient-rich seeds creates an exceptional, time-tested maternal superfood.</p>
+
+      <h2>Vital Nutrients for Fetal Growth in Every Spoonful</h2>
+      <p>Each ingredient in <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> has been selected to deliver targeted building blocks necessary for fetal organogenesis and maternal vitality:</p>
+
+      <h3>1. Natural Folate (Vitamin B9) for Neural Tube Development</h3>
+      <p>Folate is indispensable during pregnancy for cell division and the proper formation of the fetal neural tube, preventing serious birth anomalies like spina bifida. Almonds, walnuts, and pumpkin seeds are rich in natural, food-state folates that the body easily assimilates alongside synergistic co-vitamins.</p>
+
+      <h3>2. Plant Iron & Copper to Combat Pregnancy Anemia</h3>
+      <p>During pregnancy, maternal blood volume expands by nearly 50% to nurture the placenta and growing fetus. This dramatically elevates iron requirements. Synthetic iron pills frequently trigger severe constipation, nausea, and stomach cramps. The natural iron found in pumpkin seeds, cashews, and almonds—enhanced by trace copper and organic acids in raw honey—supports healthy hemoglobin production gently and comfortably.</p>
+
+      <h3>3. Omega-3 Fatty Acids (ALA) for Baby’s Brain & Retinal Growth</h3>
+      <p>The third trimester sees explosive growth in fetal brain mass and neural connections. <strong>Kashmiri walnuts</strong> are exceptionally rich in alpha-linolenic acid (ALA), a vital plant Omega-3 fatty acid that serves as a direct precursor to DHA, the structural fatty acid composing over 20% of the brain's cerebral cortex and retina.</p>
+
+      <h3>4. Magnesium & Calcium for Strong Bones & Cramp Relief</h3>
+      <p>Skeletal mineralization draws heavily on maternal calcium stores. The calcium in almonds and sesame seeds, combined with the dense magnesium in pumpkin seeds, ensures the baby develops strong skeletal architecture while shielding the mother from painful nocturnal leg and calf cramps.</p>
+
+      <blockquote>A mother's nutrition during the first 1,000 days from conception lays the genetic and metabolic foundation for her child's entire lifetime of health.</blockquote>
+
+      <h2>Soothing Maternal Morning Sickness & Acid Reflux</h2>
+      <p>Many Pakistani women suffer debilitating nausea and acidity during the first and third trimesters. Unlike refined table sugar or artificial bakery items that trigger sharp insulin spikes and acid flare-ups, cold-extracted mountain honey contains natural enzymes, mild antiseptic flavonoids, and soothing properties that coat the esophagus and gently settle turbulent stomach acids.</p>
+
+      <h2>Safety and Quality: Why Purity Matters in Pregnancy</h2>
+      <p>Expectant mothers must avoid contaminated or raw unhygienic foods. MSR Foods adheres to uncompromising hygiene standards: all dry fruits and seeds are thoroughly cleaned and golden dry-roasted under controlled temperatures to eliminate surface microbes, then preserved in pure raw mountain honey within hermetically sealed food-grade jars. There are zero chemical additives, zero artificial colors, and zero high-fructose corn syrups.</p>
+
+      <h2>How Expectant Mothers Can Enjoy Honey Nut Mix</h2>
+      <ul>
+        <li><strong>Morning Vitality Spoon:</strong> Take 1 to 2 tablespoons in the morning alongside a glass of lukewarm milk or fresh lassi for clean, sustained morning energy.</li>
+        <li><strong>Midday Nausea Buffer:</strong> Keep a 250g jar on your bedside table or office desk; a small spoonful gently stabilizes dipping blood sugar between meals.</li>
+        <li><strong>Nutrient-Dense Porridge Topping:</strong> Fold a generous spoonful into warm oats, suji kheer, or yogurt for added crunch and mineral density.</li>
+      </ul>
+
+      <p><em>Medical Note:</em> As with any dietary addition during pregnancy, mothers diagnosed with gestational diabetes or specific nut allergies should consult their obstetrician or healthcare professional before modifying their meal plans. Explore our pure, double-sealed <a href="#/shop">MSR Honey Nut Mix Jars</a> today.</p>
+    `
+  },
+  {
+    slug: "quick-healthy-energy-busy-moms-pakistan",
+    title: "The 60-Second Nutrition Fix: Why Busy Pakistani Moms Rely on Honey Nut Mix",
+    category: "Family & Lifestyle",
+    date: "November 2026",
+    dateISO: "2026-11-07",
+    readTime: "5 min read",
+    excerpt: "Balancing school runs, household chores, and careers leaves Pakistani mothers exhausted. Discover how a 60-second power spoonful of honey and nuts restores daily vitality.",
+    body: `
+      <p>From the moment the alarm rings at 6:00 AM, a Pakistani mother's day is a non-stop marathon: packing school lunchboxes, ironing uniforms, preparing family breakfasts, managing household chores, and often heading out to professional jobs or running home businesses. In this relentless rush, mothers are almost always the last ones to eat.</p>
+
+      <p>The common result? "Tired All The Time" (TATT) syndrome. Millions of Pakistani mothers survive on two or three cups of heavily sweetened chai, skipped breakfasts, and whatever cold leftovers remain. This creates a relentless cycle of mid-morning brain fog, afternoon energy crashes, and chronic irritability.</p>
+
+      <h2>The Problem with the 'Chai & Biscuit' Routine</h2>
+      <p>When exhaustion strikes, reaching for a cup of sweet tea and packaged bakery biscuits feels like the easiest fix. However, refined white flour (maida) and processed sugar trigger an immediate spike in blood glucose, followed within 90 minutes by a steep hormonal crash. This crash depletes adrenal glands, exacerbates mood swings, and leaves you feeling more depleted than before.</p>
+
+      <blockquote>Mothers are the heartbeat of every Pakistani home. When a mother's energy is drained, the entire family feels the strain. Investing in self-nourishment is not selfish—it is foundational.</blockquote>
+
+      <h2>The 60-Second Solution: One Spoonful of Pure Vitality</h2>
+      <p>Busy mothers do not have 45 minutes to prepare complex superfood smoothies or gourmet fitness bowls. They need instant, bioavailable nutrition that requires <strong>zero cooking, zero chopping, and zero cleanup</strong>. That is exactly why <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> has become the secret weapon of smart Pakistani moms.</p>
+
+      <p>Just unscrew the jar and take one heaped tablespoon. In 60 seconds, your body receives:</p>
+      <ul>
+        <li><strong>Clean, Sustained Glucose:</strong> Unpasteurized mountain honey provides instant mental clarity and lifts morning brain fog without a glycemic crash.</li>
+        <li><strong>Plant Protein & Healthy Fats:</strong> Roasted California almonds, cashews, and Kashmiri walnuts deliver 15.4g of protein per 100g and heart-healthy lipids that sustain cellular energy for 4 to 5 hours.</li>
+        <li><strong>Magnesium & B-Vitamins:</strong> Nature's ultimate anti-stress minerals found in pumpkin and sunflower seeds, calming maternal anxiety and supporting adrenal health.</li>
+        <li><strong>Natural Iron:</strong> Keeps hemoglobin high, combating the pale fatigue and lightheadedness that affect so many Pakistani women.</li>
+      </ul>
+
+      <h2>A Wholesome Treat the Entire Family Loves</h2>
+      <p>Beyond personal nourishment, MSR Honey Nut Mix solves another major daily headache: finding healthy snacks for growing children. Instead of processed chocolate spreads loaded with hydrogenated palm oil and synthetic chemicals, mothers can offer a spoonful of honey-roasted nuts and seeds over toast, fruit slices, or evening milk. Children love the natural golden sweetness and satisfying crunch, while receiving essential brain nutrients for school performance.</p>
+
+      <h2>Three Effortless Ways to Incorporate It into Your Day</h2>
+      <ol>
+        <li><strong>The Morning Dawn Kickstart (6:30 AM):</strong> Take 1 tablespoon with your morning glass of water before the household chaos begins to establish a calm, nourished baseline.</li>
+        <li><strong>The 3:00 PM School-Pickup Revival:</strong> Instead of sugary bakery treats, take a spoonful before driving to school pickup or beginning afternoon homework sessions.</li>
+        <li><strong>The Guilt-Free Late-Night Treat:</strong> Satisfy post-dinner sweet cravings cleanly with a single spoon that promotes restful, restorative sleep thanks to walnut melatonin.</li>
+      </ol>
+
+      <p>Reclaim your vitality and take care of yourself so you can continue taking care of those you love. Experience the pure goodness of handcrafted <a href="#/shop">MSR Honey Nut Mix</a> today.</p>
+    `
+  },
+  {
+    slug: "honey-nut-mix-for-runners-pakistan-endurance",
+    title: "Fueling the Long Run: Why Runners in Pakistan Are Replacing Gels with Honey Nut Mix",
+    category: "Running & Endurance",
+    date: "November 2026",
+    dateISO: "2026-11-08",
+    readTime: "5 min read",
+    excerpt: "Say goodbye to chemical energy gels and runner’s gut. Discover how raw mountain honey and golden-roasted nuts optimize glycogen loading, stamina, and recovery for Pakistani runners.",
+    body: `
+      <p>Pakistan's endurance running community is undergoing a massive cultural resurgence. From the early morning paces along Islamabad's Margalla road loops and Karachi's Seaview coastline to organized marathon clubs across Lahore and Peshawar, more Pakistanis than ever are training for 5Ks, 10Ks, half-marathons, and full 42km distances.</p>
+
+      <p>Yet, as weekly mileage climbs, runners face a universal obstacle: nutritional fueling. For years, runners relied on imported synthetic carbohydrate gels. Today, elite endurance athletes and sports science researchers are rediscovering nature's ultimate high-performance fuel: pure mountain honey paired with nutrient-dense roasted nuts and seeds.</p>
+
+      <h2>The Pitfalls of Synthetic Gels & 'Runner’s Gut'</h2>
+      <p>Commercial energy gels are largely composed of concentrated maltodextrin, synthetic fructose syrups, artificial flavorings, and chemical preservatives. While convenient, they frequently cause severe gastrointestinal distress—commonly known in the running community as "runner's trots" or stomach cramping.</p>
+
+      <p>When high concentrations of artificial sugars hit the stomach during intense running, blood is diverted away from the gut to working leg muscles, resulting in poor absorption, nausea, and sharp hypoglycemic crashes 30 minutes later.</p>
+
+      <h2>The Science of Honey: Multiple Transportable Carbohydrates (MTC)</h2>
+      <p>Sports nutrition science has established that the human digestive system absorbs carbohydrates most rapidly when utilizing multiple intestinal transporter pathways simultaneously:</p>
+
+      <ul>
+        <li><strong>Glucose</strong> enters the bloodstream via sodium-dependent <em>SGLT1</em> transporters.</li>
+        <li><strong>Fructose</strong> is absorbed via distinct <em>GLUT5</em> transporters.</li>
+      </ul>
+
+      <p>Because raw mountain honey naturally contains a perfect, enzyme-balanced ratio of bioavailable glucose and fructose, it allows runners to oxidize up to <strong>50% more carbohydrates per hour</strong> without saturating intestinal receptors or causing gastrointestinal upset.</p>
+
+      <blockquote>Raw honey provides an optimal, gut-friendly glycemic index that elevates blood glucose smoothly and sustains muscle glycogen far longer than artificial glucose syrups.</blockquote>
+
+      <h2>Protecting Joints & Accelerating Post-Run Recovery</h2>
+      <p>Distance running places extreme mechanical stress on knees, ankles, and myofibrillar tissues. Every foot strike sends shockwaves through the lower kinetic chain, elevating inflammatory biomarkers such as C-reactive protein (CRP) and interleukin-6 (IL-6).</p>
+
+      <p><a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> delivers targeted anti-inflammatory protection:</p>
+      <ul>
+        <li><strong>Kashmiri Walnuts:</strong> Abundant in plant-based Omega-3 (ALA), helping lubricate articular cartilage and suppress post-run joint soreness.</li>
+        <li><strong>California Almonds:</strong> Packed with alpha-tocopherol (Vitamin E), which neutralizes the heavy exercise-induced oxidative stress generated by high-volume aerobic breathing.</li>
+        <li><strong>Pumpkin & Sunflower Seeds:</strong> Supply bioavailable magnesium, potassium, and zinc to replenish electrolytes lost through heavy sweating and halt nocturnal muscle cramps.</li>
+        <li><strong>15.4g Protein per 100g:</strong> Supplies branched-chain amino acids (BCAAs) and L-arginine to stimulate muscle protein synthesis and repair micro-tears.</li>
+      </ul>
+
+      <h2>The Runner’s Fueling Strategy with MSR Honey Nut Mix</h2>
+      <h3>1. Pre-Run Primer (40 Minutes Before Lacing Up)</h3>
+      <p>Consume 1 to 2 tablespoons of MSR Honey Nut Mix with a glass of water or black coffee. The honey tops off liver glycogen for immediate stride responsiveness, while the healthy fats provide a slow-burning metabolic floor for miles 5 through 15.</p>
+
+      <h3>2. Post-Run Golden Window (Within 30 Minutes)</h3>
+      <p>Immediately after finishing your long run or tempo workout, take 2 generous tablespoons paired with water or milk. Honey swiftly sparks an insulin response that drives amino acids and glycogen straight into depleted leg muscles, drastically cutting recovery time before your next session.</p>
+
+      <p>Step up your personal records with clean, wholesome sports nutrition. Fuel your next long run with <a href="#/shop">MSR Foods Honey Nut Mix</a>.</p>
+    `
+  },
+  {
+    slug: "best-hiking-trail-snack-pakistan-honey-nuts",
+    title: "The Ultimate High-Altitude Trail Fuel: Why Hikers in Pakistan Choose Honey Nut Mix",
+    category: "Outdoor & Adventure",
+    date: "November 2026",
+    dateISO: "2026-11-09",
+    readTime: "5 min read",
+    excerpt: "Heading to Miranjani, Mushkpuri, Fairy Meadows, or the Karakoram? Discover why high-density honey nut mix is Pakistan’s premier lightweight trail snack for hikers and trekkers.",
+    body: `
+      <p>Pakistan is blessed with some of the most spectacular mountain topography on planet Earth. From brisk weekend morning ascents on Trail 3 and Trail 5 in Islamabad's Margalla Hills to snow-dusted ridges on Mushkpuri and Miranjani in Galyat, and legendary expeditions across Fairy Meadows, Nanga Parbat Base Camp, and the Karakoram trails—hiking has become a cherished passion for thousands of adventurous Pakistanis.</p>
+
+      <p>However, mountain trails present a unique physiological test: high elevation gain, steep ascents, fluctuating alpine weather, and severe caloric burn. Navigating these trails requires trail nutrition that is lightweight, calorie-dense, and highly resilient.</p>
+
+      <h2>The Alpine Caloric Deficit</h2>
+      <p>Trekking uphill with a loaded backpack burns between <strong>500 and 700 calories per hour</strong>. On a typical 6 to 8 hour day hike, your body can easily burn over 4,000 calories. If you fail to supply consistent fuel, you will hit "the wall"—characterized by trembling leg muscles, sudden altitude dizziness, mental fatigue, and dangerous loss of footing on narrow ridges.</p>
+
+      <p>Unfortunately, standard trail snacks carried by novice hikers in Pakistan fall short:</p>
+      <ul>
+        <li><strong>Commercial Chocolate Bars:</strong> Melt into an unappetizing sludge in summer heat or freeze rock-hard in alpine winters, providing only brief sugar rushes followed by heavy crashes.</li>
+        <li><strong>Bakery Biscuits:</strong> Crumble into dust inside your rucksack, providing empty carbohydrates with virtually zero electrolyte or protein value.</li>
+        <li><strong>Canned or Heavy Foods:</strong> Add unnecessary dead weight to your backpack and leave messy waste behind.</li>
+      </ul>
+
+      <h2>The Dual-Stage Engine: Why Honey & Roasted Nuts Excel</h2>
+      <p>Seasoned mountain guides and high-altitude trekkers rely on the biological synergy of <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> because it operates as a dual-stage endurance engine:</p>
+
+      <h3>Stage 1: Immediate Elevation Power (Raw Mountain Honey)</h3>
+      <p>When you encounter a brutal 30-degree incline, your muscles demand immediate glucose. The raw, enzymatic mountain honey delivers fast-acting monosaccharides that absorb quickly without placing heavy demands on a digestive system stressed by thin air.</p>
+
+      <h3>Stage 2: Sustained 6-Hour Alpine Stamina (Roasted Nuts & Seeds)</h3>
+      <p>While honey powers the climb, the slow-burning, dense healthy fats and 15.4g plant protein from California almonds, Kashmiri walnuts, cashews, pistachios, and seeds release a steady trickle of ATP energy hour after hour, keeping your legs fresh through grueling ridge crossings.</p>
+
+      <blockquote>At 9,000 feet above sea level, every ounce in your backpack counts. Packing nutrient-dense whole foods ensures you summit safely without unnecessary pack weight.</blockquote>
+
+      <h2>Natural Electrolyte Defense Against Trail Cramps</h2>
+      <p>Climbing under the Pakistani sun leads to heavy mineral loss through perspiration. Dehydration combined with magnesium and potassium depletion causes agonizing calf and hamstring spasms on rocky descents. The dense natural matrix of magnesium, potassium, zinc, and natural sea salts found in roasted pumpkin seeds, almonds, and peanuts replenishes cellular electrolytes naturally, ensuring sure-footed agility.</p>
+
+      <h2>Pack-Ready, Weatherproof Durability</h2>
+      <p>MSR Honey Nut Mix comes in sturdy, double-sealed food-grade jars that will not crush, leak, or spoil in your rucksack. It requires zero camp stoves, zero boiling water, and leaves zero sticky plastic wrappers along pristine mountain paths.</p>
+
+      <h2>Trail Protocol for Pakistani Trekkers</h2>
+      <ol>
+        <li><strong>Trailhead Ignition:</strong> Take 1 tablespoon before strapping on your pack at the base of the trail.</li>
+        <li><strong>Hourly Ridge Pacing:</strong> Eat 1 spoonful every 45 to 60 minutes alongside sips of fresh water to maintain consistent blood glucose without stomach heaviness.</li>
+        <li><strong>Summit Reward:</strong> Celebrate reaching the peak with a generous serving to kickstart muscle recovery before tackling the descent.</li>
+      </ol>
+
+      <p>Respect the mountains, pack light, and fuel your next great outdoor adventure with pure Pakistani superfood nutrition from <a href="#/shop">MSR Foods</a>.</p>
+    `
+  },
+  {
+    slug: "natural-immunity-booster-honey-nuts-pakistan",
+    title: "Natural Immunity Booster: How Honey Nut Mix Fortifies Your Defenses in Pakistan",
+    category: "Immunity & Wellness",
+    date: "November 2026",
+    dateISO: "2026-11-10",
+    readTime: "6 min read",
+    excerpt: "From severe winter smog in Lahore to seasonal flu across Pakistan, learn how raw mountain honey, zinc, and antioxidant-rich nuts build an impenetrable natural immune shield.",
+    body: `
+      <p>Every year across Pakistan, the onset of autumn and winter brings a major public health emergency: hazardous toxic smog blanketing Lahore, Faisalabad, and the plains of Punjab, coupled with abrupt temperature drops, dry dust, and seasonal influenza epidemics in Karachi, Rawalpindi, and Peshawar.</p>
+
+      <p>Airborne particulate matter (PM2.5) penetrates deep into the respiratory tract, generating intense oxidative stress, triggering chronic throat irritation, and compromising the immune system. While many turn to synthetic effervescent vitamin C tablets or over-the-counter cough syrups, clinical immunologists agree that true immune resilience requires whole-food, bioavailable micronutrients that reinforce the body's natural defense systems from within.</p>
+
+      <h2>The Three Biological Immunity Pillars in Honey Nut Mix</h2>
+      <p>Nature has provided an extraordinary defense formulation in the pairing of pure raw mountain honey with mineral-dense dry fruits and seeds. Here is how <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> actively strengthens your immune response:</p>
+
+      <h3>Pillar 1: Raw Mountain Honey (Antimicrobial & Antiviral Barrier)</h3>
+      <p>Unlike pasteurized supermarket honey that has been heated into simple sugar syrup, authentic raw mountain honey retains its live enzymes—notably <em>glucose oxidase</em>. When in contact with moisture, this enzyme produces microscopic, safe levels of natural hydrogen peroxide that inhibit bacterial pathogens.</p>
+
+      <p>Furthermore, raw honey contains <strong>defensin-1</strong> (a natural antimicrobial peptide secreted by healthy bees) and abundant polyphenols like pinocembrin and chrysin. These compounds form a soothing antimicrobial shield across sensitive pharyngeal tissues, easing throat irritation and blocking pathogen entry.</p>
+
+      <h3>Pillar 2: Bioavailable Zinc & Selenium (Immune Cell Multipliers)</h3>
+      <p>Zinc is the primary mineral regulator of the human immune system. Without sufficient zinc, your body cannot produce or activate T-lymphocytes (white blood cells that identify and destroy virally infected cells). Pumpkin seeds, cashews, and almonds are nature’s richest plant-based zinc sources, accompanied by trace selenium from sunflower seeds to supercharge antioxidant enzyme systems like glutathione peroxidase.</p>
+
+      <h3>Pillar 3: Vitamin E & Polyphenols (Smog & Free-Radical Defense)</h3>
+      <p>Inhaling urban smog floods the bloodstream with reactive oxygen species (free radicals) that damage lung epithelial cells. California almonds are loaded with alpha-tocopherol (natural Vitamin E), the primary lipid-soluble antioxidant that protects cell membranes against environmental toxins and calms pulmonary inflammation.</p>
+
+      <blockquote>Immunity is not built in a day through emergency pills; it is fortified daily through the wholesome foods you feed your cells.</blockquote>
+
+      <h2>The Gut-Immune Connection: Nourishing Your Microbiome</h2>
+      <p>Modern immunology has revealed that over <strong>70% of the entire human immune system</strong> resides along the gastrointestinal tract in the Gut-Associated Lymphoid Tissue (GALT). A healthy microbiome is your first line of defense against disease.</p>
+
+      <p>Raw mountain honey is packed with natural prebiotic oligosaccharides that nourish beneficial gut bacteria such as <em>Bifidobacteria</em> and <em>Lactobacilli</em>. Together with the prebiotic dietary fiber from whole dry fruits and trio-seeds (pumpkin, sunflower, sesame), it fosters a flourishing microbial ecosystem that produces short-chain fatty acids (SCFAs), directly signaling immune cells to stay vigilant against infections.</p>
+
+      <h2>The Golden Spoon Daily Routine for the Whole Family</h2>
+      <p>Protecting your household against seasonal ailments and urban air pollution is simple, delicious, and consistent:</p>
+      <ul>
+        <li><strong>The Morning Immunity Ritual:</strong> Take 1 to 2 tablespoons of MSR Honey Nut Mix each morning on an empty stomach alongside a glass of lukewarm (not boiling) water. Lukewarm water protects the delicate live enzymes in the raw honey while gently waking your digestive tract.</li>
+        <li><strong>Throat Soothing Buffer:</strong> If you feel a scratchy throat or dry cough after commuting through traffic or smog, a slow spoonful of honey and crunchy nuts coats irritated mucosal linings immediately.</li>
+        <li><strong>All Ages Nourishment:</strong> Safe and beneficial for growing children (above 1 year of age), working professionals, and elderly family members whose immune systems need gentle, natural fortification.</li>
+      </ul>
+
+      <p>Shield your family naturally with Pakistan's gold standard of pure, unadulterated superfood nutrition. Order your double-sealed jars of <a href="#/shop">MSR Honey Nut Mix</a> today.</p>
+    `
+  },
+  /*
+  // HIDDEN FOR LATER (Talbina product launch):
+  {
     slug: "what-is-talbina-talbeena-benefits-pakistan",
     title: "What is Talbina (Talbeena)? Benefits, Recipe and Where to Buy in Pakistan",
     category: "Prophetic Nutrition",
@@ -1273,45 +1509,9 @@ const BLOG_POSTS = [
     dateISO: "2026-11-03",
     readTime: "5 min read",
     excerpt: "Explore the ancient healing wisdom of Talbina, its science-backed health benefits, simple home recipe, and why pure raw honey is the essential heart of the dish.",
-    body: `
-      <p>In the rich tradition of Islamic holistic healing (Tibb-e-Nabawi), few foods hold as venerable a status as <strong>Talbina</strong> (also spelled <em>Talbeena</em>). Mentioned in classical Hadith literature as a comforting remedy for physical illness and emotional grief, this humble dish has captured the attention of modern nutritional science for its extraordinary therapeutic properties.</p>
-
-      <p>Derived from the Arabic word <em>laban</em> (meaning milk), Talbina refers to a warm, nourishing porridge prepared from finely ground whole barley flour, simmered in pure milk, and sweetened with raw natural honey.</p>
-
-      <h2>The Hadith & Prophetic Healing Heritage</h2>
-      <p>The healing significance of Talbina is established in authentic traditions. Hazrat Aisha (Radi Allahu Anha) narrated that whenever someone in her family fell ill or when a bereavement occurred, she would instruct that a pot of Talbina be prepared. She quoted the Messenger of Allah (Peace Be Upon Him) saying:</p>
-
-      <blockquote>“The Talbina soothes the heart of the sick person and relieves him of some of his sorrow and grief.” — Sahih al-Bukhari & Sahih Muslim</blockquote>
-
-      <p>For centuries across the Muslim world and Pakistan, mothers and traditional physicians prepared Talbina to restore convalescing patients, strengthen new mothers, and soothe anxious minds during times of hardship.</p>
-
-      <h2>What Modern Science Says About Talbina</h2>
-      <p>Modern clinical studies into whole-grain barley (<em>Hordeum vulgare</em>) reveal why this ancient dish possesses such profound healing qualities:</p>
-
-      <ul>
-        <li><strong>Natural Antidepressant Action:</strong> Barley is exceptionally dense in L-tryptophan (the precursor to serotonin), magnesium, and vitamin B6. These nutrients regulate the central nervous system, calming anxiety and easing mild depressive states.</li>
-        <li><strong>Superior Gut Health & Digestion:</strong> Barley is packed with beta-glucan, a prebiotic soluble fiber that coats the stomach lining, heals gastrointestinal inflammation, and nourishes the microbiome.</li>
-        <li><strong>Cardiovascular Protection:</strong> Clinical research confirms that beta-glucan binds to bile acids in the intestinal tract, significantly lowering total and LDL cholesterol levels.</li>
-        <li><strong>Steady Glycemic Control:</strong> Unlike refined wheat porridge or white oats, whole barley has a low glycemic index, providing steady, sustained energy without rapid blood sugar spikes.</li>
-      </ul>
-
-      <h2>Authentic Homemade Talbina Recipe</h2>
-      <p>Preparing authentic Talbina at home requires just a few minutes and three fundamental wholesome ingredients:</p>
-      <ol>
-        <li><strong>Ingredients:</strong> 2 tablespoons of 100% whole ground barley flour (<em>jau ka atta</em>), 1.5 cups of fresh milk (or almond milk), and 1 to 2 teaspoons of pure raw mountain honey.</li>
-        <li><strong>Step 1 (Whisking):</strong> Place the ground barley flour into a small saucepan. Slowly pour in cold milk while whisking briskly to ensure a silky texture free of lumps.</li>
-        <li><strong>Step 2 (Gentle Simmer):</strong> Place over medium-low heat. Stir continuously for 10 to 12 minutes until the mixture thickens into a comforting porridge consistency.</li>
-        <li><strong>Step 3 (The Vital Rule of Honey):</strong> Remove the pan from heat and allow it to cool slightly (under 50°C) before stirring in pure raw honey. Boiling raw honey damages its live enzymes and antimicrobial compounds.</li>
-      </ol>
-
-      <h2>Why Raw Honey & Nuts Transform Talbina</h2>
-      <p>Raw mountain honey is the true soul of Talbina. Commercial processed honey—often adulterated with sugar syrup—dilutes the therapeutic power of the dish. Sourcing unpasteurized, cold-extracted mountain honey preserves vital enzymes and natural antimicrobials.</p>
-
-      <p>To turn your morning Talbina into the ultimate nutritional powerhouse, Pakistani families frequently crown their warm bowl with a generous spoonful of crunchy dry fruits. Stirring <a href="#/product/honey-nut-mix-500g">MSR Honey Nut Mix</a> directly into warm Talbina adds roasted almonds, Kashmiri walnuts, Iranian pistachios, and nutrient-dense seeds drenched in raw honey, creating a complete superfood meal.</p>
-
-      <p>Stay tuned as MSR Foods prepares to launch our own dedicated, stone-milled Talbina line in the near future. In the meantime, you can experience pure artisanal goodness by pairing your home recipes with our signature <a href="#/shop">MSR Honey Nut Mix jars</a>.</p>
-    `
+    body: `...`
   },
+  */
   {
     slug: "brain-food-students-pakistan-energy-focus",
     title: "Top Brain Foods for Students in Pakistan: Boost Energy and Focus Naturally",

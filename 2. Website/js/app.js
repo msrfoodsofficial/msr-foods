@@ -66,7 +66,6 @@ function shell() {
     ["shop", "Shop", "#/shop"],
     ["track", "Track Order", "#/track"],
     ["about", "About Us", "#/about"],
-    ["blog", "Blog", "#/blog"],
     ["contact", "Contact", "#/contact"]
   ];
 

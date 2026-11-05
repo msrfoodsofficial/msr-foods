@@ -1711,33 +1711,101 @@ views.blogPost = (slug) => {
 
 views.contact = () => {
   const C = window.BRAND_CONFIG.contact;
+  const brand = window.BRAND_CONFIG.brand;
   return {
-    title: `Contact | ${window.BRAND_CONFIG.brand.name}`,
+    title: `Contact | ${brand.name} — Pure Taste. Natural Goodness.`,
     html: `
-      <header class="page-head">
-        <div class="wrap">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <span>Contact</span></nav>
-          <h1>Get In Touch</h1>
-          <p>Questions regarding products, bulk orders, or shipping? We are here to assist.</p>
+      <header class="page-head" style="padding-top:calc(var(--hdr) + 24px);padding-bottom:clamp(36px, 5vw, 64px);text-align:center;background:radial-gradient(ellipse at center top, #1a140a 0%, #000000 80%);border-bottom:1px solid var(--hair)">
+        <div class="wrap" style="max-width:880px;margin:0 auto">
+          <nav class="crumbs" aria-label="Breadcrumb" style="justify-content:center;margin-bottom:14px"><a href="#/">Home</a> / <span>Contact</span></nav>
+          <span class="pill" style="margin-bottom:12px">Support & Inquiries</span>
+          <h1 style="font:600 clamp(2.2rem, 4.5vw, 3.4rem) var(--serif);color:var(--cream);margin:10px 0 14px">Get in Touch with MSR Foods</h1>
+          <p style="font-size:clamp(15px, 1.6vw, 18px);line-height:1.7;color:var(--mute-dark);max-width:640px;margin:0 auto">
+            Have questions about our artisanal honey nut mix, wholesale orders, or nationwide delivery? Our team is available 24/7.
+          </p>
         </div>
       </header>
-      <section class="page light">
+
+      <section class="page light" style="padding-block:clamp(36px, 5vw, 68px)">
         <div class="wrap contact-grid">
+          
+          <!-- Left: Direct Contact Channels -->
           <div class="cinfo">
-            <a href="tel:${C.phoneIntl}">${ICON.phone}<div><b>Phone / Support</b><span>${C.phone}</span><small style="color:var(--mute-light)">${C.supportHours}</small></div></a>
-            ${C.whatsapp ? `<a href="https://wa.me/${C.whatsapp}" target="_blank" rel="noopener">${ICON.zap}<div><b>WhatsApp Direct</b><span>Chat with our team instantly</span></div></a>` : ""}
-            <a href="mailto:${C.email}">${ICON.mail}<div><b>Email Us</b><span>${C.email}</span></div></a>
-            <a href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener">${ICON.pin}<div><b>Location & Reviews</b><span>${C.address.join("<br>")}<br><b style="color:var(--gold-hi);font-size:12.5px;text-decoration:underline">⭐ View on Google Maps / Business Profile</b></span></div></a>
+            
+            <!-- 1. Phone Support -->
+            <a class="cinfo-card" href="tel:${C.phoneIntl}" aria-label="Call MSR Foods Customer Support">
+              <div class="cinfo-icon">${ICON.phone}</div>
+              <div class="cinfo-body">
+                <span class="cinfo-label">Customer Support Phone</span>
+                <strong class="cinfo-val" style="white-space:nowrap">${C.phone}</strong>
+                <small class="cinfo-sub">${C.supportHours}</small>
+              </div>
+            </a>
+
+            <!-- 2. WhatsApp Direct -->
+            ${C.whatsapp ? `
+              <a class="cinfo-card" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi MSR Foods team, I have an inquiry regarding your products.')}" target="_blank" rel="noopener" aria-label="WhatsApp MSR Foods">
+                <div class="cinfo-icon cinfo-icon-green">${ICON.zap}</div>
+                <div class="cinfo-body">
+                  <span class="cinfo-label">WhatsApp Direct</span>
+                  <strong class="cinfo-val">Chat with Our Team Instantly</strong>
+                  <small class="cinfo-sub">Fastest response for order updates & queries</small>
+                </div>
+              </a>
+            ` : ""}
+
+            <!-- 3. Official Email -->
+            <a class="cinfo-card" href="mailto:${C.email}" aria-label="Email MSR Foods">
+              <div class="cinfo-icon">${ICON.mail}</div>
+              <div class="cinfo-body">
+                <span class="cinfo-label">Official Email</span>
+                <strong class="cinfo-val">${C.email}</strong>
+                <small class="cinfo-sub">Wholesale, retail distribution & corporate orders</small>
+              </div>
+            </a>
+
+            <!-- 4. Location & Google Business Profile -->
+            <a class="cinfo-card" href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener" aria-label="View MSR Foods on Google Maps">
+              <div class="cinfo-icon">${ICON.pin}</div>
+              <div class="cinfo-body">
+                <span class="cinfo-label">Headquarters & Verified Location</span>
+                <strong class="cinfo-val">${C.address.join(", ")}</strong>
+                <span class="cinfo-badge">⭐ View on Google Maps / Business Profile ↗</span>
+              </div>
+            </a>
+
           </div>
-          <form class="box" id="contactForm" novalidate>
-            <h2>Send us a Message</h2>
+
+          <!-- Right: Email Message Form -->
+          <form class="box contact-form-box" id="contactForm" novalidate>
+            <h2 style="font-size:1.6rem;margin-bottom:6px;color:var(--ink)">Send us a Direct Message</h2>
+            <p style="color:var(--mute-light);font-size:14.5px;margin-bottom:24px;line-height:1.6">Fill out the quick form below and our team will get back to you promptly.</p>
+            
             <div class="fgrid">
-              <div class="f"><label for="c-name">Your Name</label><input id="c-name" required><span class="err">Enter your name.</span></div>
-              <div class="f"><label for="c-phone">Phone Number <i>(optional)</i></label><input id="c-phone" inputmode="tel"></div>
-              <div class="f full"><label for="c-msg">Message</label><textarea id="c-msg" placeholder="How can we help you?" required></textarea><span class="err">Enter your message.</span></div>
+              <div class="f">
+                <label for="c-name">Your Full Name</label>
+                <input id="c-name" autocomplete="name" placeholder="e.g. Ahmad Khan" required>
+                <span class="err">Please enter your full name.</span>
+              </div>
+              <div class="f">
+                <label for="c-phone">Mobile / WhatsApp Number <i>(optional)</i></label>
+                <input id="c-phone" autocomplete="tel" inputmode="tel" placeholder="03XXXXXXXXX">
+              </div>
+              <div class="f full">
+                <label for="c-msg">Your Message</label>
+                <textarea id="c-msg" rows="5" placeholder="How can we assist you today?" required></textarea>
+                <span class="err">Please enter your message.</span>
+              </div>
             </div>
-            <button class="btn btn-gold" style="margin-top:22px" type="submit">Send Message via Email</button>
+            
+            <button class="btn btn-gold btn-block" style="margin-top:22px" type="submit">
+              Send Message via Email
+            </button>
+            <small style="display:block;text-align:center;color:var(--mute-light);font-size:12.5px;margin-top:12px">
+              🔒 Your contact information is never shared.
+            </small>
           </form>
+
         </div>
       </section>
     `

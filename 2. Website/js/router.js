@@ -1130,9 +1130,9 @@ views.about = () => ({
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": ["LocalBusiness", "FoodEstablishment", "OnlineStore"],
+      "@type": ["Organization", "OnlineStore", "Brand"],
       "name": "MSR Foods",
-      "description": "MSR Foods is a premier Pakistani natural superfood brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes made from raw mountain honey, California almonds, Kashmiri walnuts, cashews, Iranian pistachios, and nutritious seeds. Delivering Pakistan-wide with Cash on Delivery.",
+      "description": "MSR Foods is a premier Pakistani national e-commerce food brand founded in 2026 in Kohat, KPK, offering handcrafted honey nut mixes and superfoods delivered nationwide across all cities in Pakistan via Cash on Delivery, with free local delivery in Kohat.",
       "url": "https://msrfoodsofficial.food",
       "telephone": "+923159935600",
       "email": "msrfoods.official@gmail.com",
@@ -1156,13 +1156,15 @@ views.about = () => ({
         "closes": "23:59"
       },
       "priceRange": "PKR 899 - PKR 2999",
-      "servesCuisine": "Natural Superfoods",
-      "hasMap": "https://maps.google.com/?q=Kohat+KPK+Pakistan",
+      "hasMap": "https://share.google/4qYt5oe9pBqKFpKce",
       "sameAs": [
+        "https://share.google/4qYt5oe9pBqKFpKce",
         "https://www.wikidata.org/wiki/Q141989418",
         "https://www.youtube.com/@MSRFoods-official-pk",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
+        "https://www.facebook.com/USSPRODUCTIONLEVEL"
+      ],
         "https://www.facebook.com/USSPRODUCTIONLEVEL"
       ],
       "foundingDate": "2026",

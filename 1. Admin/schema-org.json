@@ -1,7 +1,7 @@
 [
   {
     "@context": "https://schema.org",
-    "@type": ["Organization", "FoodEstablishment", "OnlineStore"],
+    "@type": ["Organization", "OnlineStore", "Brand"],
     "@id": "https://msrfoodsofficial.food/#organization",
     "name": "MSR Foods",
     "legalName": "MSR Foods",

@@ -84,6 +84,26 @@ svg.i {
   transform: translateY(-2px);
 }
 
+.page.light .btn-line,
+.buy-row .btn-line {
+  border: 2px solid var(--ink, #14100a) !important;
+  color: var(--ink, #14100a) !important;
+  background: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.page.light .btn-line:hover,
+.buy-row .btn-line:hover {
+  background: var(--ink, #14100a) !important;
+  color: #ffffff !important;
+  border-color: var(--ink, #14100a) !important;
+}
+
+.page.light .btn-line svg,
+.buy-row .btn-line svg {
+  stroke: currentColor !important;
+}
+
 .btn-dark {
   background: var(--black);
   color: var(--gold-hi);
@@ -509,12 +529,13 @@ summary {
 }
 
 .page.light summary {
-  color: var(--ink);
+  color: var(--ink, #14100a) !important;
+  font-weight: 700;
 }
 
 .page.light details[open] summary {
-  color: var(--gold-lo);
-  border-bottom: 1px solid rgba(214, 167, 54, 0.14);
+  color: #8a5a12 !important;
+  border-bottom: 1px solid rgba(214, 167, 54, 0.2);
 }
 
 summary::-webkit-details-marker {
@@ -528,6 +549,11 @@ summary::after {
   font-weight: 400;
   color: var(--gold);
   transition: transform 0.25s ease;
+}
+
+.page.light summary::after {
+  color: #8a5a12;
+  font-weight: 700;
 }
 
 details[open] summary::after {
@@ -545,7 +571,21 @@ details[open] summary::after {
 }
 
 .page.light .acc-body {
-  color: var(--mute-light);
+  color: #2e261d !important;
+  line-height: 1.8;
+}
+
+.page.light .acc-body p {
+  color: #2e261d !important;
+}
+
+.page.light .acc-body b {
+  color: var(--ink, #14100a) !important;
+}
+
+.page.light .acc-body h4 {
+  color: #7a4c0c !important;
+  font-weight: 700;
 }
 
 /* ---------- Tables ---------- */

@@ -26,7 +26,8 @@ const ICON = {
   facebook: '<svg class="i" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
   instagram: '<svg class="i" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
   tiktok: '<svg class="i" viewBox="0 0 24 24"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>',
-  youtube: '<svg class="i" viewBox="0 0 24 24"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10 15 15 12 10 9 10 15"/></svg>'
+  youtube: '<svg class="i" viewBox="0 0 24 24"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10 15 15 12 10 9 10 15"/></svg>',
+  whatsapp: '<svg class="i" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.59 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.01-.39.11-.51.11-.11.25-.29.38-.44.12-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.07s.89 2.4 1.01 2.57c.13.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>'
 };
 
 window.ICON = ICON;
@@ -602,13 +603,41 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "coForm") placeOrder(e);
   if (e.target.id === "contactForm") {
-    const name = $("#c-name").value.trim();
-    const msg = $("#c-msg").value.trim();
-    const phone = $("#c-phone").value.trim();
-    if (!name || !msg) return;
-    const subject = encodeURIComponent(`Message from ${name} (${window.BRAND_CONFIG.brand.name} Store)`);
-    const body = encodeURIComponent(`${msg}\n\nSender: ${name}${phone ? '\nPhone: ' + phone : ''}`);
-    location.href = `mailto:${window.BRAND_CONFIG.contact.email}?subject=${subject}&body=${body}`;
+    const name = $("#c-name") ? $("#c-name").value.trim() : "";
+    const email = $("#c-email") ? $("#c-email").value.trim() : "";
+    const phone = $("#c-phone") ? $("#c-phone").value.trim() : "";
+    const msg = $("#c-msg") ? $("#c-msg").value.trim() : "";
+
+    if (!name) {
+      alert("Please enter your full name.");
+      if ($("#c-name")) $("#c-name").focus();
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert("Please enter a valid email address so our team can reply to you.");
+      if ($("#c-email")) $("#c-email").focus();
+      return;
+    }
+    if (!msg) {
+      alert("Please enter your message.");
+      if ($("#c-msg")) $("#c-msg").focus();
+      return;
+    }
+
+    const brandName = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.name) || "MSR Foods";
+    const destEmail = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact && window.BRAND_CONFIG.contact.email) || "msrfoods.official@gmail.com";
+    const subject = encodeURIComponent(`Message from ${name} via ${brandName} Store`);
+    const body = encodeURIComponent(
+      `Customer Name: ${name}\n` +
+      `Customer Email: ${email}\n` +
+      `Customer Phone/WhatsApp: ${phone || "Not provided"}\n\n` +
+      `Inquiry / Message:\n${msg}\n\n` +
+      `-----------------------------------------\n` +
+      `Submitted from msrfoodsofficial.food contact page`
+    );
+
+    location.href = `mailto:${destEmail}?subject=${subject}&body=${body}`;
+    toast("Opening your email client to send message... Thank you!");
   }
 });
 

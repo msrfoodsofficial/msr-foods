@@ -416,26 +416,26 @@ views.product = (slug) => {
               </div>
             </div>
             <div class="pdp-info">
-              <span class="pill" style="${isOutOfStock ? "color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || "Signature Selection")}</span>
+              <span class="pill pdp-badge" style="${isOutOfStock ? "color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)" : "background:#140f08;color:#f7de8f;border:1.5px solid #d6a736;font-weight:700"}">${isOutOfStock ? "Out of Stock" : (p.badge || "Signature Selection")}</span>
               <h1 style="margin-top:14px">${p.title}</h1>
               <div class="price">
                 <span>${money(p.price)}</span>
                 ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
                 <small>${p.netWeight}</small>
               </div>
-              <p class="ing-line">Contains: Pure Honey, Almonds, Walnuts, Cashews, Pistachios & Peanuts.</p>
+              <p class="ing-line" style="color:#7a4c0c;font-weight:600;font-size:14.5px;margin-bottom:18px">Contains: Pure Honey, Almonds, Walnuts, Cashews, Pistachios & Peanuts.</p>
               ${sameGroup.length > 1 ? `
                 <div class="sizes">
                   <span>Size:</span>
                   ${sameGroup.map(g => `<a href="#/product/${g.slug}" class="${g.id === p.id ? "on" : ""}">${g.weight}</a>`).join("")}
                 </div>
               ` : ""}
-              <p style="margin-top:18px;color:var(--mute-dark,#555);line-height:1.7">${p.fullDesc}</p>
+              <p class="pdp-desc" style="margin-top:18px;color:#2e261d;line-height:1.8;font-size:15.5px">${p.fullDesc}</p>
               ${p.note ? `<p class="soon" style="margin-top:18px">${p.note}</p>` : ""}
               ${buy ? `
                 <div class="buy-row" style="margin-top:24px">
                   ${qtyCtl(qid, 1)}
-                  <button class="btn btn-line" data-act="add" data-q="${qid}" data-pid="${p.id}" title="Add to bag">
+                  <button class="btn btn-line btn-add-cart" data-act="add" data-q="${qid}" data-pid="${p.id}" title="Add to Cart" style="border:2px solid #14100a;color:#14100a;background:#ffffff;font-weight:700">
                     ${ICON.bag} Add to Cart
                   </button>
                   <button class="btn btn-gold" data-act="buy" data-q="${qid}" data-pid="${p.id}" title="Proceed directly to checkout">
@@ -448,14 +448,14 @@ views.product = (slug) => {
                     <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>
                     Currently Out of Stock
                   </div>
-                  <p style="font-size:13.5px;color:var(--mute-dark,#444);margin:0 0 16px;line-height:1.55">
+                  <p style="font-size:13.5px;color:#2e261d;margin:0 0 16px;line-height:1.6">
                     This artisanal batch has temporarily sold out due to high demand. Enter your contact details below to be notified first the second fresh jars arrive!
                   </p>
                   <div class="buy-row" style="margin-top:12px">
                     <button class="btn btn-gold" disabled style="opacity:0.65;cursor:not-allowed;flex:1">
                       Out of Stock
                     </button>
-                    <button type="button" class="btn btn-line" data-act="notify" data-pid="${p.id}" style="flex:1">
+                    <button type="button" class="btn btn-line" data-act="notify" data-pid="${p.id}" style="flex:1;border:2px solid #14100a;color:#14100a;background:#ffffff;font-weight:700">
                       🔔 Notify When Available
                     </button>
                   </div>
@@ -469,21 +469,21 @@ views.product = (slug) => {
             </div>
           </div>
           <div class="acc-wrap">
-            ${accordion("desc", "Detailed Description", `<p>${p.fullDesc}</p><p>Packed in a clear ${p.netWeight} jar so you can inspect the pristine dry fruit fusion with your own eyes.</p>`, true)}
-            ${accordion("ing", "Ingredients & Allergens", `<p>100% Pure Natural Mountain Honey, Selected California Almonds, Kashmiri Walnuts, Roasted Cashews, Iranian Pistachios, Crunchy Peanuts.</p><p><b>Allergen Notice:</b> Contains tree nuts and peanuts.</p>`)}
+            ${accordion("desc", "Detailed Description", `<p style="color:#2e261d;line-height:1.8">${p.fullDesc}</p><p style="color:#2e261d;line-height:1.8">Packed in a clear ${p.netWeight} jar so you can inspect the pristine dry fruit fusion with your own eyes.</p>`, true)}
+            ${accordion("ing", "Ingredients & Allergens", `<p style="color:#2e261d;line-height:1.8">100% Pure Natural Mountain Honey, Selected California Almonds, Kashmiri Walnuts, Roasted Cashews, Iranian Pistachios, Crunchy Peanuts.</p><p style="color:#2e261d;line-height:1.8"><b style="color:#14100a">Allergen Notice:</b> Contains tree nuts and peanuts.</p>`)}
             ${accordion("info", "Product Specs & Nutrition", `
               <table class="tbl">
                 <tr><td>Net Weight</td><td>${p.netWeight}</td></tr>
                 <tr><td>Packaging</td><td>${p.packaging}</td></tr>
                 <tr><td>Shelf Life</td><td>${p.shelfLife}</td></tr>
               </table>
-              <h4 style="margin-top:18px;color:var(--gold-lo)">Nutrition Facts (per 100g)</h4>
+              <h4 style="margin-top:18px;color:#7a4c0c;font-weight:700">Nutrition Facts (per 100g)</h4>
               <table class="tbl">
                 ${(window.NUTRITION_FACTS || []).map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}
               </table>
             `)}
             ${accordion("faq", "Frequently Asked Questions", `
-              ${(window.FAQS || []).map(f => `<div style="margin-bottom:14px"><b style="color:var(--gold-lo)">${f[0]}</b><p style="margin-top:4px">${f[1]}</p></div>`).join("")}
+              ${(window.FAQS || []).map(f => `<div style="margin-bottom:14px"><b style="color:#14100a;font-weight:700;display:block;margin-bottom:4px">${f[0]}</b><p style="margin:0;color:#2e261d;line-height:1.7">${f[1]}</p></div>`).join("")}
             `)}
           </div>
         </div>
@@ -1735,8 +1735,8 @@ views.contact = () => {
           <div class="cinfo">
             
             <!-- 1. Phone Support -->
-            <a class="cinfo-card" href="tel:${C.phoneIntl}" aria-label="Call MSR Foods Customer Support">
-              <div class="cinfo-icon">${ICON.phone}</div>
+            <a class="cinfo-card cinfo-card-phone" href="tel:${C.phoneIntl}" aria-label="Call MSR Foods Customer Support">
+              <div class="cinfo-icon cinfo-icon-phone">${ICON.phone}</div>
               <div class="cinfo-body">
                 <span class="cinfo-label">Customer Support Phone</span>
                 <strong class="cinfo-val" style="white-space:nowrap">${C.phone}</strong>
@@ -1746,10 +1746,10 @@ views.contact = () => {
 
             <!-- 2. WhatsApp Direct -->
             ${C.whatsapp ? `
-              <a class="cinfo-card" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi MSR Foods team, I have an inquiry regarding your products.')}" target="_blank" rel="noopener" aria-label="WhatsApp MSR Foods">
-                <div class="cinfo-icon cinfo-icon-green">${ICON.zap}</div>
+              <a class="cinfo-card cinfo-card-wa" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi MSR Foods team, I have an inquiry regarding your products.')}" target="_blank" rel="noopener" aria-label="WhatsApp MSR Foods">
+                <div class="cinfo-icon cinfo-icon-wa">${ICON.whatsapp}</div>
                 <div class="cinfo-body">
-                  <span class="cinfo-label">WhatsApp Direct</span>
+                  <span class="cinfo-label cinfo-label-wa">WhatsApp Direct</span>
                   <strong class="cinfo-val">Chat with Our Team Instantly</strong>
                   <small class="cinfo-sub">Fastest response for order updates & queries</small>
                 </div>
@@ -1757,8 +1757,8 @@ views.contact = () => {
             ` : ""}
 
             <!-- 3. Official Email -->
-            <a class="cinfo-card" href="mailto:${C.email}" aria-label="Email MSR Foods">
-              <div class="cinfo-icon">${ICON.mail}</div>
+            <a class="cinfo-card cinfo-card-mail" href="mailto:${C.email}" aria-label="Email MSR Foods">
+              <div class="cinfo-icon cinfo-icon-mail">${ICON.mail}</div>
               <div class="cinfo-body">
                 <span class="cinfo-label">Official Email</span>
                 <strong class="cinfo-val">${C.email}</strong>
@@ -1766,44 +1766,61 @@ views.contact = () => {
               </div>
             </a>
 
-            <!-- 4. Location & Google Business Profile -->
-            <a class="cinfo-card" href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener" aria-label="View MSR Foods on Google Maps">
-              <div class="cinfo-icon">${ICON.pin}</div>
+            <!-- 4. Location -->
+            <a class="cinfo-card cinfo-card-pin" href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener" aria-label="View MSR Foods on Google Maps">
+              <div class="cinfo-icon cinfo-icon-pin">${ICON.pin}</div>
               <div class="cinfo-body">
-                <span class="cinfo-label">Headquarters & Verified Location</span>
+                <span class="cinfo-label">Location</span>
                 <strong class="cinfo-val">${C.address.join(", ")}</strong>
-                <span class="cinfo-badge">⭐ View on Google Maps / Business Profile ↗</span>
+                <span class="cinfo-badge">⭐ View on Google Maps ↗</span>
               </div>
             </a>
 
           </div>
 
-          <!-- Right: Email Message Form -->
+          <!-- Right: Direct Message Form -->
           <form class="box contact-form-box" id="contactForm" novalidate>
-            <h2 style="font-size:1.6rem;margin-bottom:6px;color:var(--ink)">Send us a Direct Message</h2>
-            <p style="color:var(--mute-light);font-size:14.5px;margin-bottom:24px;line-height:1.6">Fill out the quick form below and our team will get back to you promptly.</p>
+            <h2 style="font-size:1.6rem;margin-bottom:6px;color:#14100a;font-weight:700">Send us a Direct Message</h2>
+            <p style="color:#4a4034;font-size:14.5px;margin-bottom:24px;line-height:1.6">Fill out the form below and our team will get back to you promptly.</p>
             
             <div class="fgrid">
               <div class="f">
-                <label for="c-name">Your Full Name</label>
+                <label for="c-name" style="color:#14100a;font-weight:600">Your Full Name <span style="color:#dc2626">*</span></label>
                 <input id="c-name" autocomplete="name" placeholder="e.g. Ahmad Khan" required>
                 <span class="err">Please enter your full name.</span>
               </div>
               <div class="f">
-                <label for="c-phone">Mobile / WhatsApp Number <i>(optional)</i></label>
+                <label for="c-email" style="color:#14100a;font-weight:600">Your Email Address <span style="color:#dc2626">*</span></label>
+                <input id="c-email" type="email" autocomplete="email" placeholder="e.g. ahmad@gmail.com" required>
+                <span class="err">Please enter a valid email address so we can reply.</span>
+              </div>
+              <div class="f full">
+                <label for="c-phone" style="color:#14100a;font-weight:600">Mobile / WhatsApp Number <i style="color:#6b5d4b;font-weight:400">(optional)</i></label>
                 <input id="c-phone" autocomplete="tel" inputmode="tel" placeholder="03XXXXXXXXX">
               </div>
               <div class="f full">
-                <label for="c-msg">Your Message</label>
+                <label for="c-msg" style="color:#14100a;font-weight:600">Your Message <span style="color:#dc2626">*</span></label>
                 <textarea id="c-msg" rows="5" placeholder="How can we assist you today?" required></textarea>
                 <span class="err">Please enter your message.</span>
               </div>
             </div>
             
-            <button class="btn btn-gold btn-block" style="margin-top:22px" type="submit">
+            <button class="btn btn-gold btn-block" style="margin-top:22px;font-weight:700" type="submit">
               Send Message via Email
             </button>
-            <small style="display:block;text-align:center;color:var(--mute-light);font-size:12.5px;margin-top:12px">
+
+            ${C.whatsapp ? `
+              <div style="display:flex;align-items:center;gap:12px;margin:16px 0 10px">
+                <span style="flex:1;height:1px;background:rgba(27,21,12,0.12)"></span>
+                <span style="font-size:12px;font-weight:700;color:#6b5d4b;text-transform:uppercase;letter-spacing:0.05em">or connect instantly</span>
+                <span style="flex:1;height:1px;background:rgba(27,21,12,0.12)"></span>
+              </div>
+              <a class="btn btn-line btn-block btn-wa-chat" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi MSR Foods team, I am contacting you from the website.')}" target="_blank" rel="noopener" style="border:2px solid #25D366;color:#047857;background:#f0fdf4;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:10px">
+                ${ICON.whatsapp} Chat on WhatsApp Direct
+              </a>
+            ` : ""}
+
+            <small style="display:block;text-align:center;color:#6b5d4b;font-size:12.5px;margin-top:14px">
               🔒 Your contact information is never shared.
             </small>
           </form>

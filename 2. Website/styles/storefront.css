@@ -567,12 +567,17 @@
   color: var(--gold-hi);
 }
 
-/* High-Contrast Pill Badges on Light Backgrounds (Artisanal Excellence, The Standard, Lifestyle & Nutrition, Customer Love) */
+/* High-Contrast Pill Badges on Light Backgrounds (Artisanal Excellence, The Standard, Lifestyle & Nutrition, Customer Love, Product Page) */
 .sec-sand .pill,
-.sec-cream .pill {
-  background: #140f08;
-  color: #f4d77f;
-  border: 1.5px solid var(--gold);
+.sec-cream .pill,
+.page.light .pill,
+.pdp-info .pill,
+.pdp-badge {
+  background: #140f08 !important;
+  color: #f7de8f !important;
+  border: 1.5px solid #d6a736 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
   box-shadow: 0 4px 14px rgba(20, 15, 8, 0.16);
 }
 
@@ -1143,6 +1148,7 @@
 .pdp-info h1 {
   font-size: clamp(2.3rem, 4vw, 3.4rem);
   letter-spacing: 0.01em;
+  color: var(--ink, #14100a);
 }
 
 .pdp-by {
@@ -1150,30 +1156,159 @@
   gap: 10px;
   align-items: center;
   margin-bottom: 12px;
-  color: var(--mute-light);
+  color: #4a4034;
   font-weight: 500;
 }
 
 .pdp-info .price {
-  color: var(--ink);
+  color: var(--ink, #14100a);
   margin: 18px 0 6px;
 }
 
 .pdp-info .price small {
-  color: var(--mute-light);
+  color: #554838 !important;
+  font-weight: 500;
 }
 
 .pdp-info .ing-line {
-  color: var(--gold-lo);
+  color: #7a4c0c !important;
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.5;
   margin-bottom: 22px;
+}
+
+.pdp-info p.pdp-desc,
+.page.light .pdp-info p {
+  color: #2e261d !important;
+  font-size: 15.5px;
+  line-height: 1.8;
+}
+
+/* Buy Row Buttons on Product Page */
+.buy-row .btn-line,
+.buy-row .btn-add-cart,
+.page.light .buy-row .btn-line {
+  border: 2px solid var(--ink, #14100a) !important;
+  color: var(--ink, #14100a) !important;
+  background: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(20, 16, 10, 0.04);
+}
+
+.buy-row .btn-line:hover,
+.buy-row .btn-add-cart:hover,
+.page.light .buy-row .btn-line:hover {
+  background: var(--ink, #14100a) !important;
+  color: #ffffff !important;
+  border-color: var(--ink, #14100a) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(20, 16, 10, 0.16);
+}
+
+.buy-row .btn-line svg,
+.buy-row .btn-add-cart svg,
+.page.light .buy-row .btn-line svg {
+  stroke: currentColor !important;
 }
 
 .info-box {
   margin-top: 26px;
-  border: 1px solid rgba(214, 167, 54, 0.4);
-  background: var(--white);
+  border: 1.5px solid rgba(214, 167, 54, 0.35);
+  background: #ffffff;
   border-radius: var(--r-md);
-  padding: 6px 20px;
+  padding: 8px 20px;
+  box-shadow: 0 4px 16px rgba(27, 21, 12, 0.04);
+}
+
+.info-box div b {
+  color: var(--ink, #14100a) !important;
+  font-weight: 700;
+}
+
+.info-box div span {
+  color: #4a4034 !important;
+  font-size: 13.5px;
+}
+
+.info-box svg {
+  color: #8a5a12 !important;
+  stroke: #8a5a12 !important;
+}
+
+/* Accordion High Contrast Rules for Product Page */
+.page.light .acc-wrap details {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(214, 167, 54, 0.28) !important;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(27, 21, 12, 0.04);
+  margin-bottom: 12px;
+}
+
+.page.light .acc-wrap details[open] {
+  border-color: rgba(214, 167, 54, 0.55) !important;
+  box-shadow: 0 4px 16px rgba(214, 167, 54, 0.12);
+}
+
+.page.light .acc-wrap summary {
+  color: var(--ink, #14100a) !important;
+  font-family: var(--serif);
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  padding: 18px 24px;
+}
+
+.page.light .acc-wrap summary::after {
+  color: #8a5a12 !important;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.page.light .acc-wrap details[open] summary {
+  color: #8a5a12 !important;
+  border-bottom: 1px solid rgba(214, 167, 54, 0.18) !important;
+}
+
+.page.light .acc-body {
+  color: #2e261d !important;
+  font-size: 15.5px !important;
+  line-height: 1.8 !important;
+  padding: 20px 24px 24px;
+}
+
+.page.light .acc-body p {
+  color: #2e261d !important;
+  line-height: 1.8 !important;
+  margin-bottom: 10px;
+}
+
+.page.light .acc-body b {
+  color: var(--ink, #14100a) !important;
+  font-weight: 700;
+}
+
+.page.light .acc-body h4 {
+  color: #7a4c0c !important;
+  font-weight: 700;
+  margin-top: 18px;
+}
+
+.page.light .tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.page.light .tbl td {
+  padding: 12px 14px;
+  font-size: 14.5px;
+  color: #2e261d !important;
+  border-bottom: 1px solid rgba(27, 21, 12, 0.1) !important;
+}
+
+.page.light .tbl tr td:first-child {
+  color: var(--ink, #14100a) !important;
+  font-weight: 700;
+  width: 40%;
 }
 
 .info-box div {
@@ -1511,42 +1646,97 @@
   align-items: flex-start;
   gap: 18px;
   padding: 20px 22px;
-  background: var(--white);
-  border: 1px solid rgba(214, 167, 54, 0.28);
+  background: #ffffff;
+  border: 1.5px solid rgba(214, 167, 54, 0.28);
   border-radius: 14px;
   text-decoration: none;
-  color: var(--ink);
+  color: var(--ink, #14100a);
   box-shadow: 0 4px 16px rgba(27, 21, 12, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .cinfo-card:hover {
   transform: translateY(-2px);
-  border-color: var(--gold);
-  box-shadow: 0 8px 24px rgba(214, 167, 54, 0.16);
+  border-color: #d6a736;
+  box-shadow: 0 8px 24px rgba(214, 167, 54, 0.18);
 }
 
 .cinfo-icon {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(214, 167, 54, 0.12);
-  color: var(--gold-hi);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.cinfo-card:hover .cinfo-icon {
+  transform: scale(1.06);
 }
 
 .cinfo-icon svg {
   width: 22px;
   height: 22px;
-  stroke-width: 2;
+  display: block;
 }
 
-.cinfo-icon-green {
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
+/* 1. Phone Support - High Contrast Charcoal */
+.cinfo-icon-phone {
+  background: #f5f0e8;
+  border: 1.5px solid rgba(27, 21, 12, 0.14);
+  color: #14100a;
+}
+.cinfo-icon-phone svg {
+  stroke: #14100a;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* 2. WhatsApp Direct - Signature Emerald */
+.cinfo-card-wa {
+  border-color: rgba(37, 211, 102, 0.35);
+}
+.cinfo-card-wa:hover {
+  border-color: #25D366;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.18);
+}
+.cinfo-icon-wa {
+  background: #e8f8ed;
+  border: 1.5px solid rgba(37, 211, 102, 0.4);
+  color: #25D366;
+}
+.cinfo-icon-wa svg {
+  fill: #25D366;
+  stroke: none;
+}
+.cinfo-label-wa {
+  color: #047857 !important;
+}
+
+/* 3. Official Email - Rich Deep Amber/Bronze */
+.cinfo-icon-mail {
+  background: #fbf5e8;
+  border: 1.5px solid rgba(214, 167, 54, 0.35);
+  color: #8a5a12;
+}
+.cinfo-icon-mail svg {
+  stroke: #8a5a12;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* 4. Location - Rich Terracotta Pin */
+.cinfo-icon-pin {
+  background: #fef2f2;
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
+}
+.cinfo-icon-pin svg {
+  stroke: #b91c1c;
+  stroke-width: 2;
+  fill: none;
 }
 
 .cinfo-body {
@@ -1561,22 +1751,22 @@
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--gold-lo);
+  color: #6c4e13;
   font-weight: 700;
 }
 
 .cinfo-val {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ink);
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--ink, #14100a);
   line-height: 1.35;
   word-break: break-word;
 }
 
 .cinfo-sub {
   font-size: 13.5px;
-  color: var(--mute-light);
-  line-height: 1.4;
+  color: #4a4034;
+  line-height: 1.45;
 }
 
 .cinfo-badge {
@@ -1584,19 +1774,54 @@
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--gold-lo);
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a5a12;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.cinfo-badge:hover {
+  color: #14100a;
+}
 
 .contact-form-box {
-  background: var(--white);
-  border: 1px solid rgba(214, 167, 54, 0.28);
+  background: #ffffff;
+  border: 1.5px solid rgba(214, 167, 54, 0.28);
   border-radius: 16px;
   padding: clamp(24px, 3.5vw, 36px);
   box-shadow: 0 6px 24px rgba(27, 21, 12, 0.06);
+}
+
+.contact-form-box label {
+  color: #14100a;
+  font-weight: 600;
+  font-size: 14.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.contact-form-box input,
+.contact-form-box textarea {
+  background: #ffffff;
+  color: #14100a;
+  border: 1.5px solid rgba(27, 21, 12, 0.2);
+  border-radius: 10px;
+  font-size: 15px;
+  padding: 12px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.contact-form-box input::placeholder,
+.contact-form-box textarea::placeholder {
+  color: #8c7e6c;
+}
+
+.contact-form-box input:focus,
+.contact-form-box textarea:focus {
+  outline: none;
+  border-color: #d6a736;
+  box-shadow: 0 0 0 3px rgba(214, 167, 54, 0.18);
 }
 
 /* Animations */

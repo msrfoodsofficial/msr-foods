@@ -71,7 +71,7 @@ function shell() {
 
   // Header
   const logoHtml = L.type === "image"
-    ? `<img src="${L.src}" alt="${L.alt}" width="${L.width || 105}" height="${L.height || 62}">`
+    ? `<img src="${L.src}" alt="${L.alt}" width="${L.width || 116}" height="${L.height || 64}">`
     : `<span class="logo-txt">${L.textFallback || B.name}</span>`;
 
   $("#hdr").innerHTML = `
@@ -230,6 +230,37 @@ function updatePay() {
   `;
 }
 
+function updateCheckoutDelivery() {
+  const cityInput = $("#f-city");
+  if (!cityInput) return;
+  const city = cityInput.value.trim();
+  const t = totals(city);
+  const shipVal = $("#co-ship-val");
+  const totVal = $("#co-tot-val");
+  const msg = $("#city-delivery-msg");
+  if (shipVal) {
+    if (t.isCityFree) {
+      shipVal.innerHTML = '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>';
+    } else if (t.isFree) {
+      shipVal.innerHTML = '<span class="tag tag-emerald">FREE SHIPPING</span>';
+    } else {
+      shipVal.textContent = money(t.ship);
+    }
+  }
+  if (totVal) totVal.textContent = money(t.total);
+  if (msg) {
+    if (t.isCityFree) {
+      msg.style.display = "block";
+      msg.style.color = "#047857";
+      msg.style.fontWeight = "600";
+      msg.innerHTML = "🎉 <b>Special Local Benefit:</b> You got 100% FREE doorstep delivery in Kohat!";
+    } else {
+      msg.style.display = "none";
+      msg.innerHTML = "";
+    }
+  }
+}
+
 // Order Dispatching
 function placeOrder(e) {
   if (e && e.preventDefault) e.preventDefault();
@@ -274,7 +305,8 @@ function placeOrder(e) {
     submitBtn.textContent = "Placing Your Order...";
   }
 
-  const t = totals();
+  const cityVal = g("f-city");
+  const t = totals(cityVal);
   const now = new Date();
   const dateStr = String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0");
   const randId = Math.floor(1000 + Math.random() * 9000);
@@ -384,6 +416,7 @@ function route() {
   window.scrollTo({ top: 0, behavior: "instant" });
   afterRender();
   updatePay();
+  updateCheckoutDelivery();
 }
 
 function afterRender() {
@@ -444,6 +477,27 @@ document.addEventListener("keydown", e => {
 });
 
 document.addEventListener("click", e => {
+  const cityPill = e.target.closest(".btn-city-pill");
+  if (cityPill) {
+    const city = cityPill.dataset.city;
+    const cityInput = $("#f-city");
+    if (cityInput && city) {
+      cityInput.value = city;
+      const provSelect = $("#f-prov");
+      if (provSelect) {
+        if (/kohat|peshawar|mardan|bannu|abbottabad/i.test(city)) provSelect.value = "Khyber Pakhtunkhwa";
+        else if (/islamabad/i.test(city)) provSelect.value = "Islamabad Capital Territory";
+        else if (/lahore|faisalabad|multan|rawalpindi/i.test(city)) provSelect.value = "Punjab";
+        else if (/karachi/i.test(city)) provSelect.value = "Sindh";
+        else if (/quetta/i.test(city)) provSelect.value = "Balochistan";
+      }
+      updateCheckoutDelivery();
+      const parent = cityInput.closest(".f");
+      if (parent) parent.classList.remove("bad");
+    }
+    return;
+  }
+
   const actBtn = e.target.closest("[data-act]");
   if (!actBtn) {
     const pc = e.target.closest(".pc");
@@ -524,11 +578,13 @@ document.addEventListener("click", e => {
 
 document.addEventListener("input", e => {
   if (e.target.id === "sq") runSearch(e.target.value);
+  if (e.target.id === "f-city") updateCheckoutDelivery();
   if (e.target.name === "pay") updatePay();
   if (e.target.matches(".qty input")) e.target.value = e.target.value.replace(/\D/g, "").slice(0, 2);
 });
 
 document.addEventListener("change", e => {
+  if (e.target.id === "f-city") updateCheckoutDelivery();
   if (e.target.name === "pay") updatePay();
   if (e.target.matches(".qty input")) {
     const v = clampQ(e.target.value);

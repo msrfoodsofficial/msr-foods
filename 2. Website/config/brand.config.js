@@ -26,11 +26,11 @@ const BRAND_CONFIG = {
   // Logo Configuration
   logo: {
     type: "image", // "image" or "text"
-    src: "assets/images/logo.webp?v=32",
+    src: "assets/images/logo.webp?v=33",
     alt: "MSR Foods — Quality Built For You",
     textFallback: "MSR FOODS",
-    width: 108,
-    height: 62
+    width: 116,
+    height: 64
   },
 
   // Currency & Locale
@@ -45,9 +45,10 @@ const BRAND_CONFIG = {
   delivery: {
     fee: 200,
     freeShippingThreshold: 5000,
-    eta: "3–5 working days",
+    freeCities: ["Kohat"],
+    eta: "3–5 working days (1–2 days in Kohat)",
     area: "Pakistan-wide delivery",
-    couriers: ["TCS", "Leopard Courier", "Trax Logistics", "PostEx"]
+    couriers: ["TCS", "Leopard Courier", "Trax Logistics", "PostEx", "MSR Local Rider (Kohat)"]
   },
 
   // Store Contact Details

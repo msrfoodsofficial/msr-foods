@@ -462,7 +462,7 @@ views.product = (slug) => {
                 </div>
               `}
               <div class="info-box">
-                <div>${ICON.truck}<div><b>Pakistan Delivery: Flat ${money(D.fee)}</b><span>${D.area} · Estimated ${D.eta}</span></div></div>
+                <div>${ICON.truck}<div><b>Pakistan Delivery: Flat ${money(D.fee)} (FREE in Kohat)</b><span>${D.area} · Estimated ${D.eta}</span></div></div>
                 <div>${ICON.shield}<div><b>Double Freshness Seal</b><span>${p.packaging}</span></div></div>
                 <div>${ICON.bag}<div><b>Payment Methods</b><span>Cash on Delivery (COD)</span></div></div>
               </div>
@@ -489,7 +489,7 @@ views.product = (slug) => {
         </div>
       </section>
       <div class="mbar">
-        <div><b>${money(p.price)}</b><small>${p.netWeight} · Delivery ${money(D.fee)}</small></div>
+        <div><b>${money(p.price)}</b><small>${p.netWeight} · Delivery ${money(D.fee)} (FREE in Kohat)</small></div>
         ${buy ? `
           <button class="btn btn-gold btn-sm" data-act="add" data-q="${qid}" data-pid="${p.id}">
             Add to Cart
@@ -562,7 +562,7 @@ views.cart = () => {
               <div><span>Subtotal</span><span>${money(t.sub)}</span></div>
               <div><span>Delivery</span><span>${t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship)}</span></div>
               <div class="tot"><span>Total</span><span>${money(t.total)}</span></div>
-              <small>${D.area} · Estimated ${D.eta}<br>${t.isFree ? '🎉 You qualified for FREE delivery!' : `Flat ${money(D.fee)} courier delivery.`}</small>
+              <small>${D.area} · Estimated ${D.eta}<br>${t.isFree ? '🎉 You qualified for FREE delivery!' : `Flat ${money(D.fee)} courier delivery · <b style="color:#059669">FREE in Kohat!</b>`}</small>
             </div>
             <a class="btn btn-gold btn-block" style="margin-top:22px" href="#/checkout">Proceed to Checkout</a>
             <a class="btn btn-ink-line btn-block" style="margin-top:10px" href="#/shop">Continue Shopping</a>
@@ -611,7 +611,33 @@ views.checkout = () => {
               <legend>2. Shipping Address</legend>
               <div class="fgrid">
                 <div class="f full"><label for="f-addr">Street Address / House No.</label><input id="f-addr" autocomplete="street-address" placeholder="House/Apartment #, Street, Area landmark" required><span class="err">Enter your delivery address.</span></div>
-                <div class="f"><label for="f-city">City</label><input id="f-city" autocomplete="address-level2" required><span class="err">Enter your city.</span></div>
+                <div class="f">
+                  <label for="f-city">City</label>
+                  <input id="f-city" autocomplete="address-level2" placeholder="e.g. Kohat, Peshawar, Islamabad" required list="city-suggestions">
+                  <datalist id="city-suggestions">
+                    <option value="Kohat">Kohat (FREE Local Delivery 🎉)</option>
+                    <option value="Peshawar">Peshawar</option>
+                    <option value="Islamabad">Islamabad</option>
+                    <option value="Rawalpindi">Rawalpindi</option>
+                    <option value="Lahore">Lahore</option>
+                    <option value="Karachi">Karachi</option>
+                    <option value="Abbottabad">Abbottabad</option>
+                    <option value="Mardan">Mardan</option>
+                    <option value="Bannu">Bannu</option>
+                    <option value="Faisalabad">Faisalabad</option>
+                    <option value="Multan">Multan</option>
+                    <option value="Quetta">Quetta</option>
+                  </datalist>
+                  <div class="city-quick-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+                    <button type="button" class="btn-city-pill" data-city="Kohat" style="background:rgba(16,185,129,0.14);color:#047857;border:1.5px solid #10b981;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">📍 Kohat (FREE Delivery 🎉)</button>
+                    <button type="button" class="btn-city-pill" data-city="Peshawar" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Peshawar</button>
+                    <button type="button" class="btn-city-pill" data-city="Islamabad" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Islamabad</button>
+                    <button type="button" class="btn-city-pill" data-city="Lahore" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Lahore</button>
+                    <button type="button" class="btn-city-pill" data-city="Karachi" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Karachi</button>
+                  </div>
+                  <div id="city-delivery-msg" style="margin-top:8px;font-size:13px;display:none"></div>
+                  <span class="err">Enter your city.</span>
+                </div>
                 <div class="f"><label for="f-prov">Province</label><select id="f-prov">${prov.map(p => `<option>${p}</option>`).join("")}</select></div>
                 <div class="f"><label for="f-zip">Postal Code <i>(optional)</i></label><input id="f-zip" inputmode="numeric"></div>
                 <div class="f full"><label for="f-note">Delivery Notes / Special Instructions <i>(optional)</i></label><textarea id="f-note" placeholder="Nearest landmark, preferred delivery timing, etc."></textarea></div>
@@ -645,9 +671,9 @@ views.checkout = () => {
               `).join("")}
             </div>
             <div class="sum" style="margin-top:16px">
-              <div><span>Subtotal</span><span>${money(t.sub)}</span></div>
-              <div><span>Delivery Fee</span><span>${t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship)}</span></div>
-              <div class="tot"><span>Total Amount</span><span>${money(t.total)}</span></div>
+              <div><span>Subtotal</span><span id="co-sub-val">${money(t.sub)}</span></div>
+              <div id="co-ship-row"><span>Delivery Fee</span><span id="co-ship-val">${t.isCityFree ? '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship))}</span></div>
+              <div class="tot"><span>Total Amount</span><span id="co-tot-val">${money(t.total)}</span></div>
             </div>
             <button class="btn btn-gold btn-block" style="margin-top:22px" type="submit">Place Order Now</button>
             <div class="secure">${ICON.lock} Safe & secure checkout. Your details are private.</div>
@@ -1724,7 +1750,7 @@ views.policy = (key) => {
   const policies = {
     shipping: {
       title: "Shipping & Delivery Policy",
-      body: `<h2>Nationwide Coverage</h2><p>We deliver across all cities, towns, and sectors in Pakistan through reputable couriers.</p><h2>Delivery Timelines</h2><p>Orders typically arrive within <b>${D.eta}</b> of dispatch.</p><h2>Delivery Charges</h2><p>Standard flat shipping fee of <b>${money(D.fee)}</b> per order across Pakistan.</p>`
+      body: `<h2>Nationwide Coverage</h2><p>We deliver across all cities, towns, and sectors in Pakistan through reputable couriers.</p><h2>Delivery Timelines</h2><p>Orders typically arrive within <b>${D.eta}</b> of dispatch.</p><h2>Delivery Charges</h2><p>Standard flat shipping fee of <b>${money(D.fee)}</b> per order across Pakistan. <b>100% FREE doorstep delivery on all orders in Kohat!</b></p>`
     },
     returns: {
       title: "Returns & Refund Policy",

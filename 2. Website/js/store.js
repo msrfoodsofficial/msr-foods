@@ -189,13 +189,24 @@ function itemCount() {
   return lines().reduce((sum, line) => sum + line.qty, 0);
 }
 
-function totals() {
+function isKohatCity(city) {
+  if (!city) return false;
+  const c = String(city).trim().toLowerCase();
+  return c.includes("kohat");
+}
+
+function totals(city = "") {
+  if (!city && typeof document !== "undefined") {
+    const el = document.getElementById("f-city") || document.getElementById("moCity");
+    if (el && el.value) city = el.value;
+  }
   const sub = lines().reduce((s, l) => s + l.qty * l.p.price, 0);
   const deliveryCfg = (window.BRAND_CONFIG && window.BRAND_CONFIG.delivery) || { fee: 200, freeShippingThreshold: 5000 };
   const freeThreshold = deliveryCfg.freeShippingThreshold || 999999;
-  const isFree = sub >= freeThreshold;
+  const isCityFree = isKohatCity(city);
+  const isFree = sub >= freeThreshold || isCityFree;
   const ship = sub === 0 ? 0 : (isFree ? 0 : (deliveryCfg.fee || 200));
-  return { sub, ship, total: sub + ship, isFree };
+  return { sub, ship, total: sub + ship, isFree, isCityFree };
 }
 
 // Order Management & Tracking DB Helpers
@@ -414,7 +425,7 @@ function generateOrderWhatsAppMessage(order) {
 📦 *Items Ordered:*
 ${itemsText}
 
-🚚 *Delivery Fee:* ${order.shipping === 0 ? "FREE SHIPPING" : `PKR ${order.shipping}`}
+🚚 *Delivery Fee:* ${order.shipping === 0 ? ((cust.city && isKohatCity(cust.city)) ? "FREE (Kohat Local Delivery 🎉)" : "FREE SHIPPING") : `PKR ${order.shipping}`}
 💰 *TOTAL AMOUNT:* PKR ${(order.total || 0).toLocaleString()} (${order.paymentMethod || "Cash on Delivery"})
 -----------------------------------------
 🔍 *Live Order Tracking:*
@@ -432,6 +443,7 @@ if (typeof window !== "undefined") {
   window.lines = lines;
   window.itemCount = itemCount;
   window.totals = totals;
+  window.isKohatCity = isKohatCity;
   window.getP = getP;
   window.getPBySlug = getPBySlug;
   window.canBuy = canBuy;

@@ -547,7 +547,7 @@ async function sendOrderEmails(order, env) {
             
             <!-- Brand Header -->
             <div style="background: #14100a; padding: 28px 24px; text-align: center; border-bottom: 3px solid #d6a736;">
-              <h1 style="color: #f4d77f; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px;">MSR BRAND</h1>
+              <h1 style="color: #f4d77f; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px;">MSR FOODS</h1>
               <p style="color: #d6a736; margin: 4px 0 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">Pure Taste · Natural Goodness</p>
             </div>
 

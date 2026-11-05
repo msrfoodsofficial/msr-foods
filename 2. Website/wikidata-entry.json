@@ -14,8 +14,10 @@
     "P159": { "label": "headquarters location", "value": "Q384670", "value_label": "Kohat" },
     "P571": { "label": "inception/founded", "value": "2026" },
     "P856": { "label": "official website", "value": "https://msrfoodsofficial.food" },
+    "P2013": { "label": "Facebook username", "value": "USSPRODUCTIONLEVEL" },
     "P2002": { "label": "Instagram username", "value": "msrfoods.official" },
     "P7085": { "label": "TikTok username", "value": "msrfoodsoffical" },
+    "P2397": { "label": "YouTube handle", "value": "MSRFoods-official-pk" },
     "P452": { "label": "industry", "value": "Q1403016", "value_label": "food industry" },
     "P1056": { "label": "product or material produced", "value": "honey nut mix, dry fruits blend, natural superfoods" },
     "P18": { "label": "image", "value": "upload logo image to Wikimedia Commons first" }

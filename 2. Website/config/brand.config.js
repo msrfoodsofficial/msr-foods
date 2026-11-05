@@ -86,7 +86,7 @@ const BRAND_CONFIG = {
 
   // Social Links
   social: {
-    facebook: "https://www.facebook.com/people/MSR-Foods/61595442878318/",
+    facebook: "https://www.facebook.com/USSPRODUCTIONLEVEL",
     instagram: "https://www.instagram.com/msrfoods.official",
     tiktok: "https://www.tiktok.com/@msrfoodsoffical?lang=en",
     youtube: "https://www.youtube.com/@MSRFoods-official-pk"

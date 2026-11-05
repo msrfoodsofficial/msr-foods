@@ -1163,7 +1163,7 @@ views.about = () => ({
         "https://www.youtube.com/@MSRFoods-official-pk",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
-        "https://www.facebook.com/people/MSR-Foods/61595442878318/"
+        "https://www.facebook.com/USSPRODUCTIONLEVEL"
       ],
       "foundingDate": "2026",
       "areaServed": {

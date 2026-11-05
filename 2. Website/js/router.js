@@ -1727,7 +1727,7 @@ views.contact = () => {
             <a href="tel:${C.phoneIntl}">${ICON.phone}<div><b>Phone / Support</b><span>${C.phone}</span><small style="color:var(--mute-light)">${C.supportHours}</small></div></a>
             ${C.whatsapp ? `<a href="https://wa.me/${C.whatsapp}" target="_blank" rel="noopener">${ICON.zap}<div><b>WhatsApp Direct</b><span>Chat with our team instantly</span></div></a>` : ""}
             <a href="mailto:${C.email}">${ICON.mail}<div><b>Email Us</b><span>${C.email}</span></div></a>
-            <div>${ICON.pin}<div><b>Location</b><span>${C.address.join("<br>")}</span></div></div>
+            <a href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener">${ICON.pin}<div><b>Location & Reviews</b><span>${C.address.join("<br>")}<br><b style="color:var(--gold-hi);font-size:12.5px;text-decoration:underline">⭐ View on Google Maps / Business Profile</b></span></div></a>
           </div>
           <form class="box" id="contactForm" novalidate>
             <h2>Send us a Message</h2>

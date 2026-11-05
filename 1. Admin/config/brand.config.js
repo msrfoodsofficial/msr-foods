@@ -58,6 +58,7 @@ const BRAND_CONFIG = {
     whatsapp: "923159935600", // Set to "" to hide the WhatsApp quick order button
     email: "msrfoods.official@gmail.com",
     supportHours: "24/7 Available (Open 24 Hours)",
+    googleBusiness: "https://share.google/4qYt5oe9pBqKFpKce",
     address: [
       "Kohat, Pakistan"
     ]

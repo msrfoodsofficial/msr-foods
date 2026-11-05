@@ -167,7 +167,7 @@ function shell() {
           <ul class="ct">
             <li>${ICON.phone}<a href="tel:${C.phoneIntl}">${C.phone}</a></li>
             <li>${ICON.mail}<a href="mailto:${C.email}">${C.email}</a></li>
-            <li>${ICON.pin}<span>${C.address.join("<br>")}</span></li>
+            <li>${ICON.pin}<a href="https://share.google/4qYt5oe9pBqKFpKce" target="_blank" rel="noopener" style="text-decoration:underline">${C.address.join("<br>")} (Google Maps)</a></li>
           </ul>
         </div>
       </div>

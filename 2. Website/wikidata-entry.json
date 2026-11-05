@@ -1,10 +1,11 @@
 {
+  "status": "LIVE_AND_VERIFIED",
   "entity_id": "Q141989418",
   "wikidata_url": "https://www.wikidata.org/wiki/Q141989418",
   "entity": {
     "label_en": "MSR Foods",
     "label_ur": "ایم ایس آر فوڈز",
-    "description_en": "Pakistani premium natural superfood brand founded in 2026, known for honey nut mix products",
+    "description_en": "Pakistani premium natural superfood and wellness brand founded in 2026, producing honey nut mixes, dry fruits, desi ghee, pure honey, and traditional nutrition products",
     "description_ur": "پاکستانی پریمیم قدرتی سپرفوڈ برانڈ",
     "aliases": ["MSR", "MSR Foods Official", "MSR Foods Pakistan", "MSR Honey Nut Mix"]
   },
@@ -19,18 +20,11 @@
     "P7085": { "label": "TikTok username", "value": "msrfoodsoffical" },
     "P2397": { "label": "YouTube handle", "value": "MSRFoods-official-pk" },
     "P452": { "label": "industry", "value": "Q1403016", "value_label": "food industry" },
-    "P1056": { "label": "product or material produced", "value": "honey nut mix, dry fruits blend, natural superfoods" },
-    "P18": { "label": "image", "value": "upload logo image to Wikimedia Commons first" }
+    "P1056": { "label": "product or material produced", "value": "honey nut mix, dry fruits blend, natural superfoods" }
   },
-  "quickStatements": "CREATE\nLABEL en MSR Foods\nLABEL ur ایم ایس آر فوڈز\nDESCRIPTION en Pakistani premium natural superfood brand founded in 2026, known for honey nut mix products\nALIAS en MSR|MSR Foods Official|MSR Foods Pakistan\nP31 Q4830453\nP17 Q843\nP159 Q384670\nP571 +2026-01-01T00:00:00Z/9\nP856 \"https://msrfoodsofficial.food\"\nP2002 \"msrfoods.official\"\nP452 Q1403016",
-  "submission_steps": [
-    "1. Create a free account at https://www.wikidata.org/w/index.php?title=Special:CreateAccount",
-    "2. Go to https://www.wikidata.org/wiki/Special:NewItem",
-    "3. Enter label: 'MSR Foods', description: 'Pakistani premium natural superfood brand founded in 2026'",
-    "4. After creating, go to https://www.wikidata.org/wiki/Special:EntityPage and add all properties listed above",
-    "5. OR use QuickStatements at https://quickstatements.toolforge.org/ and paste the quickStatements field above",
-    "6. After Wikidata entry is live, add its URL (e.g. https://www.wikidata.org/wiki/Q12345678) to the sameAs array in the JSON-LD schema in 2. Website/index.html"
-  ],
-  "note": "Wikidata entries for businesses require some web presence/notability. Make sure msrfoodsofficial.food is indexed by Google first and you have some social media presence before submitting."
+  "linked_in_website": {
+    "schema_org_sameAs": "https://msrfoodsofficial.food (Linked in Schema.org and About Us page)",
+    "about_page_authority": "Linked in #/about brand authority section"
+  }
 }
 

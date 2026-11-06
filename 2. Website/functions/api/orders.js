@@ -544,6 +544,7 @@ async function sendOrderEmails(order, env) {
       body: JSON.stringify({
         from: fromEmail,
         to: [targetAdminEmail],
+        reply_to: custEmail || targetAdminEmail,
         subject: `🔔 New Order #${order.id} (PKR ${totalNum.toLocaleString()}) - ${custName}`,
         html: adminEmailHtml
       })
@@ -660,6 +661,7 @@ async function sendOrderEmails(order, env) {
         body: JSON.stringify({
           from: fromEmail,
           to: [custEmail],
+          reply_to: targetAdminEmail,
           subject: `🎉 Order Confirmed! Reference #${order.id} - MSR Foods`,
           html: customerEmailHtml
         })

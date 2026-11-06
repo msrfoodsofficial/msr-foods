@@ -91,22 +91,88 @@ function shell() {
           ${ICON.bag}
           <span class="badge" id="badge" aria-hidden="true" hidden></span>
         </a>
-        <button class="ic" data-act="account" aria-label="Account">${ICON.user}</button>
         <a class="btn btn-gold btn-sm" href="#/shop">Shop Now</a>
         <button class="ic burger" data-act="menu" aria-label="Open navigation menu">${ICON.menu}</button>
       </div>
     </div>
   `;
 
-  // Dialogs
+  // Social Links List
+  const socEntries = [
+    { key: "facebook", name: "Facebook", icon: ICON.facebook, url: window.BRAND_CONFIG.social.facebook },
+    { key: "instagram", name: "Instagram", icon: ICON.instagram, url: window.BRAND_CONFIG.social.instagram },
+    { key: "tiktok", name: "TikTok", icon: ICON.tiktok, url: window.BRAND_CONFIG.social.tiktok },
+    { key: "youtube", name: "YouTube", icon: ICON.youtube, url: window.BRAND_CONFIG.social.youtube }
+  ];
+
+  // Mobile Navigation Drawer
   $("#dlg-menu").innerHTML = `
-    <div class="dlg">
-      <button class="ic dlg-x" data-act="close" aria-label="Close menu">${ICON.x}</button>
-      <div style="height:50px"></div>
+    <div class="dlg mobile-menu-drawer">
+      <div class="menu-head">
+        <a class="menu-logo" href="#/" data-act="close" aria-label="${B.name} Home">
+          ${logoHtml}
+        </a>
+        <button class="ic menu-close-btn" data-act="close" aria-label="Close navigation menu">${ICON.x}</button>
+      </div>
+
+      <div class="menu-badge-banner">
+        <span>🌿 100% Pure Mountain Honey & Nuts</span>
+        <span class="delivery-pill">⚡ Free Doorstep Delivery in Kohat · Cash on Delivery</span>
+      </div>
+
       <nav class="menu-links" aria-label="Mobile Navigation">
-        ${nav.map(n => `<a href="${n[2]}" data-nav="${n[0]}">${n[1]}</a>`).join("")}
+        <a href="#/" data-nav="home" data-act="close">
+          <span>Home</span>
+          <span class="menu-arr">→</span>
+        </a>
+        <a href="#/shop" data-nav="shop" data-act="close">
+          <span>Shop Products</span>
+          <span class="menu-arr">→</span>
+        </a>
+        <a href="#/track" data-nav="track" data-act="close">
+          <span>Track Order</span>
+          <span class="menu-arr">→</span>
+        </a>
+        <a href="#/about" data-nav="about" data-act="close">
+          <span>About Us</span>
+          <span class="menu-arr">→</span>
+        </a>
+        <a href="#/blog" data-nav="blog" data-act="close">
+          <span>Health Blog</span>
+          <span class="menu-arr">→</span>
+        </a>
+        <a href="#/contact" data-nav="contact" data-act="close">
+          <span>Contact & Help</span>
+          <span class="menu-arr">→</span>
+        </a>
       </nav>
-      <a class="btn btn-gold" style="margin-top:24px" href="#/shop" data-act="close">Shop Now</a>
+
+      <div class="menu-actions">
+        <a class="btn btn-gold btn-full" href="#/shop" data-act="close">
+          Shop Now · Cash on Delivery
+        </a>
+        ${C.whatsapp ? `
+          <a class="btn-wa-drawer" href="https://wa.me/${C.whatsapp}?text=Hi%20MSR%20Foods,%20I%20would%20like%20to%20inquire%20about%20ordering." target="_blank" rel="noopener">
+            ${ICON.whatsapp} Chat on WhatsApp
+          </a>
+        ` : ''}
+      </div>
+
+      <div class="menu-social-sec">
+        <div class="menu-social-label">Follow Us</div>
+        <div class="menu-social-icons">
+          ${socEntries.map(s => s.url ? `
+            <a class="menu-soc-btn" href="${s.url}" target="_blank" rel="noopener" aria-label="${s.name}">
+              ${s.icon}
+            </a>
+          ` : '').join("")}
+        </div>
+      </div>
+
+      <div class="menu-foot">
+        <p>Direct Support: <a href="tel:${C.phoneIntl}">${C.phone}</a></p>
+        <p class="menu-copy">© ${B.foundedYear} ${B.name} · Quality Built For You</p>
+      </div>
     </div>
   `;
 
@@ -731,6 +797,13 @@ document.addEventListener("click", e => {
   } else if (act === "close") {
     const d = actBtn.closest("dialog");
     if (d) d.close();
+  }
+});
+
+// Close dialog when clicking on the backdrop outside the dialog box
+document.addEventListener("click", e => {
+  if (e.target && e.target.nodeName === "DIALOG" && e.target.open) {
+    e.target.close();
   }
 });
 

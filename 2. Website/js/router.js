@@ -27,8 +27,8 @@ function accordion(id, title, body, open = false) {
 }
 
 function secHero() {
-  const B = window.BRAND_CONFIG.brand;
-  const P = window.PRODUCTS[0];
+  const B = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR", fullName: "MSR Foods", description: "" };
+  const P = (window.PRODUCTS && window.PRODUCTS[0]) || { img: { front: "assets/images/products/front.webp" }, slug: "honey-nut-mix-500g" };
   return `
     <section class="hero hex" aria-label="Introduction">
       <div class="hex-layer"></div>
@@ -64,7 +64,7 @@ function secHero() {
 }
 
 function secTrustStrip() {
-  const D = window.BRAND_CONFIG.delivery;
+  const D = (window.BRAND_CONFIG && window.BRAND_CONFIG.delivery) || { area: "Pakistan-wide delivery", eta: "3–5 working days" };
   return `
     <div class="strip">
       <div class="wrap strip-in">
@@ -77,8 +77,8 @@ function secTrustStrip() {
 }
 
 function secWelcome() {
-  const B = window.BRAND_CONFIG.brand;
-  const P = window.PRODUCTS[0];
+  const B = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR", fullName: "MSR Foods" };
+  const P = (window.PRODUCTS && window.PRODUCTS[0]) || { img: { pair: "assets/images/products/pair.webp" } };
   return `
     <section class="sec sec-sand" aria-label="Welcome">
       <div class="wrap welcome">

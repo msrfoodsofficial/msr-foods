@@ -229,15 +229,40 @@ function getAllOrders() {
 
 function findOrder(query) {
   if (!query) return null;
-  const q = String(query).trim().toLowerCase();
+  let decoded = "";
+  try {
+    decoded = decodeURIComponent(String(query)).trim();
+  } catch (e) {
+    decoded = String(query).trim();
+  }
+  const q = decoded.toLowerCase();
   const cleanQ = q.replace(/[^0-9a-z]/gi, "");
+  const qDigits = decoded.replace(/[^0-9]/g, "");
+  const last10 = qDigits.length >= 7 ? qDigits.slice(-10) : null;
+  const last9 = qDigits.length >= 7 ? qDigits.slice(-9) : null;
   const orders = getAllOrders();
+
   return orders.find(o => {
+    if (!o) return false;
     const cust = o.customer || {};
     const oId = String(o.id || "").toLowerCase();
+    const cleanOId = oId.replace(/^#/, "");
     const phone = String(cust.phone || o.phone || "").replace(/[^0-9]/g, "");
     const email = String(cust.email || o.email || "").toLowerCase();
-    return oId.includes(q) || (cleanQ.length >= 4 && phone.includes(cleanQ)) || email === q;
+
+    // Order ID exact or partial match
+    if (oId === q || cleanOId === q || cleanOId === cleanQ) return true;
+    if (cleanQ.length >= 4 && cleanOId.includes(cleanQ)) return true;
+
+    // Email exact match
+    if (email && email === q) return true;
+
+    // Phone match across 03XX, +923XX, 923XX formats
+    if (last10 && phone.includes(last10)) return true;
+    if (last9 && phone.includes(last9)) return true;
+    if (qDigits.length >= 7 && phone.includes(qDigits)) return true;
+
+    return false;
   });
 }
 
@@ -269,7 +294,7 @@ async function sendOrderToServer(order) {
   return order;
 }
 
-async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trackingInfo = null) {
+async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trackingInfo = null, cancelReason = "") {
   try {
     const endpoint = getOrdersApiEndpoint();
     const res = await fetch(endpoint, {
@@ -279,7 +304,8 @@ async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trac
         id: orderId,
         status: newStatus,
         note,
-        tracking: trackingInfo
+        tracking: trackingInfo,
+        cancelReason
       })
     });
     if (res.ok) {
@@ -293,10 +319,16 @@ async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trac
 
 async function fetchOrderRemote(orderId) {
   if (!orderId) return null;
-  const local = findOrder(orderId);
+  let decoded = "";
+  try {
+    decoded = decodeURIComponent(String(orderId)).trim();
+  } catch (e) {
+    decoded = String(orderId).trim();
+  }
+  const local = findOrder(decoded);
 
   try {
-    const endpoint = `${getOrdersApiEndpoint()}?id=${encodeURIComponent(orderId)}`;
+    const endpoint = `${getOrdersApiEndpoint()}?id=${encodeURIComponent(decoded)}`;
     const res = await fetch(endpoint);
     if (res.ok) {
       const order = await res.json();
@@ -362,13 +394,17 @@ function saveOrder(order) {
   return order;
 }
 
-function updateOrderStatusInDb(orderId, newStatus, note = "", trackingInfo = null) {
+function updateOrderStatusInDb(orderId, newStatus, note = "", trackingInfo = null, cancelReason = "") {
   const orders = getAllOrders();
   const target = orders.find(o => o.id === orderId);
   if (!target) return null;
 
   target.status = newStatus;
   target.updatedAt = new Date().toISOString();
+  if (cancelReason) {
+    target.cancelReason = cancelReason;
+    target.cancellationReason = cancelReason;
+  }
   const timeFormatted = formatOrderDate(new Date());
 
   if (!target.timeline) target.timeline = [];
@@ -386,21 +422,26 @@ function updateOrderStatusInDb(orderId, newStatus, note = "", trackingInfo = nul
     if (newStatus === "Delivered") target.tracking.deliveredAt = target.updatedAt;
   }
 
+  const finalNote = cancelReason 
+    ? `Reason: ${cancelReason}` 
+    : (note || (trackingInfo ? `Courier: ${trackingInfo.courier} (Tracking #${trackingInfo.trackingNumber})` : `Order marked as ${newStatus}`));
+
   target.timeline.push({
     status: newStatus,
     title,
     time: timeFormatted,
-    note: note || (trackingInfo ? `Courier: ${trackingInfo.courier} (Tracking #${trackingInfo.trackingNumber})` : `Order marked as ${newStatus}`)
+    note: finalNote
   });
 
   Store.set("app_orders", orders);
   if (lastOrder && lastOrder.id === orderId) {
     lastOrder = target;
     Store.set("app_last_order", target, sessionStorage);
+    Store.set("msr_order", target, sessionStorage);
   }
 
   // Asynchronously sync status update to Cloudflare D1
-  sendOrderStatusUpdateToServer(orderId, newStatus, note, trackingInfo);
+  sendOrderStatusUpdateToServer(orderId, newStatus, note, trackingInfo, cancelReason);
 
   return target;
 }

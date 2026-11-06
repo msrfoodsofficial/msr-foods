@@ -203,6 +203,11 @@ svg.i {
   line-height: 1;
 }
 
+.badge:empty,
+.badge[hidden] {
+  display: none !important;
+}
+
 .badge.bump {
   animation: bump 0.3s ease;
 }

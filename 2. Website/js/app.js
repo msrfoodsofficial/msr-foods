@@ -47,14 +47,21 @@ function updateBadge(bump = false) {
   const b = $("#badge");
   if (!b) return;
   const n = itemCount();
-  b.hidden = !n;
-  b.textContent = n > 0 ? n : "";
+  if (n <= 0) {
+    b.hidden = true;
+    b.textContent = "";
+    b.style.setProperty("display", "none", "important");
+  } else {
+    b.hidden = false;
+    b.textContent = String(n);
+    b.style.setProperty("display", "flex", "important");
+  }
   const a = b.closest("a");
   const desc = n > 0 ? `Cart, ${n} item${n === 1 ? "" : "s"}` : "Cart";
   if (a) a.setAttribute("aria-label", desc);
   const lbl = $("#cartLabel");
   if (lbl) lbl.textContent = desc;
-  if (bump) {
+  if (bump && n > 0) {
     b.classList.remove("bump");
     void b.offsetWidth;
     b.classList.add("bump");
@@ -102,18 +109,11 @@ function shell() {
   $("#dlg-menu").innerHTML = `
     <div class="dlg">
       <button class="ic dlg-x" data-act="close" aria-label="Close menu">${ICON.x}</button>
-      <div style="height:48px"></div>
+      <div style="height:50px"></div>
       <nav class="menu-links" aria-label="Mobile Navigation">
         ${nav.map(n => `<a href="${n[2]}" data-nav="${n[0]}" data-act="close">${n[1]}</a>`).join("")}
       </nav>
-      <a class="btn btn-gold" style="margin-top:28px;width:100%" href="#/shop" data-act="close">Shop Now</a>
-      
-      <div class="menu-soc-clean">
-        <a href="${window.BRAND_CONFIG.social.facebook}" target="_blank" rel="noopener" aria-label="Facebook">${ICON.facebook}</a>
-        <a href="${window.BRAND_CONFIG.social.instagram}" target="_blank" rel="noopener" aria-label="Instagram">${ICON.instagram}</a>
-        <a href="${window.BRAND_CONFIG.social.tiktok}" target="_blank" rel="noopener" aria-label="TikTok">${ICON.tiktok}</a>
-        <a href="${window.BRAND_CONFIG.social.youtube}" target="_blank" rel="noopener" aria-label="YouTube">${ICON.youtube}</a>
-      </div>
+      <a class="btn btn-gold" style="margin-top:24px" href="#/shop" data-act="close">Shop Now</a>
     </div>
   `;
 

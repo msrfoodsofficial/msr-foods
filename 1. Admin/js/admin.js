@@ -1226,14 +1226,18 @@ function markOrderDelivered(orderId) {
 }
 
 // General Update Order Status Dropdown
-function updateOrderStatus(orderId, newStatus) {
+function updateOrderStatus(orderId, newStatus, cancelReason = "") {
   if (typeof updateOrderStatusInDb === "function") {
-    updateOrderStatusInDb(orderId, newStatus, `Status updated to ${newStatus}`);
+    updateOrderStatusInDb(orderId, newStatus, cancelReason ? `Reason: ${cancelReason}` : `Status updated to ${newStatus}`, null, cancelReason);
   } else {
     const orders = Store.get("app_orders") || [];
     const target = orders.find(o => o.id === orderId);
     if (target) {
       target.status = newStatus;
+      if (cancelReason) {
+        target.cancelReason = cancelReason;
+        target.cancellationReason = cancelReason;
+      }
       Store.set("app_orders", orders);
     }
   }
@@ -1296,9 +1300,24 @@ function openOrderModal(orderId) {
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-xs btn-warning" onclick="document.getElementById('dlg-order-details').close(); openDispatchModal('${o.id}');">🚚 Set Courier Tracking</button>
+          <button class="btn btn-xs btn-line" style="color:#ef4444;border-color:rgba(239,68,68,0.4)" onclick="openCancelOrderModal('${o.id}')">❌ Cancel Order with Reason</button>
           ${cleanPhone ? `<a class="btn btn-xs btn-line" href="${waReceiptUrl}" target="_blank" rel="noopener" style="color:#25D366;border-color:rgba(37,211,102,0.4)">💬 WhatsApp Customer</a>` : ""}
         </div>
       </div>
+
+      <!-- Cancelled State Banner (if order is cancelled) -->
+      ${o.status === "Cancelled" ? `
+        <div style="background:rgba(239,68,68,0.12);border:1.5px solid rgba(239,68,68,0.38);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px">
+          <div style="font-size:22px;color:#ef4444;line-height:1">🚫</div>
+          <div style="flex:1">
+            <b style="color:#fca5a5;font-size:14px;text-transform:uppercase;letter-spacing:0.04em">Order Cancelled</b>
+            <div style="color:#fff;font-size:13.5px;margin-top:3px">
+              <b>Reason:</b> <span style="color:var(--sand)">${esc(o.cancelReason || o.cancellationReason || "No specific reason recorded.")}</span>
+            </div>
+            <button class="btn btn-xs btn-line" style="margin-top:8px;padding:3px 10px;font-size:11px" onclick="openCancelOrderModal('${o.id}')">✏️ Edit Cancellation Reason</button>
+          </div>
+        </div>
+      ` : ""}
 
       <!-- Consignment Tracking Details (if any) -->
       ${o.tracking && o.tracking.trackingNumber ? `
@@ -1387,7 +1406,87 @@ function updateOrderStatusFromModal(orderId, chosenStatus) {
     if (sel) chosenStatus = sel.value;
   }
   if (!chosenStatus) return;
+
+  if (chosenStatus === "Cancelled") {
+    openCancelOrderModal(orderId);
+    return;
+  }
+
   updateOrderStatus(orderId, chosenStatus);
+  openOrderModal(orderId);
+}
+
+function openCancelOrderModal(orderId) {
+  const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const cust = o.customer || { name: o.name, phone: o.phone };
+  let modal = document.getElementById("dlg-cancel-order");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-cancel-order";
+    document.body.appendChild(modal);
+  }
+
+  const existingReason = o.cancelReason || o.cancellationReason || "";
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(540px,94vw);max-height:90vh;overflow-y:auto;padding:26px 24px">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-cancel-order').close()">${ICON.x}</button>
+      
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:42px;height:42px;border-radius:50%;background:rgba(239,68,68,0.18);color:#ef4444;display:grid;place-items:center;font-size:22px;flex-shrink:0">❌</div>
+        <div>
+          <h3 style="margin:0;font-size:18px;color:#fca5a5">Cancel Order #${esc(o.id)}</h3>
+          <small style="color:var(--mute-dark)">Customer: ${esc(cust.name || "Customer")} · ${esc(cust.phone || "")}</small>
+        </div>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--sand);margin:0 0 14px;line-height:1.45">
+        Provide a cancellation reason below. This explanation will be saved in the order records and displayed to the customer on their live tracking page.
+      </p>
+
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:700;color:var(--gold-hi);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Quick Reasons (Tap to fill):</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="btn btn-xs btn-line" onclick="setCancelReasonText('Customer requested order cancellation.')">Customer requested</button>
+          <button type="button" class="btn btn-xs btn-line" onclick="setCancelReasonText('Customer phone unreachable / address unverified.')">Unreachable / Unverified</button>
+          <button type="button" class="btn btn-xs btn-line" onclick="setCancelReasonText('Item out of stock / failed quality inspection.')">Out of stock</button>
+          <button type="button" class="btn btn-xs btn-line" onclick="setCancelReasonText('Duplicate order placed by customer.')">Duplicate order</button>
+          <button type="button" class="btn btn-xs btn-line" onclick="setCancelReasonText('Delivery address is outside courier delivery coverage area.')">Address not serviceable</button>
+        </div>
+      </div>
+
+      <div class="f" style="margin-bottom:20px">
+        <label for="cancelReasonInput" style="font-size:13px;color:var(--cream);font-weight:600;margin-bottom:4px">Reason for Cancellation (Shown to Customer):</label>
+        <textarea id="cancelReasonInput" rows="3" placeholder="Explain why the order was cancelled..." style="width:100%;font-size:14px;padding:10px 12px;background:#14100a;color:#fff;border:1.5px solid rgba(239,68,68,0.4);border-radius:var(--r-sm)">${esc(existingReason)}</textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-cancel-order').close()">Keep Active</button>
+        <button type="button" class="btn btn-sm" style="background:#dc2626;color:#ffffff;border:0;padding-inline:20px;font-weight:600" onclick="confirmCancelOrder('${esc(o.id)}')">Confirm Cancellation</button>
+      </div>
+    </div>
+  `;
+
+  modal.showModal();
+}
+
+function setCancelReasonText(text) {
+  const inp = document.getElementById("cancelReasonInput");
+  if (inp) inp.value = text;
+}
+
+function confirmCancelOrder(orderId) {
+  const reasonInput = document.getElementById("cancelReasonInput");
+  const reason = (reasonInput ? reasonInput.value.trim() : "") || "Cancelled by store operations team";
+
+  updateOrderStatus(orderId, "Cancelled", reason);
+
+  const dlg = document.getElementById("dlg-cancel-order");
+  if (dlg) dlg.close();
+
   openOrderModal(orderId);
 }
 
@@ -2963,6 +3062,9 @@ window.loadStoreSettingsForm = loadStoreSettingsForm;
 window.openSaveSettingsConfirmation = openSaveSettingsConfirmation;
 window.confirmSaveStoreSettings = confirmSaveStoreSettings;
 window.updateOrderStatusFromModal = updateOrderStatusFromModal;
+window.openCancelOrderModal = openCancelOrderModal;
+window.setCancelReasonText = setCancelReasonText;
+window.confirmCancelOrder = confirmCancelOrder;
 
 // Start periodic live order polling
 setInterval(syncRemoteOrders, 4000);

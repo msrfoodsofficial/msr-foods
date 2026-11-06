@@ -205,54 +205,18 @@
 
 .menu-links a {
   display: block;
-  padding: 16px 8px;
-  font: 600 24px var(--serif);
-  color: #f8f1e2;
-  border-bottom: 1px solid rgba(214, 167, 54, 0.14);
+  padding: 14px 10px;
+  font: 500 18px var(--sans);
+  color: var(--cream);
+  border-bottom: 1px solid rgba(214, 167, 54, 0.12);
   text-decoration: none;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease, padding-left 0.2s ease;
 }
 
 .menu-links a:hover,
 .menu-links a.on {
   color: var(--gold-hi);
-  transform: translateX(4px);
-}
-
-.menu-soc-clean {
-  margin-top: auto;
-  padding-top: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  border-top: 1px solid rgba(214, 167, 54, 0.14);
-}
-
-.menu-soc-clean a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid rgba(214, 167, 54, 0.28);
-  color: #e9dec3;
-  background: rgba(255, 255, 255, 0.03);
-  transition: all 0.25s ease;
-}
-
-.menu-soc-clean a:hover {
-  border-color: var(--gold);
-  color: var(--gold-hi);
-  background: rgba(214, 167, 54, 0.12);
-  transform: translateY(-2px);
-}
-
-.menu-soc-clean svg {
-  width: 19px;
-  height: 19px;
-  fill: currentColor;
+  padding-left: 14px;
 }
 
 /* Header Cart Icon & Badge Placement */
@@ -279,6 +243,13 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
   pointer-events: none !important;
   z-index: 2 !important;
+}
+
+#hdrCart .badge:empty,
+#hdrCart .badge[hidden],
+.badge:empty,
+.badge[hidden] {
+  display: none !important;
 }
 
 #hdrCart svg {

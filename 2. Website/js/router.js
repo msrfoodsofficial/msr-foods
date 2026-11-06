@@ -843,14 +843,25 @@ views.confirmation = () => {
 views.track = (orderIdParam) => {
   const brand = window.BRAND_CONFIG.brand;
   const C = window.BRAND_CONFIG.contact;
-  let o = orderIdParam ? (typeof findOrder === "function" ? findOrder(orderIdParam) : null) : (lastOrder || null);
+
+  if (!window._trackQueryFailedFor) window._trackQueryFailedFor = {};
+
+  let decodedParam = "";
+  try {
+    decodedParam = decodeURIComponent(orderIdParam || "").trim();
+  } catch (e) {
+    decodedParam = (orderIdParam || "").trim();
+  }
+
+  let o = decodedParam ? (typeof findOrder === "function" ? findOrder(decodedParam) : null) : (lastOrder || null);
 
   // Background Live Sync from Cloudflare D1
-  if (orderIdParam && typeof fetchOrderRemote === "function" && !window._fetchingRemoteOrder) {
+  if (decodedParam && typeof fetchOrderRemote === "function" && !window._fetchingRemoteOrder) {
     window._fetchingRemoteOrder = true;
-    fetchOrderRemote(orderIdParam).then(remote => {
+    fetchOrderRemote(decodedParam).then(remote => {
       window._fetchingRemoteOrder = false;
       if (remote) {
+        delete window._trackQueryFailedFor[decodedParam];
         const changed = !o || remote.status !== o.status || remote.updatedAt !== o.updatedAt ||
           (remote.timeline && o.timeline && remote.timeline.length !== o.timeline.length) ||
           (remote.tracking && o.tracking && remote.tracking.trackingNumber !== o.tracking.trackingNumber);
@@ -858,12 +869,23 @@ views.track = (orderIdParam) => {
           route();
           if (typeof toast === "function") toast(`🔔 Live Status: ${remote.status}`);
         }
+      } else {
+        if (!o) {
+          window._trackQueryFailedFor[decodedParam] = true;
+          if (typeof route === "function") route();
+        }
       }
-    }).catch(() => { window._fetchingRemoteOrder = false; });
+    }).catch(() => { 
+      window._fetchingRemoteOrder = false;
+      if (!o) {
+        window._trackQueryFailedFor[decodedParam] = true;
+        if (typeof route === "function") route();
+      }
+    });
   }
 
   // Periodic heartbeat polling while on track page (every 10s)
-  if (orderIdParam && !window._trackHeartbeatActive) {
+  if (decodedParam && !window._trackHeartbeatActive) {
     window._trackHeartbeatActive = true;
     if (window._trackInterval) clearInterval(window._trackInterval);
     window._trackInterval = setInterval(() => {
@@ -873,7 +895,7 @@ views.track = (orderIdParam) => {
         return;
       }
       if (typeof fetchOrderRemote === "function") {
-        fetchOrderRemote(orderIdParam).then(remote => {
+        fetchOrderRemote(decodedParam).then(remote => {
           if (remote && o) {
             const changed = remote.status !== o.status || remote.updatedAt !== o.updatedAt ||
               (remote.timeline && o.timeline && remote.timeline.length !== o.timeline.length) ||
@@ -888,6 +910,8 @@ views.track = (orderIdParam) => {
     }, 10000);
   }
 
+  const isCancelled = o && (o.status || "").toLowerCase() === "cancelled";
+
   const statusLevels = {
     "pending": 1,
     "approved": 2,
@@ -899,146 +923,239 @@ views.track = (orderIdParam) => {
   };
   const currentLvl = o ? (statusLevels[(o.status || "pending").toLowerCase()] || 1) : 1;
 
-  const trackContent = o ? `
-    <div class="track-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--hair);padding-bottom:20px;margin-bottom:24px">
-        <div>
-          <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold-hi)">Live Order Tracking</span>
-          <h2 style="font-size:26px;color:var(--cream);margin:4px 0 2px">Order #${esc(o.id)}</h2>
-          <small style="color:var(--mute-dark)">Placed on ${o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString())}</small>
-          <div style="margin-top:8px">
-            <button class="btn btn-line btn-sm" style="font-size:12px;padding:4px 11px;border-radius:6px" onclick="refreshTrackLive('${esc(o.id)}')">🔄 Refresh Live Status</button>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <span class="status-pill status-${(o.status || 'pending').toLowerCase()}" style="font-size:13px;padding:6px 14px">${o.status}</span>
-          <div style="margin-top:6px;font-size:13.5px;color:var(--sand)">Payment: <b>${o.paymentMethod || "Cash on Delivery"}</b></div>
-        </div>
-      </div>
+  let trackContent = "";
 
-      <!-- Visual 5-Step Progress Stepper -->
-      <div class="track-stepper">
-        <div class="step-node ${currentLvl >= 1 ? (currentLvl === 1 ? 'active' : 'completed') : ''}">
-          <div class="step-circle">${currentLvl > 1 ? '✓' : '📝'}</div>
-          <span class="step-label">Order Placed</span>
-          <span class="step-time">${o.timeline && o.timeline[0] ? o.timeline[0].time : 'Recorded'}</span>
-        </div>
-        <div class="step-node ${currentLvl >= 2 ? (currentLvl === 2 ? 'active' : 'completed') : ''}">
-          <div class="step-circle">${currentLvl > 2 ? '✓' : '✅'}</div>
-          <span class="step-label">Approved</span>
-          <span class="step-time">${currentLvl >= 2 ? 'Confirmed' : 'Pending'}</span>
-        </div>
-        <div class="step-node ${currentLvl >= 3 ? (currentLvl === 3 ? 'active' : 'completed') : ''}">
-          <div class="step-circle">${currentLvl > 3 ? '✓' : '📦'}</div>
-          <span class="step-label">Packed & Sealed</span>
-          <span class="step-time">${currentLvl >= 3 ? 'Ready' : 'In Queue'}</span>
-        </div>
-        <div class="step-node ${currentLvl >= 4 ? (currentLvl === 4 ? 'active' : 'completed') : ''}">
-          <div class="step-circle">${currentLvl > 4 ? '✓' : '🚚'}</div>
-          <span class="step-label">Dispatched</span>
-          <span class="step-time">${currentLvl >= 4 ? (o.tracking && o.tracking.courier ? o.tracking.courier : 'In Transit') : 'Awaiting'}</span>
-        </div>
-        <div class="step-node ${currentLvl === 5 ? 'completed active' : ''}">
-          <div class="step-circle">${currentLvl === 5 ? '🎉' : '🏠'}</div>
-          <span class="step-label">Delivered</span>
-          <span class="step-time">${currentLvl === 5 ? 'Completed' : 'Expected'}</span>
-        </div>
-      </div>
+  if (o) {
+    const statusKey = (o.status || 'pending').toLowerCase();
+    const orderDate = o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString());
+    
+    // Extract cancellation reason if any
+    const cancellationReason = o.cancelReason || o.cancellationReason || 
+      (o.timeline && o.timeline.slice().reverse().find(t => t.status === "Cancelled" && t.note && !t.note.startsWith("Status updated to"))?.note) ||
+      (o.timeline && o.timeline.slice().reverse().find(t => t.status === "Cancelled" && t.note)?.note?.replace(/^Status updated to Cancelled\s*[—–-]?\s*/i, "")) ||
+      "Order was cancelled upon customer request or by the store operations team.";
 
-      <!-- Courier Partner & Consignment Box -->
-      ${o.tracking && o.tracking.trackingNumber ? `
-        <div style="background:rgba(214,167,54,0.08);border:1.5px solid var(--gold);border-radius:var(--r-md);padding:20px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
-          <div>
-            <div style="font-size:12px;text-transform:uppercase;color:var(--gold-hi);font-weight:600">Courier Partner Details</div>
-            <div style="font-size:18px;font-weight:700;color:var(--cream);margin-top:2px">🚚 ${esc(o.tracking.courier || "Courier Partner")}</div>
-            <div style="font-size:13.5px;color:var(--sand);margin-top:2px">Tracking Number: <b style="font-family:monospace;color:var(--gold-hi);font-size:15px">${esc(o.tracking.trackingNumber)}</b></div>
+    trackContent = `
+      <div class="track-card" style="padding:clamp(18px, 4vw, 32px);max-width:1000px;margin-inline:auto">
+        <!-- Responsive Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;border-bottom:1px solid var(--hair);padding-bottom:18px;margin-bottom:22px">
+          <div style="min-width:0;flex:1 1 240px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold-hi);font-weight:700">Live Order Tracking</span>
+            <h2 style="font-size:clamp(1.3rem, 5vw, 1.8rem);color:var(--cream);margin:4px 0 2px;word-break:break-word;line-height:1.2">Order #${esc(o.id)}</h2>
+            <small style="color:var(--mute-dark);font-size:12.5px">Placed on ${orderDate}</small>
+            <div style="margin-top:10px">
+              <button class="btn btn-line btn-sm" style="font-size:12px;padding:4px 12px;border-radius:6px" onclick="refreshTrackLive('${esc(o.id)}')">🔄 Refresh Live Status</button>
+            </div>
           </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-gold btn-sm" onclick="navigator.clipboard.writeText('${esc(o.tracking.trackingNumber)}'); toast('Tracking number copied!');">Copy Tracking ID</button>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px">
+            <span class="status-pill status-${statusKey}" style="font-size:13px;padding:6px 14px;font-weight:700;letter-spacing:0.02em">
+              ${isCancelled ? '✕ Cancelled' : o.status}
+            </span>
+            <div style="font-size:13px;color:var(--sand)">Payment: <b>${esc(o.paymentMethod || o.pay || "Cash on Delivery")}</b></div>
           </div>
         </div>
-      ` : `
-        <div style="background:rgba(255,255,255,0.02);border:1px dashed var(--hair);border-radius:var(--r-md);padding:18px;margin-bottom:28px;display:flex;align-items:center;gap:12px">
-          <span style="font-size:24px">📦</span>
-          <div>
-            <b style="color:var(--cream);font-size:14.5px">Standard Dispatch Courier Service</b>
-            <p style="margin:2px 0 0;font-size:13px;color:var(--mute-dark)">Your items will be dispatched via express insured courier (TCS / Leopards / Trax) within 24–48 business hours.</p>
-          </div>
-        </div>
-      `}
 
-      <!-- 2 Columns: Order Items & Live Activity Log -->
-      <div class="track-grid">
-        <div>
-          <h3 style="font-size:17px;color:var(--cream);margin-bottom:14px;border-bottom:1px solid rgba(214,167,54,0.15);padding-bottom:8px">Order Summary</h3>
-          <div class="co-items" style="max-height:280px;overflow-y:auto">
-            ${(o.items || []).map(i => `
-              <div class="li" style="padding-block:10px">
-                <div>
-                  <h3 style="font-size:14.5px">${esc(i.name)}</h3>
-                  <small style="color:var(--mute-dark)">${esc(i.weight || "")} × ${i.qty}</small>
+        ${isCancelled ? `
+          <!-- Prominent Cancelled State Banner -->
+          <div style="background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(185,28,28,0.05));border:1.5px solid rgba(239,68,68,0.38);border-radius:var(--r-md);padding:clamp(16px, 3.5vw, 24px);margin-bottom:24px">
+            <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(239,68,68,0.22);color:#ef4444;display:grid;place-items:center;font-size:22px;flex-shrink:0;box-shadow:0 0 16px rgba(239,68,68,0.25)">
+                ✕
+              </div>
+              <div style="flex:1;min-width:220px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <h3 style="font-size:18px;color:#fca5a5;margin:0;font-weight:700">This Order Has Been Cancelled</h3>
+                  <span class="status-pill status-cancelled" style="font-size:11px;padding:2px 8px">Cancelled</span>
                 </div>
-                <b>${money(i.qty * i.price)}</b>
+                
+                <div style="margin-top:12px;padding:12px 14px;background:rgba(0,0,0,0.32);border-radius:var(--r-sm);border:1px solid rgba(239,68,68,0.25)">
+                  <b style="color:#fecaca;font-size:12.5px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Reason for Cancellation:</b>
+                  <p style="margin:0;font-size:14px;color:var(--cream);line-height:1.5">
+                    ${esc(cancellationReason)}
+                  </p>
+                </div>
+
+                <p style="margin:12px 0 0;font-size:13px;color:var(--mute-dark);line-height:1.4">
+                  Need to replace this order or have questions? Click below to instantly re-add your items or chat with our team on WhatsApp:
+                </p>
+
+                <!-- Order Again & Support Action Buttons -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+                  <button class="btn btn-gold" onclick="reorderItems('${esc(o.id)}')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;font-size:14px;font-weight:600">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+                    Order Again
+                  </button>
+                  <a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi ' + brand.name + ', I would like to inquire about my cancelled Order #' + o.id + ' (Reason: ' + cancellationReason + ')')}" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13.5px;color:#25D366;border-color:rgba(37,211,102,0.4)">
+                    ${ICON.whatsapp} Chat on WhatsApp
+                  </a>
+                  <a class="btn btn-ink-line" href="#/shop" style="padding:10px 16px;font-size:13.5px">Browse Shop</a>
+                </div>
               </div>
-            `).join("")}
+            </div>
           </div>
-          <div class="sum" style="margin-top:16px">
-            <div><span>Subtotal</span><span>${money(o.subtotal || o.total)}</span></div>
-            <div><span>Delivery</span><span>${o.shipping === 0 ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(o.shipping || 0)}</span></div>
-            <div class="tot"><span>Total Amount</span><span style="color:var(--gold-hi)">${money(o.total)}</span></div>
+        ` : `
+          <!-- Visual 5-Step Progress Stepper (Only for Active Orders) -->
+          <div class="track-stepper">
+            <div class="step-node ${currentLvl >= 1 ? (currentLvl === 1 ? 'active' : 'completed') : ''}">
+              <div class="step-circle">${currentLvl > 1 ? '✓' : '📝'}</div>
+              <span class="step-label">Order Placed</span>
+              <span class="step-time">${o.timeline && o.timeline[0] ? o.timeline[0].time : 'Recorded'}</span>
+            </div>
+            <div class="step-node ${currentLvl >= 2 ? (currentLvl === 2 ? 'active' : 'completed') : ''}">
+              <div class="step-circle">${currentLvl > 2 ? '✓' : '✅'}</div>
+              <span class="step-label">Approved</span>
+              <span class="step-time">${currentLvl >= 2 ? 'Confirmed' : 'Pending'}</span>
+            </div>
+            <div class="step-node ${currentLvl >= 3 ? (currentLvl === 3 ? 'active' : 'completed') : ''}">
+              <div class="step-circle">${currentLvl > 3 ? '✓' : '📦'}</div>
+              <span class="step-label">Packed & Sealed</span>
+              <span class="step-time">${currentLvl >= 3 ? 'Ready' : 'In Queue'}</span>
+            </div>
+            <div class="step-node ${currentLvl >= 4 ? (currentLvl === 4 ? 'active' : 'completed') : ''}">
+              <div class="step-circle">${currentLvl > 4 ? '✓' : '🚚'}</div>
+              <span class="step-label">Dispatched</span>
+              <span class="step-time">${currentLvl >= 4 ? (o.tracking && o.tracking.courier ? o.tracking.courier : 'In Transit') : 'Awaiting'}</span>
+            </div>
+            <div class="step-node ${currentLvl === 5 ? 'completed active' : ''}">
+              <div class="step-circle">${currentLvl === 5 ? '🎉' : '🏠'}</div>
+              <span class="step-label">Delivered</span>
+              <span class="step-time">${currentLvl === 5 ? 'Completed' : 'Expected'}</span>
+            </div>
           </div>
-          <div style="margin-top:16px;background:rgba(255,255,255,0.02);padding:14px;border-radius:var(--r-sm);border:1px solid var(--hair)">
-            <b style="color:var(--cream);font-size:13px">Shipping Destination:</b>
-            <p style="margin:4px 0 0;font-size:13px;color:var(--sand);line-height:1.4">
-              ${esc(o.customer ? o.customer.name : o.name)} · ${esc(o.customer ? o.customer.phone : o.phone)}<br>
-              ${esc(o.customer ? o.customer.address : o.addr)}, ${esc(o.customer ? o.customer.city : o.city)}
-            </p>
+
+          <!-- Courier Partner & Consignment Box -->
+          ${o.tracking && o.tracking.trackingNumber ? `
+            <div style="background:rgba(214,167,54,0.08);border:1.5px solid var(--gold);border-radius:var(--r-md);padding:18px 20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+              <div>
+                <div style="font-size:12px;text-transform:uppercase;color:var(--gold-hi);font-weight:600">Courier Partner Details</div>
+                <div style="font-size:17px;font-weight:700;color:var(--cream);margin-top:2px">🚚 ${esc(o.tracking.courier || "Courier Partner")}</div>
+                <div style="font-size:13px;color:var(--sand);margin-top:2px">Tracking Number: <b style="font-family:monospace;color:var(--gold-hi);font-size:14.5px">${esc(o.tracking.trackingNumber)}</b></div>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button class="btn btn-gold btn-sm" onclick="navigator.clipboard.writeText('${esc(o.tracking.trackingNumber)}'); toast('Tracking number copied!');">Copy Tracking ID</button>
+              </div>
+            </div>
+          ` : `
+            <div style="background:rgba(255,255,255,0.02);border:1px dashed var(--hair);border-radius:var(--r-md);padding:16px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px">
+              <span style="font-size:24px">📦</span>
+              <div>
+                <b style="color:var(--cream);font-size:14px">Standard Dispatch Courier Service</b>
+                <p style="margin:2px 0 0;font-size:13px;color:var(--mute-dark)">Your items will be dispatched via express courier (TCS / Leopards / Trax) within 24–48 business hours.</p>
+              </div>
+            </div>
+          `}
+        `}
+
+        <!-- 2 Columns: Order Summary & Activity History -->
+        <div class="track-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px">
+          <div>
+            <h3 style="font-size:16px;color:var(--cream);margin:0 0 12px;border-bottom:1px solid rgba(214,167,54,0.15);padding-bottom:8px">Order Summary</h3>
+            <div class="co-items" style="max-height:280px;overflow-y:auto;border:1px solid var(--hair);border-radius:var(--r-sm);padding:8px 14px;background:rgba(0,0,0,0.15)">
+              ${(o.items || []).map(i => `
+                <div class="li" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-block:10px;border-bottom:1px solid rgba(214,167,54,0.08)">
+                  <div style="min-width:0;flex:1">
+                    <h4 style="font-size:14px;margin:0 0 3px;color:var(--cream);line-height:1.35;word-break:break-word">${esc(i.name)}</h4>
+                    <small style="color:var(--mute-dark);font-size:12px">${esc(i.weight || "")} × ${i.qty}</small>
+                  </div>
+                  <b style="color:var(--gold-hi);font-size:14px;white-space:nowrap;flex-shrink:0">${money(i.qty * i.price)}</b>
+                </div>
+              `).join("")}
+            </div>
+            <div class="sum" style="margin-top:14px">
+              <div><span>Subtotal</span><span>${money(o.subtotal || o.total)}</span></div>
+              <div><span>Delivery</span><span>${o.shipping === 0 ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(o.shipping || 0)}</span></div>
+              <div class="tot"><span>Total Amount</span><span style="color:var(--gold-hi)">${money(o.total)}</span></div>
+            </div>
+            <div style="margin-top:14px;background:rgba(255,255,255,0.02);padding:14px;border-radius:var(--r-sm);border:1px solid var(--hair)">
+              <b style="color:var(--cream);font-size:13px">Shipping Destination:</b>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--sand);line-height:1.45;word-break:break-word">
+                ${esc(o.customer ? o.customer.name : o.name)} · ${esc(o.customer ? o.customer.phone : o.phone)}<br>
+                ${esc(o.customer ? o.customer.address : o.addr)}, ${esc(o.customer ? o.customer.city : o.city)}${o.customer && o.customer.province ? ', ' + esc(o.customer.province) : ''}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="font-size:16px;color:var(--cream);margin:0 0 12px;border-bottom:1px solid rgba(214,167,54,0.15);padding-bottom:8px">Tracking Activity & History</h3>
+            <div class="track-timeline" style="border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 18px;background:rgba(0,0,0,0.15);max-height:300px;overflow-y:auto">
+              ${(o.timeline || []).slice().reverse().map(ev => `
+                <div class="timeline-item" style="margin-bottom:14px">
+                  <h4 style="font-size:14px;margin:0;color:var(--cream)">${esc(ev.title)}</h4>
+                  <small style="font-size:12px;color:var(--mute-dark)">${esc(ev.time)}</small>
+                  <p style="font-size:13px;color:var(--sand);margin:3px 0 0;line-height:1.4;word-break:break-word">${esc(ev.note || "")}</p>
+                </div>
+              `).join("")}
+            </div>
+
+            <div style="margin-top:20px;padding:14px 16px;background:rgba(214,167,54,0.04);border:1px solid var(--hair);border-radius:var(--r-sm)">
+              <b style="color:var(--cream);font-size:13.5px">Customer Service & WhatsApp Updates:</b>
+              <p style="margin:4px 0 10px;font-size:12.5px;color:var(--mute-dark)">Need an instant update or modification? Chat directly with our fulfillment operations team:</p>
+              <a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi ' + brand.name + ', I would like an update on my Order #' + o.id)}">
+                ${ICON.whatsapp} Chat on WhatsApp
+              </a>
+            </div>
           </div>
         </div>
 
-        <div>
-          <h3 style="font-size:17px;color:var(--cream);margin-bottom:14px;border-bottom:1px solid rgba(214,167,54,0.15);padding-bottom:8px">Tracking Activity & History</h3>
-          <div class="track-timeline">
-            ${(o.timeline || []).slice().reverse().map(ev => `
-              <div class="timeline-item">
-                <h4>${esc(ev.title)}</h4>
-                <small>${esc(ev.time)}</small>
-                <p>${esc(ev.note || "")}</p>
-              </div>
-            `).join("")}
+        ${o.otherOrders && o.otherOrders.length > 0 ? `
+          <!-- Additional Orders Found for this Phone Number -->
+          <div style="margin-top:24px;padding:16px 20px;background:rgba(214,167,54,0.05);border:1px solid rgba(214,167,54,0.22);border-radius:var(--r-md)">
+            <b style="color:var(--cream);font-size:13.5px;display:block;margin-bottom:8px">Other orders placed with this phone number:</b>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${o.otherOrders.map(other => `
+                <a href="#/track/${encodeURIComponent(other.id)}" class="btn btn-xs btn-line" style="font-size:12px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px">
+                  <span>#${esc(other.id)}</span>
+                  <span class="status-pill status-${(other.status || 'pending').toLowerCase()}" style="font-size:10px;padding:2px 6px">${other.status}</span>
+                  <span style="color:var(--gold-hi)">PKR ${Number(other.total || 0).toLocaleString()} →</span>
+                </a>
+              `).join("")}
+            </div>
           </div>
-
-          <div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--hair)">
-            <b style="color:var(--cream);font-size:13.5px">Customer Service & WhatsApp Updates:</b>
-            <p style="margin:4px 0 12px;font-size:13px;color:var(--mute-dark)">Need an instant update or modification? Chat directly with our fulfillment operations team:</p>
-            <a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent('Hi ' + brand.name + ', I would like an update on my Order #' + o.id)}">
-              Chat on WhatsApp
-            </a>
-          </div>
-        </div>
+        ` : ""}
       </div>
-    </div>
-  ` : `
-    <div class="track-card" style="max-width:580px;margin:40px auto;text-align:center;padding:44px 32px">
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(214,167,54,0.15);color:var(--gold-hi);display:grid;place-items:center;font-size:30px;margin:0 auto 16px">🔍</div>
-      <h2 style="font-size:24px;color:var(--cream);margin-bottom:8px">Track Your Order Status</h2>
-      <p style="font-size:14.5px;color:var(--mute-dark);margin-bottom:28px">Enter your Order ID (e.g. MSR-261014-4821) or your 11-digit mobile number to view live consignment tracking.</p>
-      
-      <form onsubmit="event.preventDefault(); const q = document.getElementById('trackQueryInput').value.trim(); if(q) location.hash = '#/track/' + encodeURIComponent(q);">
-        <div class="f" style="margin-bottom:16px">
-          <input id="trackQueryInput" placeholder="Enter Order ID or Mobile Number (03XXXXXXXXX)" required style="font-size:16px;text-align:center;padding:14px">
+    `;
+  } else if (decodedParam && !window._trackQueryFailedFor[decodedParam]) {
+    // Loading State while fetching from D1
+    trackContent = `
+      <div class="track-card" style="max-width:540px;margin:40px auto;text-align:center;padding:44px 28px">
+        <div style="width:48px;height:48px;border:3px solid rgba(214,167,54,0.2);border-top-color:var(--gold-hi);border-radius:50%;margin:0 auto 18px;animation:spin 0.8s linear infinite"></div>
+        <h2 style="font-size:22px;color:var(--cream);margin-bottom:6px">Searching Live Records...</h2>
+        <p style="font-size:14px;color:var(--mute-dark);margin:0">Querying live fulfillment database for <strong style="color:var(--gold-hi)">${esc(decodedParam)}</strong>...</p>
+      </div>
+    `;
+  } else {
+    // Search Form (or Not Found message)
+    const wasFailed = decodedParam && window._trackQueryFailedFor[decodedParam];
+    trackContent = `
+      <div class="track-card" style="max-width:560px;margin:36px auto;text-align:center;padding:clamp(24px, 5vw, 44px) clamp(16px, 4vw, 32px)">
+        <div style="width:60px;height:60px;border-radius:50%;background:${wasFailed ? 'rgba(239,68,68,0.15)' : 'rgba(214,167,54,0.15)'};color:${wasFailed ? '#ef4444' : 'var(--gold-hi)'};display:grid;place-items:center;font-size:28px;margin:0 auto 16px">
+          ${wasFailed ? '⚠️' : '🔍'}
         </div>
-        <button type="submit" class="btn btn-gold btn-block" style="padding-block:14px">Search & Track Order</button>
-      </form>
+        <h2 style="font-size:22px;color:var(--cream);margin-bottom:8px">
+          ${wasFailed ? 'No Order Records Found' : 'Track Your Order Status'}
+        </h2>
+        <p style="font-size:14px;color:var(--mute-dark);margin-bottom:24px;line-height:1.5">
+          ${wasFailed 
+            ? `We couldn't locate any order matching <strong style="color:var(--gold-hi)">"${esc(decodedParam)}"</strong>.<br>Please double-check your 11-digit mobile number or Order ID below.` 
+            : 'Enter your Order ID (e.g. MSR-261014-4821) or your 11-digit mobile number to view live consignment tracking.'}
+        </p>
+        
+        <form onsubmit="handleTrackSearch(event)">
+          <div class="f" style="margin-bottom:16px">
+            <input id="trackQueryInput" value="${wasFailed ? esc(decodedParam) : ''}" placeholder="Enter Order ID or Mobile Number (03XXXXXXXXX)" required style="font-size:15px;text-align:center;padding:13px">
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" style="padding-block:13px;font-size:15px">Search & Track Order</button>
+        </form>
 
-      ${lastOrder ? `
-        <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--hair);font-size:13.5px;color:var(--sand)">
-          <span>Recently placed order found: </span>
-          <a href="#/track/${lastOrder.id}" style="color:var(--gold-hi);font-weight:600">Track #${lastOrder.id} →</a>
-        </div>
-      ` : ""}
-    </div>
-  `;
+        ${lastOrder ? `
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--hair);font-size:13.5px;color:var(--sand)">
+            <span>Recently placed order found: </span>
+            <a href="#/track/${lastOrder.id}" style="color:var(--gold-hi);font-weight:600">Track #${lastOrder.id} →</a>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  }
 
   return {
     title: `Order Tracking | ${brand.name}`,
@@ -1057,6 +1174,57 @@ views.track = (orderIdParam) => {
       </section>
     `
   };
+};
+
+window.handleTrackSearch = function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const input = document.getElementById("trackQueryInput");
+  const q = input ? input.value.trim() : "";
+  if (!q) return;
+  const targetHash = "#/track/" + encodeURIComponent(q);
+  if (location.hash === targetHash) {
+    if (typeof route === "function") route();
+  } else {
+    location.hash = targetHash;
+  }
+};
+
+window.reorderItems = function(orderId) {
+  const o = (typeof findOrder === "function" ? findOrder(orderId) : null) || lastOrder;
+  if (!o || !o.items || !o.items.length) {
+    location.hash = "#/shop";
+    return;
+  }
+  let count = 0;
+  (o.items || []).forEach(item => {
+    const pId = item.id || item.slug || "msr-500";
+    const qty = Number(item.qty) || 1;
+    const weight = item.weight || "500g";
+    if (typeof addToCart === "function") {
+      addToCart(pId, qty, weight);
+      count += qty;
+    }
+  });
+  if (typeof toast === "function") {
+    toast(`🛒 ${count} item${count === 1 ? "" : "s"} added to cart! Proceeding to cart.`);
+  }
+  setTimeout(() => {
+    location.hash = "#/cart";
+  }, 250);
+};
+
+window.refreshTrackLive = function(orderId) {
+  if (typeof fetchOrderRemote === "function") {
+    if (typeof toast === "function") toast("🔄 Checking live tracking status...");
+    fetchOrderRemote(orderId).then(remote => {
+      if (remote && typeof route === "function") {
+        route();
+        if (typeof toast === "function") toast(`Live Status: ${remote.status}`);
+      } else {
+        if (typeof toast === "function") toast("Status is up to date");
+      }
+    });
+  }
 };
 
 function orderMessage(o) {

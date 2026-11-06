@@ -51,21 +51,98 @@ export async function onRequestGet(context) {
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get("id");
+  const phoneParam = url.searchParams.get("phone");
+  const queryParam = url.searchParams.get("query");
   const statusFilter = url.searchParams.get("status");
   const searchQuery = url.searchParams.get("search");
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "200"), 500);
 
   try {
-    // A. Single Order Lookup (for tracking or detail view)
-    if (orderId) {
-      const row = await db
-        .prepare("SELECT raw_json FROM orders WHERE id = ?")
-        .bind(orderId.trim())
+    // A. Single Order or Phone/Query Lookup (for live tracking or detail view)
+    const lookupParam = (orderId || phoneParam || queryParam || "").trim();
+    if (lookupParam) {
+      const cleanId = lookupParam.replace(/^#/, "").trim();
+
+      // 1. Try exact or uppercase Order ID match first
+      let row = await db
+        .prepare("SELECT raw_json FROM orders WHERE id = ? OR UPPER(id) = UPPER(?) OR id = ?")
+        .bind(lookupParam, cleanId, cleanId.toUpperCase())
         .first();
+
+      // 2. If not found by ID, check if lookupParam is a phone number (7+ digits)
+      if (!row) {
+        const digits = lookupParam.replace(/[^0-9]/g, "");
+        if (digits.length >= 7) {
+          const last10 = digits.slice(-10);
+          const last9 = digits.slice(-9);
+          const localFormat = "0" + last10;
+          const intlFormat = "+92" + last10;
+          const intlNoPlus = "92" + last10;
+
+          const phoneResults = await db
+            .prepare(`
+              SELECT raw_json FROM orders 
+              WHERE customer_phone = ? 
+                 OR customer_phone = ? 
+                 OR customer_phone = ? 
+                 OR customer_phone = ? 
+                 OR customer_phone LIKE ? 
+                 OR customer_phone LIKE ? 
+                 OR raw_json LIKE ? 
+                 OR raw_json LIKE ?
+              ORDER BY created_at DESC 
+              LIMIT 5
+            `)
+            .bind(
+              lookupParam,
+              localFormat,
+              intlFormat,
+              intlNoPlus,
+              `%${last10}%`,
+              `%${last9}%`,
+              `%"phone":"%${last10}%"`,
+              `%${last10}%`
+            )
+            .all();
+
+          if (phoneResults && phoneResults.results && phoneResults.results.length > 0) {
+            try {
+              const primaryOrder = JSON.parse(phoneResults.results[0].raw_json);
+              if (phoneResults.results.length > 1) {
+                primaryOrder.otherOrders = phoneResults.results.slice(1).map(r => {
+                  try {
+                    const o = JSON.parse(r.raw_json);
+                    return {
+                      id: o.id,
+                      date: o.dateFormatted || o.createdAt,
+                      status: o.status,
+                      total: o.total,
+                      itemCount: (o.items || []).length
+                    };
+                  } catch (e) {
+                    return null;
+                  }
+                }).filter(Boolean);
+              }
+              return new Response(JSON.stringify(primaryOrder), { status: 200, headers });
+            } catch (e) {
+              row = phoneResults.results[0];
+            }
+          }
+        }
+      }
+
+      // 3. If not found by phone, check if lookupParam is an email address
+      if (!row && lookupParam.includes("@")) {
+        row = await db
+          .prepare("SELECT raw_json FROM orders WHERE customer_email = ? OR LOWER(customer_email) = LOWER(?) ORDER BY created_at DESC LIMIT 1")
+          .bind(lookupParam, lookupParam.toLowerCase())
+          .first();
+      }
 
       if (!row) {
         return new Response(
-          JSON.stringify({ error: `Order #${orderId} not found` }),
+          JSON.stringify({ error: `Order #${lookupParam} not found` }),
           { status: 404, headers }
         );
       }
@@ -318,6 +395,12 @@ export async function onRequestPatch(context) {
       orderObj.status = body.status;
     }
 
+    if (body.cancelReason || body.cancellationReason) {
+      const cReason = (body.cancelReason || body.cancellationReason).trim();
+      orderObj.cancelReason = cReason;
+      orderObj.cancellationReason = cReason;
+    }
+
     if (body.shipping !== undefined) {
       orderObj.shipping = Number(body.shipping);
       if (orderObj.pricing) orderObj.pricing.shipping = Number(body.shipping);
@@ -346,7 +429,7 @@ export async function onRequestPatch(context) {
         time: timeFormatted,
         note: body.note || `Delivery fee adjusted to PKR ${orderObj.shipping} (Kohat Free Delivery applied). Total payable: PKR ${orderObj.total.toLocaleString()}.`
       });
-    } else if (body.status || body.note) {
+    } else if (body.status || body.note || body.cancelReason) {
       if (!orderObj.timeline) orderObj.timeline = [];
       let eventTitle = `Status updated to ${orderObj.status}`;
       if (orderObj.status === "Approved") eventTitle = "Order Approved & Confirmed";
@@ -355,11 +438,15 @@ export async function onRequestPatch(context) {
       else if (orderObj.status === "Delivered") eventTitle = "Delivered to Customer";
       else if (orderObj.status === "Cancelled") eventTitle = "Order Cancelled";
 
+      const eventNote = body.cancelReason 
+        ? `Reason: ${body.cancelReason}`
+        : (body.note || (body.tracking && body.tracking.courier ? `Courier: ${body.tracking.courier} (Tracking #${body.tracking.trackingNumber})` : `Order marked as ${orderObj.status}`));
+
       orderObj.timeline.push({
         status: orderObj.status,
         title: eventTitle,
         time: timeFormatted,
-        note: body.note || (body.tracking && body.tracking.courier ? `Courier: ${body.tracking.courier} (Tracking #${body.tracking.trackingNumber})` : `Order marked as ${orderObj.status}`)
+        note: eventNote
       });
     }
 
@@ -401,6 +488,15 @@ export async function onRequestPatch(context) {
         VALUES (?, ?, ?, ?, ?)
       `).bind(orderId, body.adminName || "Admin", actionTitle, body.note || (body.tracking && body.tracking.courier ? `Courier: ${body.tracking.courier} (#${body.tracking.trackingNumber})` : ""), now.toISOString()).run();
     } catch (e) {}
+
+    // Dispatch status update email to customer whenever order status/tracking is modified
+    try {
+      if (body.status || body.cancelReason || body.tracking) {
+        await sendOrderStatusUpdateEmail(orderObj, env);
+      }
+    } catch (emailErr) {
+      console.warn("Failed sending order status update email:", emailErr);
+    }
 
     return new Response(
       JSON.stringify({ success: true, order: orderObj }),
@@ -699,4 +795,209 @@ async function sendOrderEmails(order, env) {
       console.warn("Failed sending customer confirmation email:", errCust);
     }
   }
+}
+
+// =======================================================================
+// 5. AUTOMATED ORDER STATUS UPDATE EMAIL (SENT TO CUSTOMER ON STATUS CHANGE)
+// =======================================================================
+async function sendOrderStatusUpdateEmail(order, env) {
+  let apiKey = (env && env.RESEND_API_KEY) || "";
+  if (!apiKey) {
+    try {
+      apiKey = atob("cmVfVXY1UERZc1VfRlhkeUpITEFhcDVVUHMyeDNDMkRIZW45");
+    } catch (e) {
+      apiKey = "";
+    }
+  }
+  if (!apiKey) return;
+
+  const targetAdminEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
+  const fromEmail = (env && env.EMAIL_FROM) || "MSR Foods <orders@msrfoodsofficial.food>";
+
+  const cust = order.customer || {};
+  const custName = cust.name || order.name || "Valued Customer";
+  const firstName = (custName || "Valued Customer").trim().split(" ")[0];
+  const custPhone = cust.phone || order.phone || "";
+  const custEmail = (cust.email || order.email || "").trim();
+  const custAddress = cust.address || order.addr || "";
+  const custCity = cust.city || order.city || "";
+
+  if (!custEmail || !custEmail.includes("@")) {
+    console.log(`[Status Email] Skipping email for order #${order.id} - no customer email address provided.`);
+    return;
+  }
+
+  const status = (order.status || "Pending").trim();
+  const statusLower = status.toLowerCase();
+  const tracking = order.tracking || {};
+  const cancelReason = order.cancelReason || order.cancellationReason || "";
+  const trackUrl = `https://msrfoodsofficial.food/#/track/${encodeURIComponent(order.id)}`;
+  const totalNum = Number(order.total || (order.pricing && order.pricing.total) || 0);
+  const subtotalNum = Number(order.subtotal || (order.pricing && order.pricing.subtotal) || 0);
+  const shippingNum = Number(order.shipping !== undefined ? order.shipping : (order.pricing ? order.pricing.shipping : 0));
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  // Determine email visual badge and message per status
+  let statusBadgeBg = "#d6a736";
+  let statusBadgeText = "#14100a";
+  let statusHeadline = `Order #${order.id} Status Updated`;
+  let statusMessage = `Your order #${order.id} status has been updated to <strong>${status}</strong>.`;
+  let subject = `Order #${order.id} Status: ${status} — MSR Foods`;
+
+  if (statusLower === "approved") {
+    statusBadgeBg = "#059669";
+    statusBadgeText = "#ffffff";
+    subject = `✓ Order #${order.id} Approved & Confirmed — MSR Foods`;
+    statusHeadline = `Your Order Has Been Approved & Confirmed!`;
+    statusMessage = `Hello ${firstName}, your order #${order.id} has been verified and confirmed by our fulfillment team. Our kitchen team is now preparing and packing your fresh artisanal honey and dry fruits.`;
+  } else if (statusLower === "processing") {
+    statusBadgeBg = "#d97706";
+    statusBadgeText = "#ffffff";
+    subject = `⚙️ Order #${order.id} Packed & Sealed — MSR Foods`;
+    statusHeadline = `Your Order is Packed & Quality Sealed`;
+    statusMessage = `Hello ${firstName}, your order #${order.id} has been freshly packed with double tamper-evident seal protection and is awaiting courier handover.`;
+  } else if (statusLower === "dispatched") {
+    statusBadgeBg = "#2563eb";
+    statusBadgeText = "#ffffff";
+    subject = `🚚 Order #${order.id} Dispatched${tracking.courier ? ' with ' + tracking.courier : ''} — MSR Foods`;
+    statusHeadline = `Your Package Has Been Dispatched!`;
+    statusMessage = `Exciting news, ${firstName}! Your order #${order.id} has been handed over to ${tracking.courier ? '<strong>' + tracking.courier + '</strong>' : 'our courier partner'} and is now on its way to your doorstep.`;
+  } else if (statusLower === "delivered") {
+    statusBadgeBg = "#10b981";
+    statusBadgeText = "#ffffff";
+    subject = `🎉 Order #${order.id} Delivered Successfully — MSR Foods`;
+    statusHeadline = `Your Package Has Been Delivered!`;
+    statusMessage = `Hello ${firstName}, your order #${order.id} has been marked as delivered. We hope you and your family enjoy the rich, wholesome taste of 100% pure MSR mountain honey & roasted nuts!`;
+  } else if (statusLower === "cancelled") {
+    statusBadgeBg = "#dc2626";
+    statusBadgeText = "#ffffff";
+    subject = `⚠️ Notice Regarding Order #${order.id} (Cancelled) — MSR Foods`;
+    statusHeadline = `Order #${order.id} Has Been Cancelled`;
+    statusMessage = `Hello ${firstName}, we are writing to notify you that your order #${order.id} has been cancelled.`;
+  }
+
+  const itemsHtml = items.map(item => `
+    <tr style="border-bottom: 1px solid #f1ece1;">
+      <td style="padding: 10px 0; color: #14100a; font-size: 14px;">
+        <b>${item.title || item.name}</b> ${item.weight ? `<span style="color:#d97706; font-size:12.5px;">(${item.weight})</span>` : ''}
+        <div style="color: #6b6355; font-size: 12.5px;">Qty: ${item.qty || 1} × PKR ${Number(item.price || 0).toLocaleString()}</div>
+      </td>
+      <td style="padding: 10px 0; text-align: right; font-weight: 700; color: #14100a; font-size: 14.5px;">
+        PKR ${(Number(item.price || 0) * Number(item.qty || 1)).toLocaleString()}
+      </td>
+    </tr>
+  `).join("");
+
+  const emailHtml = `
+    <div style="background-color: #0b0906; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 36px 12px; min-height: 100%;">
+      <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        
+        <!-- Header Banner -->
+        <div style="background: #14100a; padding: 28px 24px 24px; text-align: center; border-bottom: 3px solid #d6a736;">
+          <h1 style="color: #f4d77f; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px;">MSR FOODS</h1>
+          <p style="color: #ffffff; margin: 6px 0 0; font-size: 13.5px; letter-spacing: 1px; text-transform: uppercase;">Quality Built For You</p>
+        </div>
+
+        <div style="padding: 28px 24px;">
+          <!-- Status Pill -->
+          <div style="text-align: center; margin-bottom: 18px;">
+            <span style="background: ${statusBadgeBg}; color: ${statusBadgeText}; padding: 6px 18px; border-radius: 99px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">
+              ● ${status}
+            </span>
+          </div>
+
+          <h2 style="font-size: 22px; color: #14100a; margin: 0 0 10px; text-align: center; font-weight: 800;">
+            ${statusHeadline}
+          </h2>
+
+          <p style="font-size: 14.5px; color: #4b5563; line-height: 1.6; margin: 0 0 20px; text-align: center;">
+            ${statusMessage}
+          </p>
+
+          ${statusLower === "cancelled" ? `
+            <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px;">
+              <b style="color: #991b1b; font-size: 13px; display: block; margin-bottom: 4px; text-transform: uppercase;">Reason for Cancellation:</b>
+              <p style="margin: 0; font-size: 14px; color: #1f2937; line-height: 1.5;">
+                ${cancelReason || 'Cancelled upon customer request or by store operations team.'}
+              </p>
+            </div>
+          ` : ''}
+
+          ${(statusLower === "dispatched" && tracking.trackingNumber) ? `
+            <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; text-align: center;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #1e40af; font-weight: 700; letter-spacing: 0.5px;">Consignment Details</div>
+              <div style="font-size: 17px; font-weight: 800; color: #1e3a8a; margin: 4px 0;">🚚 ${tracking.courier || 'Express Courier'}</div>
+              <div style="font-size: 13.5px; color: #374151;">Tracking ID: <code style="font-family: monospace; font-size: 15px; font-weight: 700; background: #ffffff; padding: 3px 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #1e40af;">${tracking.trackingNumber}</code></div>
+            </div>
+          ` : ''}
+
+          <!-- Live Tracking CTA -->
+          <div style="text-align: center; margin-bottom: 26px;">
+            <a href="${trackUrl}" style="background: linear-gradient(135deg, #f7de8f, #d6a736); color: #14100a; padding: 14px 34px; border-radius: 99px; font-weight: 800; text-decoration: none; font-size: 15px; display: inline-block; box-shadow: 0 4px 14px rgba(214, 167, 54, 0.4);">
+              ${statusLower === "cancelled" ? "View Order Status Online →" : "View Live Order Tracking →"}
+            </a>
+          </div>
+
+          <!-- Order Summary Card -->
+          <div style="border: 1px solid #ebdcc4; border-radius: 12px; padding: 20px; background: #faf8f3; margin-bottom: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; border-bottom: 1px solid #e7dcce; padding-bottom: 8px;">
+              <h3 style="margin: 0; font-size: 15px; color: #14100a; font-weight: 800; text-transform: uppercase;">Order Summary</h3>
+              <span style="font-size: 13px; color: #946914; font-weight: 700;">#${order.id}</span>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+              ${itemsHtml}
+            </table>
+
+            <div style="border-top: 1.5px solid #dfd2be; padding-top: 10px; font-size: 13.5px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 3px 0; color: #6b6355;">Subtotal</td>
+                  <td style="padding: 3px 0; text-align: right; color: #14100a; font-weight: 600;">PKR ${subtotalNum.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 3px 0; color: #6b6355;">Delivery Shipping</td>
+                  <td style="padding: 3px 0; text-align: right;">${shippingNum === 0 ? '<strong style="color:#16a34a">FREE</strong>' : `PKR ${shippingNum.toLocaleString()}`}</td>
+                </tr>
+                <tr style="border-top: 1.5px solid #14100a;">
+                  <td style="padding: 8px 0 0; font-size: 16px; font-weight: 800; color: #14100a;">Total Payable:</td>
+                  <td style="padding: 8px 0 0; text-align: right; font-size: 16px; font-weight: 800; color: #b45309;">PKR ${totalNum.toLocaleString()}</td>
+                </tr>
+              </table>
+            </div>
+
+            ${custAddress ? `
+              <div style="border-top: 1px solid #e7dcce; margin-top: 14px; padding-top: 10px; font-size: 13px; color: #524737; line-height: 1.45;">
+                <strong style="color: #14100a;">Destination:</strong> ${custName} · ${custPhone}<br>${custAddress}, ${custCity}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Reassurance / WhatsApp Contact -->
+          <div style="background: #ffffff; border: 1px dashed #d6a736; border-radius: 10px; padding: 14px 18px; text-align: center; font-size: 13px; color: #6b6355;">
+            Have questions about this update? Reply directly to this email or chat with us on WhatsApp at 
+            <a href="https://wa.me/923159935600" style="color: #25D366; font-weight: 700; text-decoration: none;">+92 315 9935600</a>.
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #14100a; padding: 20px; text-align: center; color: #9c8e76; font-size: 12px; line-height: 1.6;">
+          <p style="margin: 0 0 4px; color: #e5ded2; font-weight: 600;">MSR Foods · Kohat, Pakistan</p>
+          <p style="margin: 0;">100% Pure Natural Mountain Honey & Artisanal Dry Fruits.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [custEmail],
+      reply_to: targetAdminEmail,
+      subject,
+      html: emailHtml
+    })
+  });
 }

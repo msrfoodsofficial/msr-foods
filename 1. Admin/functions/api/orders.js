@@ -318,6 +318,18 @@ export async function onRequestPatch(context) {
       orderObj.status = body.status;
     }
 
+    if (body.shipping !== undefined) {
+      orderObj.shipping = Number(body.shipping);
+      if (orderObj.pricing) orderObj.pricing.shipping = Number(body.shipping);
+      orderObj.total = Number(orderObj.subtotal || 0) + Number(body.shipping);
+      if (orderObj.pricing) orderObj.pricing.total = orderObj.total;
+    }
+
+    if (body.total !== undefined) {
+      orderObj.total = Number(body.total);
+      if (orderObj.pricing) orderObj.pricing.total = Number(body.total);
+    }
+
     if (body.tracking) {
       orderObj.tracking = { ...(orderObj.tracking || {}), ...body.tracking };
       if (body.status === "Dispatched") orderObj.tracking.dispatchedAt = now.toISOString();
@@ -326,6 +338,14 @@ export async function onRequestPatch(context) {
 
     if (body.timeline && Array.isArray(body.timeline)) {
       orderObj.timeline = body.timeline;
+    } else if (body.shipping !== undefined) {
+      if (!orderObj.timeline) orderObj.timeline = [];
+      orderObj.timeline.push({
+        status: orderObj.status || "Pending",
+        title: "Delivery Price Adjusted to FREE (Kohat)",
+        time: timeFormatted,
+        note: body.note || `Delivery fee adjusted to PKR ${orderObj.shipping} (Kohat Free Delivery applied). Total payable: PKR ${orderObj.total.toLocaleString()}.`
+      });
     } else if (body.status || body.note) {
       if (!orderObj.timeline) orderObj.timeline = [];
       let eventTitle = `Status updated to ${orderObj.status}`;
@@ -353,13 +373,24 @@ export async function onRequestPatch(context) {
       .prepare(`
         UPDATE orders SET
           status = ?,
+          shipping = ?,
+          total = ?,
           updated_at = ?,
           tracking_json = ?,
           timeline_json = ?,
           raw_json = ?
         WHERE id = ?
       `)
-      .bind(orderObj.status, orderObj.updatedAt, trackingJson, timelineJson, rawJson, orderId)
+      .bind(
+        orderObj.status,
+        Number(orderObj.shipping !== undefined ? orderObj.shipping : 0),
+        Number(orderObj.total !== undefined ? orderObj.total : 0),
+        orderObj.updatedAt,
+        trackingJson,
+        timelineJson,
+        rawJson,
+        orderId
+      )
       .run();
 
     // Record in order_activity_logs audit trail

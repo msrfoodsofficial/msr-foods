@@ -1334,8 +1334,15 @@ function openOrderModal(orderId) {
               </tr>
             `).join("")}
             <tr style="border-top:1px solid var(--hair)">
-              <td colspan="2" style="padding:6px 0">Delivery Shipping</td>
-              <td style="text-align:right;padding:6px 0">${o.shipping === 0 ? '<span class="tag tag-emerald">FREE</span>' : money(o.shipping || 200)}</td>
+              <td colspan="2" style="padding:6px 0">
+                Delivery Shipping
+                ${o.shipping > 0 ? `
+                  <button class="btn btn-xs btn-line" style="margin-left:8px;padding:2px 8px;font-size:11px;color:#22c55e;border-color:rgba(34,197,94,0.3)" onclick="updateOrderDeliveryFee('${o.id}', 0)">
+                    ⚡ Make Free (Kohat)
+                  </button>
+                ` : ""}
+              </td>
+              <td style="text-align:right;padding:6px 0">${o.shipping === 0 ? '<span class="tag tag-emerald">FREE (Kohat)</span>' : money(o.shipping || 200)}</td>
             </tr>
             <tr style="border-top:1.5px solid var(--gold)">
               <td colspan="2" style="padding:8px 0"><b style="font-size:15px;color:var(--cream)">Total Amount</b></td>
@@ -1383,6 +1390,55 @@ function updateOrderStatusFromModal(orderId, chosenStatus) {
   updateOrderStatus(orderId, chosenStatus);
   openOrderModal(orderId);
 }
+
+async function updateOrderDeliveryFee(orderId, newShippingFee = 0) {
+  let orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const newShipping = Number(newShippingFee);
+  o.shipping = newShipping;
+  if (o.pricing) o.pricing.shipping = newShipping;
+  o.total = Number(o.subtotal || 0) + newShipping;
+  if (o.pricing) o.pricing.total = o.total;
+  o.updatedAt = new Date().toISOString();
+
+  if (!o.timeline) o.timeline = [];
+  const noteText = newShipping === 0 
+    ? "Delivery fee adjusted to PKR 0 (Kohat Free Delivery applied by merchant)" 
+    : `Delivery fee adjusted to PKR ${newShipping}`;
+
+  o.timeline.push({
+    status: o.status || "Pending",
+    title: newShipping === 0 ? "Free Delivery Applied (Kohat)" : "Delivery Fee Adjusted",
+    time: typeof formatOrderDate === "function" ? formatOrderDate(new Date()) : new Date().toLocaleString(),
+    note: noteText
+  });
+
+  Store.set("app_orders", orders);
+
+  try {
+    const endpoint = (typeof getOrdersApiEndpoint === "function") ? getOrdersApiEndpoint() : "/api/orders";
+    await fetch(endpoint, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: orderId,
+        shipping: newShipping,
+        total: o.total,
+        note: noteText
+      })
+    });
+  } catch (err) {
+    console.warn("Failed to sync delivery fee adjustment to server:", err);
+  }
+
+  toast(`Delivery price updated for Order #${orderId} (Total: PKR ${o.total.toLocaleString()})`);
+  renderDashboard();
+  renderOrdersTable();
+  openOrderModal(orderId);
+}
+window.updateOrderDeliveryFee = updateOrderDeliveryFee;
 
 // Global window exposure for inline onclick handlers
 window.approveOrder = approveOrder;

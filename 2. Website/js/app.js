@@ -47,9 +47,12 @@ function updateBadge(bump = false) {
   if (!b) return;
   const n = itemCount();
   b.hidden = !n;
-  b.textContent = n;
+  b.textContent = n > 0 ? n : "";
+  const a = b.closest("a");
+  const desc = n > 0 ? `Cart, ${n} item${n === 1 ? "" : "s"}` : "Cart";
+  if (a) a.setAttribute("aria-label", desc);
   const lbl = $("#cartLabel");
-  if (lbl) lbl.textContent = `Cart, ${n} item${n === 1 ? "" : "s"}`;
+  if (lbl) lbl.textContent = desc;
   if (bump) {
     b.classList.remove("bump");
     void b.offsetWidth;
@@ -72,7 +75,7 @@ function shell() {
 
   // Header
   const logoHtml = L.type === "image"
-    ? `<img src="${L.src}" alt="${L.alt}" width="${L.width || 116}" height="${L.height || 64}">`
+    ? `<img src="${L.src}" alt="${L.alt}" width="${L.width || 116}" height="${L.height || 64}" fetchpriority="high" decoding="sync">`
     : `<span class="logo-txt">${L.textFallback || B.name}</span>`;
 
   $("#hdr").innerHTML = `
@@ -83,10 +86,10 @@ function shell() {
       </nav>
       <div class="hdr-r">
         <button class="ic" data-act="search" aria-label="Search">${ICON.search}</button>
-        <a class="ic" href="#/cart" aria-label="Cart">
+        <a class="ic" href="#/cart" id="hdrCart" aria-label="Cart">
           <span class="sr" id="cartLabel">Cart</span>
           ${ICON.bag}
-          <span class="badge" id="badge" hidden>0</span>
+          <span class="badge" id="badge" aria-hidden="true" hidden></span>
         </a>
         <button class="ic" data-act="account" aria-label="Account">${ICON.user}</button>
         <a class="btn btn-gold btn-sm" href="#/shop">Shop Now</a>
@@ -145,7 +148,7 @@ function shell() {
           </div>
         </div>
         <div>
-          <h4>Navigation</h4>
+          <h3>Navigation</h3>
           <ul>
             <li><a href="#/">Home</a></li>
             <li><a href="#/shop">Shop</a></li>
@@ -155,7 +158,7 @@ function shell() {
           </ul>
         </div>
         <div>
-          <h4>Customer Care</h4>
+          <h3>Customer Care</h3>
           <ul>
             <li><a href="#/policy/shipping">Shipping & Delivery</a></li>
             <li><a href="#/policy/returns">Returns & Refunds</a></li>
@@ -164,7 +167,7 @@ function shell() {
           </ul>
         </div>
         <div>
-          <h4>Contact Information</h4>
+          <h3>Contact Information</h3>
           <ul class="ct">
             <li>${ICON.phone}<a href="tel:${C.phoneIntl}">${C.phone}</a></li>
             <li>${ICON.mail}<a href="mailto:${C.email}">${C.email}</a></li>

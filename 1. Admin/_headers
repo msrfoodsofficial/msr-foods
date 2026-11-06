@@ -1,0 +1,39 @@
+# HTML documents: always revalidate so deploys are instant
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Static media & images: 1-year immutable cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Machine discovery & API data
+/.well-known/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Access-Control-Allow-Origin: *
+
+/catalog.json
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Access-Control-Allow-Origin: *
+
+/sitemap.xml
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/llms.txt
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Access-Control-Allow-Origin: *
+
+# Versioned CSS & JS
+/styles/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/js/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/data/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/config/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

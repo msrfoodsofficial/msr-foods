@@ -413,15 +413,28 @@
   }
   </script>
 
-  <!-- Google Fonts Preconnect & Stylesheet -->
+  <!-- Machine Discovery & Agent Standards -->
+  <link rel="ard" type="application/json" href="/.well-known/ard.json">
+
+  <!-- Preload Critical LCP Assets -->
+  <link rel="preload" as="image" href="assets/images/products/front.webp" fetchpriority="high" type="image/webp">
+  <link rel="preload" as="image" href="assets/images/logo.webp" fetchpriority="high" type="image/webp">
+
+  <!-- Google Fonts Preconnect & Optimized Non-Blocking Stylesheet -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/fraunces/v38/6NU78FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0KxC9TeP2Xz5c.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Jost:wght@400;500;600;700&display=swap">
+  </noscript>
 
   <!-- Design System & Component Styles -->
-  <link rel="stylesheet" href="styles/theme.css?v=36">
-  <link rel="stylesheet" href="styles/ui-kit.css?v=36">
-  <link rel="stylesheet" href="styles/storefront.css?v=36">
+  <link rel="stylesheet" href="styles/theme.css?v=37">
+  <link rel="stylesheet" href="styles/ui-kit.css?v=37">
+  <link rel="stylesheet" href="styles/storefront.css?v=37">
 
 </head>
 <body>
@@ -784,15 +797,15 @@
   <!-- Interactive Toast Notification -->
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <!-- White-Label Configuration & Data -->
-  <script src="config/brand.config.js?v=36"></script>
-  <script src="config/theme.config.js?v=36"></script>
-  <script src="data/products.js?v=36"></script>
-  <script src="data/cities.js?v=36"></script>
+  <!-- White-Label Configuration & Data (Deferred) -->
+  <script src="config/brand.config.js?v=37" defer></script>
+  <script src="config/theme.config.js?v=37" defer></script>
+  <script src="data/products.js?v=37" defer></script>
+  <script src="data/cities.js?v=37" defer></script>
 
-  <!-- Core Logic, Router & Application Runtime -->
-  <script src="js/store.js?v=36"></script>
-  <script src="js/router.js?v=36"></script>
-  <script src="js/app.js?v=36"></script>
+  <!-- Core Logic, Router & Application Runtime (Deferred) -->
+  <script src="js/store.js?v=37" defer></script>
+  <script src="js/router.js?v=37" defer></script>
+  <script src="js/app.js?v=37" defer></script>
 </body>
 </html>

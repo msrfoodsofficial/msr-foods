@@ -56,7 +56,7 @@ function secHero() {
             <circle cx="280" cy="280" r="230"/>
             <circle class="c2" cx="280" cy="280" r="270"/>
           </svg>
-          <img class="hero-jar" id="heroJar" src="${P ? P.img.front : 'assets/images/products/front.webp'}" alt="${B.name} Honey Nut Mix 500g" width="460" height="600">
+          <img class="hero-jar" id="heroJar" src="${P ? P.img.front : 'assets/images/products/front.webp'}" alt="${B.name} Honey Nut Mix 500g" width="460" height="600" fetchpriority="high" decoding="sync">
         </div>
       </div>
     </section>
@@ -92,7 +92,7 @@ function secWelcome() {
           <div><a class="link" href="#/about">Our Brand Story ${ICON.arrow}</a></div>
         </div>
         <figure class="panel-sand reveal" style="--d:.2s">
-          <img src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="${B.name} Product Jar Display" width="1340" height="996" style="width:100%;max-width:660px;height:auto;aspect-ratio:1340/996;object-fit:contain;display:block;margin:0 auto">
+          <img src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="${B.name} Product Jar Display" width="1340" height="996" loading="lazy" decoding="async" style="width:100%;max-width:660px;height:auto;aspect-ratio:1340/996;object-fit:contain;display:block;margin:0 auto">
           <figcaption>Available in 500g and 1kg family sizes.</figcaption>
         </figure>
       </div>
@@ -106,10 +106,10 @@ function prodCard(p) {
   const isProminent = p.prominent || p.id === "msr-250";
   const imgSrc = (p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp";
   return `
-    <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}" data-href="#/product/${p.slug}" role="button" tabindex="0" aria-label="View ${p.title} details">
+    <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}" data-href="#/product/${p.slug}">
       <a href="#/product/${p.slug}" class="pc-img" aria-label="${p.title} details">
         <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
-        <img src="${imgSrc}" alt="${p.name} ${p.weight}" loading="lazy">
+        <img src="${imgSrc}" alt="${p.name} ${p.weight}" width="240" height="240" loading="lazy" decoding="async">
       </a>
       <div class="pc-body">
         <h3><a href="#/product/${p.slug}" style="color:inherit;text-decoration:none">${p.title.replace(/\s*\([^)]*\)\s*$/, "")}</a> <span class="pc-w">(${p.weight})</span></h3>
@@ -202,7 +202,7 @@ function secIngredients() {
         <div class="grid3">
           ${items.map((ing, i) => `
             <div class="ing reveal" style="--d:${i * 0.08}s">
-              <div class="ing-img"><img src="${ing.img}" alt="${ing.name}" loading="lazy"></div>
+              <div class="ing-img"><img src="${ing.img}" alt="${ing.name}" width="80" height="80" loading="lazy" decoding="async"></div>
               <h3>${ing.name}</h3>
               <p>${ing.desc}</p>
             </div>
@@ -257,11 +257,11 @@ function secShowcase() {
           <p class="lead">Look through the clear jar: packed to the brim with rich, crunchy dry fruits drenched in viscous golden honey.</p>
         </div>
         <div class="show-stage" id="stage">
-          <img class="pair" src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="MSR Showcase Display" loading="lazy">
-          <div class="orb" data-p="18" style="top:10%;left:8%"><img src="assets/images/ingredients/honey.webp" alt="Honey"></div>
-          <div class="orb" data-p="-22" style="top:18%;right:10%"><img src="assets/images/ingredients/almonds.webp" alt="Almonds"></div>
-          <div class="orb" data-p="26" style="bottom:12%;left:12%"><img src="assets/images/ingredients/walnuts.webp" alt="Walnuts"></div>
-          <div class="orb" data-p="-16" style="bottom:16%;right:14%"><img src="assets/images/ingredients/cashews.webp" alt="Cashews"></div>
+          <img class="pair" src="${P ? P.img.pair : 'assets/images/products/pair.webp'}" alt="MSR Showcase Display" width="1340" height="996" loading="lazy" decoding="async">
+          <div class="orb" data-p="18" style="top:10%;left:8%"><img src="assets/images/ingredients/honey.webp" alt="Honey" width="80" height="80" loading="lazy" decoding="async"></div>
+          <div class="orb" data-p="-22" style="top:18%;right:10%"><img src="assets/images/ingredients/almonds.webp" alt="Almonds" width="80" height="80" loading="lazy" decoding="async"></div>
+          <div class="orb" data-p="26" style="bottom:12%;left:12%"><img src="assets/images/ingredients/walnuts.webp" alt="Walnuts" width="80" height="80" loading="lazy" decoding="async"></div>
+          <div class="orb" data-p="-16" style="bottom:16%;right:14%"><img src="assets/images/ingredients/cashews.webp" alt="Cashews" width="80" height="80" loading="lazy" decoding="async"></div>
         </div>
       </div>
     </section>
@@ -288,7 +288,7 @@ function secAbout(full = false) {
           <div style="margin-top:22px"><a class="link" href="#/about">Read Our Full Brand Story ${ICON.arrow}</a></div>
         </div>
         <div class="brand-tile reveal" style="--d:.2s">
-          <img src="${window.BRAND_CONFIG.logo.src}" alt="${B.name} Logo">
+          <img src="${window.BRAND_CONFIG.logo.src}" alt="${B.name} Logo" width="406" height="224" loading="lazy" decoding="async" style="width:100%;max-width:406px;height:auto;aspect-ratio:406/224;object-fit:contain">
           <p style="margin-top:20px;font-size:15px;color:var(--mute-dark);text-align:center">Headquartered in ${(C.address[C.address.length - 1] || C.address[0] || "Pakistan")} · Delivering Nationwide</p>
         </div>
       </div>
@@ -401,17 +401,17 @@ views.product = (slug) => {
           <div class="pdp">
             <div>
               <div class="gal-main">
-                <img class="main" id="galMain" src="${imgSrc}" alt="${p.name} ${p.weight}">
+                <img class="main" id="galMain" src="${imgSrc}" alt="${p.name} ${p.weight}" width="600" height="600" decoding="async">
               </div>
               <div class="thumbs">
                 <button class="thumb" aria-pressed="true" data-act="thumb" data-pid="${p.id}" data-src="front" data-alt="front jar view">
-                  <img src="${(p.img && p.img.front) || imgSrc}" alt="Front">
+                  <img src="${(p.img && p.img.front) || imgSrc}" alt="Front" width="80" height="80" loading="lazy" decoding="async">
                 </button>
                 <button class="thumb" aria-pressed="false" data-act="thumb" data-pid="${p.id}" data-src="back" data-alt="back label view">
-                  <img src="${(p.img && p.img.back) || imgSrc}" alt="Back">
+                  <img src="${(p.img && p.img.back) || imgSrc}" alt="Back" width="80" height="80" loading="lazy" decoding="async">
                 </button>
                 <button class="thumb" aria-pressed="false" data-act="thumb" data-pid="${p.id}" data-src="pair" data-alt="product collection view">
-                  <img src="${(p.img && p.img.pair) || imgSrc}" alt="Pair">
+                  <img src="${(p.img && p.img.pair) || imgSrc}" alt="Pair" width="80" height="80" loading="lazy" decoding="async">
                 </button>
               </div>
             </div>
@@ -543,7 +543,7 @@ views.cart = () => {
           <div class="box">
             ${L.map(l => `
               <div class="li">
-                <a class="li-img" href="#/product/${l.p.slug}"><img src="${l.p.img.front}" alt="${l.p.name}"></a>
+                <a class="li-img" href="#/product/${l.p.slug}"><img src="${l.p.img.front}" alt="${l.p.name}" width="72" height="72" loading="lazy" decoding="async"></a>
                 <div>
                   <h3>${l.p.name}</h3>
                   <small>${l.p.netWeight} · ${money(l.p.price)} each</small>
@@ -730,7 +730,7 @@ views.checkout = () => {
               ${L.map(l => `
                 <div class="li" style="border-bottom:1px solid rgba(27,21,12,0.08);padding-bottom:12px;margin-bottom:12px">
                   <div class="li-img" style="background:#000;border:1px solid rgba(27,21,12,0.1);border-radius:8px;overflow:hidden">
-                    <img src="${l.p.img.front}" alt="${l.p.name}">
+                    <img src="${l.p.img.front}" alt="${l.p.name}" width="54" height="54" loading="lazy" decoding="async">
                   </div>
                   <div>
                     <h3 style="font-size:15px;font-weight:700;color:#14100a;line-height:1.3">${l.p.name}</h3>
@@ -2102,7 +2102,7 @@ function openNotifyModal(pid) {
 
       <!-- Product Preview Snippet -->
       <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;margin-bottom:16px">
-        <img src="${imgSrc}" alt="${p.title}" style="width:42px;height:42px;object-fit:cover;border-radius:8px">
+        <img src="${imgSrc}" alt="${p.title}" width="42" height="42" loading="lazy" decoding="async" style="width:42px;height:42px;object-fit:cover;border-radius:8px">
         <div style="flex:1">
           <div style="font-weight:600;font-size:13px;color:var(--cream,#f5f5f0)">${p.title}</div>
           <div style="font-size:12px;color:var(--gold-lo,#b38f26)">${money(p.price)} · ${p.weight || p.netWeight}</div>

@@ -184,15 +184,22 @@ MSR Foods welcomes bulk orders from retailers, pharmacies, fitness centers, corp
 - Q: Will MSR Foods expand internationally?
   A: Yes. International expansion is planned for the near future. Contact us for early inquiries.
 
-## Machine-Readable Data
+## Machine-Readable Data & Links
 
-- Product catalog (JSON): https://msrfoodsofficial.food/catalog.json
-- Sitemap: https://msrfoodsofficial.food/sitemap.xml
-- Schema.org JSON-LD: embedded in https://msrfoodsofficial.food
+- [Official Storefront](https://msrfoodsofficial.food): Browse products and place orders with Cash on Delivery nationwide.
+- [Product Catalog (JSON)](https://msrfoodsofficial.food/catalog.json): Structured machine-readable product catalog.
+- [XML Sitemap](https://msrfoodsofficial.food/sitemap.xml): Complete URL index of MSR Foods website.
+- [Agentic Resource Discovery Manifest](https://msrfoodsofficial.food/.well-known/ard.json): ARD standard machine discovery manifest.
+- [MSR Honey Nut Mix 500g](https://msrfoodsofficial.food/#/product/honey-nut-mix-500g): Signature 500g everyday superfood jar.
+- [MSR Honey Nut Mix 1kg](https://msrfoodsofficial.food/#/product/honey-nut-mix-1kg): Best-value 1kg family value pack.
+- [MSR Honey Nut Mix 250g](https://msrfoodsofficial.food/#/product/honey-nut-mix-250g): Compact 250g trial starter jar.
 
-## Social Media
+## Official Brand Channels
 
-- Instagram: https://www.instagram.com/msrfoods.official
-- YouTube: https://www.youtube.com/@MSRFoods-official-pk
-- Facebook: https://www.facebook.com/USSPRODUCTIONLEVEL
-- TikTok: https://www.tiktok.com/@msrfoodsoffical?lang=en
+- [WhatsApp Direct Chat](https://wa.me/923159935600): +92 315 9935600 for instant ordering and support.
+- [Google Business Profile](https://share.google/4qYt5oe9pBqKFpKce): Verified business location and customer reviews.
+- [Wikidata Entity](https://www.wikidata.org/wiki/Q141989418): Wikidata knowledge graph entry Q141989418.
+- [Instagram Profile](https://www.instagram.com/msrfoods.official): @msrfoods.official
+- [YouTube Channel](https://www.youtube.com/@MSRFoods-official-pk): @MSRFoods-official-pk
+- [Facebook Page](https://www.facebook.com/USSPRODUCTIONLEVEL): Official Facebook presence.
+- [TikTok Channel](https://www.tiktok.com/@msrfoodsoffical?lang=en): @msrfoodsoffical

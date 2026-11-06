@@ -5,6 +5,11 @@
  */
 
 /* Header & Navigation */
+#app {
+  min-height: 85vh;
+  display: block;
+}
+
 .hdr {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
@@ -951,6 +956,7 @@
   margin-left: -6px;
 }
 
+.ftr h3,
 .ftr h4 {
   font: 600 17px var(--sans);
   color: var(--gold-hi);

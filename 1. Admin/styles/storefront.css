@@ -1194,10 +1194,10 @@
   line-height: 1.8;
 }
 
-/* Buy Row Buttons on Product Page */
-.buy-row .btn-line,
-.buy-row .btn-add-cart,
-.page.light .buy-row .btn-line {
+/* Buy Row Buttons on Product Detail Page (Light Background) */
+.pdp .buy-row .btn-line,
+.pdp .buy-row .btn-add-cart,
+.page.light .pdp .buy-row .btn-line {
   border: 2px solid var(--ink, #14100a) !important;
   color: var(--ink, #14100a) !important;
   background: #ffffff !important;
@@ -1205,9 +1205,9 @@
   box-shadow: 0 2px 8px rgba(20, 16, 10, 0.04);
 }
 
-.buy-row .btn-line:hover,
-.buy-row .btn-add-cart:hover,
-.page.light .buy-row .btn-line:hover {
+.pdp .buy-row .btn-line:hover,
+.pdp .buy-row .btn-add-cart:hover,
+.page.light .pdp .buy-row .btn-line:hover {
   background: var(--ink, #14100a) !important;
   color: #ffffff !important;
   border-color: var(--ink, #14100a) !important;
@@ -1215,9 +1215,9 @@
   box-shadow: 0 8px 20px rgba(20, 16, 10, 0.16);
 }
 
-.buy-row .btn-line svg,
-.buy-row .btn-add-cart svg,
-.page.light .buy-row .btn-line svg {
+.pdp .buy-row .btn-line svg,
+.pdp .buy-row .btn-add-cart svg,
+.page.light .pdp .buy-row .btn-line svg {
   stroke: currentColor !important;
 }
 
@@ -2302,6 +2302,32 @@ select:-webkit-autofill:focus {
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+.pc .buy-row .btn-line {
+  border: 1.5px solid var(--gold, #d6a736) !important;
+  color: var(--gold-hi, #f7de8f) !important;
+  background: rgba(214, 167, 54, 0.06) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: all 0.25s ease !important;
+}
+
+.pc .buy-row .btn-line:hover {
+  background: rgba(214, 167, 54, 0.18) !important;
+  border-color: #f7de8f !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(214, 167, 54, 0.25) !important;
+}
+
+.pc .buy-row .btn-line svg {
+  stroke: var(--gold-hi, #f7de8f) !important;
+  transition: stroke 0.25s ease !important;
+}
+
+.pc .buy-row .btn-line:hover svg {
+  stroke: #ffffff !important;
 }
 
 .pc-size {

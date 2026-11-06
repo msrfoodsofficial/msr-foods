@@ -84,23 +84,23 @@ svg.i {
   transform: translateY(-2px);
 }
 
-.page.light .btn-line,
-.buy-row .btn-line {
+.page.light .pdp .btn-line,
+.page.light .pdp .btn-add-cart {
   border: 2px solid var(--ink, #14100a) !important;
   color: var(--ink, #14100a) !important;
   background: #ffffff !important;
   font-weight: 700 !important;
 }
 
-.page.light .btn-line:hover,
-.buy-row .btn-line:hover {
+.page.light .pdp .btn-line:hover,
+.page.light .pdp .btn-add-cart:hover {
   background: var(--ink, #14100a) !important;
   color: #ffffff !important;
   border-color: var(--ink, #14100a) !important;
 }
 
-.page.light .btn-line svg,
-.buy-row .btn-line svg {
+.page.light .pdp .btn-line svg,
+.page.light .pdp .btn-add-cart svg {
   stroke: currentColor !important;
 }
 

@@ -581,105 +581,202 @@ views.checkout = () => {
   }
   const t = totals();
   const D = window.BRAND_CONFIG.delivery;
-  const prov = [
-    "Khyber Pakhtunkhwa", "Punjab", "Sindh", "Balochistan",
-    "Islamabad Capital Territory", "Gilgit-Baltistan", "Azad Jammu & Kashmir"
+  const prov = window.PAKISTAN_PROVINCES || [
+    "Khyber Pakhtunkhwa", "Punjab", "Sindh", "Islamabad Capital Territory",
+    "Balochistan", "Azad Jammu & Kashmir", "Gilgit-Baltistan"
   ];
+  const totalItemsCount = L.reduce((acc, item) => acc + (item.qty || 1), 0);
 
   return {
     title: `Checkout | ${window.BRAND_CONFIG.brand.name}`,
     html: `
-      <header class="page-head">
+      <header class="page-head" style="padding-top:calc(var(--hdr) + 16px);padding-bottom:18px;text-align:center">
         <div class="wrap">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a> / <a href="#/cart">Cart</a> / <span>Checkout</span></nav>
-          <h1>Complete Your Order</h1>
+          <nav class="crumbs" aria-label="Breadcrumb" style="justify-content:center;margin-bottom:8px"><a href="#/">Home</a> / <a href="#/cart">Cart</a> / <span>Checkout</span></nav>
+          <h1 style="font-size:clamp(1.8rem, 3.5vw, 2.6rem)">Complete Your Order</h1>
         </div>
       </header>
-      <section class="page light">
+
+      <!-- Mobile Collapsible Order Summary Banner -->
+      <div class="mob-summary-bar" id="mobileSummaryToggle">
+        <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:17px">🛒</span>
+            <span style="font-weight:700;color:#14100a;font-size:14px">
+              Order Summary <span style="font-weight:500;color:#6b5d4b">(${totalItemsCount} ${totalItemsCount === 1 ? 'item' : 'items'})</span>
+            </span>
+            <svg class="mob-caret" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.25s ease"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:15.5px;color:#14100a" id="mob-total-top">${money(t.total)}</div>
+        </div>
+      </div>
+
+      <section class="page light checkout-page" style="padding-top:16px;padding-bottom:clamp(40px, 6vw, 90px)">
         <form class="wrap co-grid" id="coForm" novalidate>
-          <div class="box">
+          
+          <!-- Left Column: Checkout Inputs Form -->
+          <div class="box co-form-box">
+            
+            <!-- 1. Contact Information -->
             <fieldset class="fs">
               <legend>1. Contact Information</legend>
               <div class="fgrid">
-                <div class="f"><label for="f-name">Full Name</label><input id="f-name" autocomplete="name" required><span class="err">Please enter your full name.</span></div>
-                <div class="f"><label for="f-phone">Mobile Number</label><input id="f-phone" autocomplete="tel" inputmode="tel" placeholder="03XXXXXXXXX" required><span class="err">Enter a valid mobile like 03001234567.</span></div>
-                <div class="f full"><label for="f-email">Email Address <i>(optional)</i></label><input id="f-email" type="email" autocomplete="email"><span class="err">Enter a valid email address.</span></div>
+                <div class="f">
+                  <label for="f-name">Full Name <span style="color:#dc2626">*</span></label>
+                  <input id="f-name" autocomplete="name" placeholder="e.g. Ahmad Khan" required>
+                  <span class="err">Please enter your full name.</span>
+                </div>
+                <div class="f">
+                  <label for="f-phone">Mobile Number <span style="color:#dc2626">*</span></label>
+                  <input id="f-phone" autocomplete="tel" inputmode="tel" placeholder="03XXXXXXXXX" required>
+                  <span class="err">Enter a valid mobile like 03001234567.</span>
+                </div>
+                <div class="f full">
+                  <label for="f-email">Email Address <i>(optional)</i></label>
+                  <input id="f-email" type="email" autocomplete="email" placeholder="name@example.com">
+                  <span class="err">Enter a valid email address.</span>
+                </div>
               </div>
             </fieldset>
 
+            <!-- 2. Shipping Address -->
             <fieldset class="fs">
               <legend>2. Shipping Address</legend>
               <div class="fgrid">
-                <div class="f full"><label for="f-addr">Street Address / House No.</label><input id="f-addr" autocomplete="street-address" placeholder="House/Apartment #, Street, Area landmark" required><span class="err">Enter your delivery address.</span></div>
-                <div class="f">
-                  <label for="f-city">City</label>
-                  <input id="f-city" autocomplete="address-level2" placeholder="e.g. Kohat, Peshawar, Islamabad" required list="city-suggestions">
-                  <datalist id="city-suggestions">
-                    <option value="Kohat">Kohat (FREE Local Delivery 🎉)</option>
-                    <option value="Peshawar">Peshawar</option>
-                    <option value="Islamabad">Islamabad</option>
-                    <option value="Rawalpindi">Rawalpindi</option>
-                    <option value="Lahore">Lahore</option>
-                    <option value="Karachi">Karachi</option>
-                    <option value="Abbottabad">Abbottabad</option>
-                    <option value="Mardan">Mardan</option>
-                    <option value="Bannu">Bannu</option>
-                    <option value="Faisalabad">Faisalabad</option>
-                    <option value="Multan">Multan</option>
-                    <option value="Quetta">Quetta</option>
-                  </datalist>
-                  <div class="city-quick-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-                    <button type="button" class="btn-city-pill" data-city="Kohat" style="background:rgba(16,185,129,0.14);color:#047857;border:1.5px solid #10b981;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">📍 Kohat (FREE Delivery 🎉)</button>
-                    <button type="button" class="btn-city-pill" data-city="Peshawar" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Peshawar</button>
-                    <button type="button" class="btn-city-pill" data-city="Islamabad" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Islamabad</button>
-                    <button type="button" class="btn-city-pill" data-city="Lahore" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Lahore</button>
-                    <button type="button" class="btn-city-pill" data-city="Karachi" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer">Karachi</button>
-                  </div>
-                  <div id="city-delivery-msg" style="margin-top:8px;font-size:13px;display:none"></div>
-                  <span class="err">Enter your city.</span>
+                
+                <div class="f full">
+                  <label for="f-addr">Street Address / House No. <span style="color:#dc2626">*</span></label>
+                  <input id="f-addr" autocomplete="street-address" placeholder="House/Apartment #, Street, Area landmark" required>
+                  <span class="err">Enter your delivery address.</span>
                 </div>
-                <div class="f"><label for="f-prov">Province</label><select id="f-prov">${prov.map(p => `<option>${p}</option>`).join("")}</select></div>
-                <div class="f"><label for="f-zip">Postal Code <i>(optional)</i></label><input id="f-zip" inputmode="numeric"></div>
-                <div class="f full"><label for="f-note">Delivery Notes / Special Instructions <i>(optional)</i></label><textarea id="f-note" placeholder="Nearest landmark, preferred delivery timing, etc."></textarea></div>
+
+                <!-- PROVINCE FIRST -->
+                <div class="f">
+                  <label for="f-prov">Province <span style="color:#dc2626">*</span></label>
+                  <div class="select-wrapper">
+                    <select id="f-prov" class="custom-select" required>
+                      <option value="" disabled selected>Select your province</option>
+                      ${prov.map(p => `<option value="${p}">${p}</option>`).join("")}
+                    </select>
+                  </div>
+                  <span class="err">Please select your province.</span>
+                </div>
+
+                <!-- CITY SECOND WITH SEARCHABLE DROPDOWN -->
+                <div class="f city-field-wrap">
+                  <label for="f-city">City <span style="color:#dc2626">*</span></label>
+                  <div class="city-search-box">
+                    <input id="f-city" type="text" autocomplete="off" placeholder="Search or select your city..." required>
+                    <button type="button" id="btn-toggle-city" class="btn-city-chevron" aria-label="Toggle city list">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="city-dropdown-menu" class="city-dropdown-menu"></div>
+                  </div>
+                  <span class="err">Please choose or enter your city.</span>
+                </div>
+
+                <!-- Quick Popular City Pills (Full Width) -->
+                <div class="f full city-pills-row">
+                  <div class="city-pills-header">
+                    <span>⚡ Quick select delivery cities:</span>
+                  </div>
+                  <div class="city-quick-pills">
+                    <button type="button" class="btn-city-pill pill-kohat" data-city="Kohat">📍 Kohat (FREE Delivery 🎉)</button>
+                    <button type="button" class="btn-city-pill" data-city="Peshawar">Peshawar</button>
+                    <button type="button" class="btn-city-pill" data-city="Islamabad">Islamabad</button>
+                    <button type="button" class="btn-city-pill" data-city="Rawalpindi">Rawalpindi</button>
+                    <button type="button" class="btn-city-pill" data-city="Lahore">Lahore</button>
+                    <button type="button" class="btn-city-pill" data-city="Karachi">Karachi</button>
+                  </div>
+                  <div id="city-delivery-msg" class="city-delivery-msg" style="display:none"></div>
+                </div>
+
+                <div class="f">
+                  <label for="f-zip">Postal Code <i>(optional)</i></label>
+                  <input id="f-zip" inputmode="numeric" placeholder="e.g. 26000">
+                </div>
+                <div class="f">
+                  <label for="f-note">Delivery Notes / Landmark <i>(optional)</i></label>
+                  <input id="f-note" placeholder="Nearest landmark or instructions">
+                </div>
+
               </div>
             </fieldset>
 
+            <!-- 3. Payment Method -->
             <fieldset class="fs" style="margin:0">
               <legend>3. Payment Method</legend>
               ${window.BRAND_CONFIG.payments.map((m, i) => `
-                <label class="opt">
+                <label class="opt checkout-pay-opt">
                   <input type="radio" name="pay" value="${m.id}" ${i === 0 ? "checked" : ""}>
-                  <span>
-                    <b>${m.name} ${m.badge ? `<span class="tag tag-gold" style="margin-left:8px">${m.badge}</span>` : ""}</b>
-                    <span>${m.short}</span>
+                  <span class="pay-opt-body">
+                    <b class="pay-opt-title">${m.name} ${m.badge ? `<span class="tag tag-gold" style="margin-left:8px">${m.badge}</span>` : ""}</b>
+                    <span class="pay-opt-desc">${m.short}</span>
                   </span>
                 </label>
               `).join("")}
-              <div class="notice" id="payDetail" style="margin-top:16px;background:var(--coal);color:var(--cream);border-color:var(--gold)" aria-live="polite"></div>
+              <div class="notice pay-instructions-box" id="payDetail" aria-live="polite"></div>
             </fieldset>
+
           </div>
 
-          <aside class="box sticky">
-            <h2>Order Summary</h2>
+          <!-- Right Column: Order Summary (Desktop Sticky, Mobile Collapsible / Top) -->
+          <aside class="box sticky co-summary-box" id="coAsideBox">
+            <h2 style="font-size:1.35rem;margin-bottom:14px;color:#14100a;display:flex;align-items:center;justify-content:space-between">
+              <span>Order Summary</span>
+              <small style="font-size:13px;font-weight:500;color:#6b5d4b">(${totalItemsCount} ${totalItemsCount === 1 ? 'item' : 'items'})</small>
+            </h2>
             <div class="co-items">
               ${L.map(l => `
-                <div class="li">
-                  <div class="li-img"><img src="${l.p.img.front}" alt="${l.p.name}"></div>
-                  <div><h3>${l.p.name}</h3><small>${l.p.netWeight} × ${l.qty}</small></div>
-                  <b>${money(l.qty * l.p.price)}</b>
+                <div class="li" style="border-bottom:1px solid rgba(27,21,12,0.08);padding-bottom:12px;margin-bottom:12px">
+                  <div class="li-img" style="background:#000;border:1px solid rgba(27,21,12,0.1);border-radius:8px;overflow:hidden">
+                    <img src="${l.p.img.front}" alt="${l.p.name}">
+                  </div>
+                  <div>
+                    <h3 style="font-size:15px;font-weight:700;color:#14100a;line-height:1.3">${l.p.name}</h3>
+                    <small style="color:#6b5d4b;font-size:13px">${l.p.netWeight} × ${l.qty}</small>
+                  </div>
+                  <b style="font-weight:700;color:#14100a;font-size:15px">${money(l.qty * l.p.price)}</b>
                 </div>
               `).join("")}
             </div>
             <div class="sum" style="margin-top:16px">
               <div><span>Subtotal</span><span id="co-sub-val">${money(t.sub)}</span></div>
-              <div id="co-ship-row"><span>Delivery Fee</span><span id="co-ship-val">${t.isCityFree ? '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship))}</span></div>
-              <div class="tot"><span>Total Amount</span><span id="co-tot-val">${money(t.total)}</span></div>
+              <div id="co-ship-row">
+                <span>Delivery Fee</span>
+                <span id="co-ship-val">
+                  ${t.isCityFree ? '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship))}
+                </span>
+              </div>
+              <div class="tot" style="border-top:1.5px solid rgba(27,21,12,0.14);padding-top:14px;margin-top:10px">
+                <span style="font-size:17px;font-weight:700">Total Amount</span>
+                <span id="co-tot-val" style="font-size:20px;font-weight:800;color:#14100a">${money(t.total)}</span>
+              </div>
             </div>
-            <button class="btn btn-gold btn-block" style="margin-top:22px" type="submit">Place Order Now</button>
-            <div class="secure">${ICON.lock} Safe & secure checkout. Your details are private.</div>
+            <button class="btn btn-gold btn-block" style="margin-top:22px;font-weight:700;font-size:16.5px" type="submit">
+              Place Order Now
+            </button>
+            <div class="secure" style="color:#6b5d4b;font-size:12.5px;margin-top:12px;text-align:center">
+              ${ICON.lock} Safe & secure checkout. Cash on Delivery (COD).
+            </div>
           </aside>
+
         </form>
       </section>
+
+      <!-- Persistent Mobile Bottom Bar for Instant Checkout -->
+      <div class="co-mob-bar" id="coMobBar">
+        <div class="co-mob-bar-in">
+          <div class="co-mob-info">
+            <span class="co-mob-lbl">Total to Pay (COD)</span>
+            <b class="co-mob-val" id="co-mob-tot-val">${money(t.total)}</b>
+            <small class="co-mob-sub" id="co-mob-ship-sub">${t.isCityFree ? "FREE Delivery in Kohat 🎉" : "Flat PKR 200 Delivery"}</small>
+          </div>
+          <button class="btn btn-gold btn-mob-place" type="button" id="btn-mob-place">
+            Place Order Now
+          </button>
+        </div>
+      </div>
     `
   };
 };
@@ -1805,8 +1902,8 @@ views.contact = () => {
               </div>
             </div>
             
-            <button class="btn btn-gold btn-block" style="margin-top:22px;font-weight:700" type="submit">
-              Send Message via Email
+            <button class="btn btn-gold btn-block" id="btn-contact-submit" style="margin-top:22px;font-weight:700" type="submit">
+              Submit
             </button>
 
             ${C.whatsapp ? `

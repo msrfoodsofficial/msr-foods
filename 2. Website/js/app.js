@@ -226,8 +226,8 @@ function updatePay() {
   if (!sel || !detailBox) return;
   const method = (window.BRAND_CONFIG.payments || []).find(x => x.id === sel.value) || {};
   detailBox.innerHTML = `
-    <b>${method.name} Instructions</b>
-    <p style="margin-top:6px;font-size:14.5px;color:var(--mute-dark)">${method.detail || method.short}</p>
+    <b style="color:#14100a;font-size:14.5px;font-weight:700;display:block">${method.name} Instructions</b>
+    <p style="margin-top:4px;font-size:13.5px;color:#4a4034;line-height:1.5;margin-bottom:0">${method.detail || method.short}</p>
   `;
 }
 
@@ -239,6 +239,10 @@ function updateCheckoutDelivery() {
   const shipVal = $("#co-ship-val");
   const totVal = $("#co-tot-val");
   const msg = $("#city-delivery-msg");
+  const mobTotVal = $("#co-mob-tot-val");
+  const mobShipSub = $("#co-mob-ship-sub");
+  const mobTopTot = $("#mob-total-top");
+
   if (shipVal) {
     if (t.isCityFree) {
       shipVal.innerHTML = '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>';
@@ -249,17 +253,71 @@ function updateCheckoutDelivery() {
     }
   }
   if (totVal) totVal.textContent = money(t.total);
+  if (mobTotVal) mobTotVal.textContent = money(t.total);
+  if (mobTopTot) mobTopTot.textContent = money(t.total);
+  if (mobShipSub) {
+    mobShipSub.textContent = t.isCityFree ? "FREE Delivery in Kohat 🎉" : "Flat PKR 200 Delivery";
+    mobShipSub.style.color = t.isCityFree ? "#047857" : "#6b5d4b";
+  }
+
   if (msg) {
     if (t.isCityFree) {
       msg.style.display = "block";
-      msg.style.color = "#047857";
-      msg.style.fontWeight = "600";
       msg.innerHTML = "🎉 <b>Special Local Benefit:</b> You got 100% FREE doorstep delivery in Kohat!";
     } else {
       msg.style.display = "none";
       msg.innerHTML = "";
     }
   }
+}
+
+// Searchable City Dropdown Manager
+function renderCityDropdown(filterQuery = "") {
+  const menu = $("#city-dropdown-menu");
+  if (!menu) return;
+  const provVal = $("#f-prov") ? $("#f-prov").value : "";
+  const allCities = window.PAKISTAN_CITIES || [];
+  const q = (filterQuery || "").toLowerCase().trim();
+
+  let filtered = allCities;
+  if (q) {
+    filtered = allCities.filter(c => c.city.toLowerCase().includes(q) || c.prov.toLowerCase().includes(q));
+  } else if (provVal) {
+    const provCities = allCities.filter(c => c.prov === provVal);
+    const otherCities = allCities.filter(c => c.prov !== provVal);
+    filtered = [...provCities, ...otherCities];
+  }
+
+  if (!filtered.length) {
+    menu.innerHTML = `<div style="padding:12px 16px;color:#786951;font-size:13px;text-align:center">No matching city found. You can type custom town/village name.</div>`;
+    menu.style.display = "block";
+    return;
+  }
+
+  const curCityVal = ($("#f-city")?.value || "").toLowerCase().trim();
+  menu.innerHTML = filtered.map(c => `
+    <div class="city-opt-item ${c.city.toLowerCase() === curCityVal ? 'selected' : ''}" data-city="${c.city}" data-prov="${c.prov}">
+      <span class="city-name">${c.city}</span>
+      <span class="city-prov-tag">${c.prov}</span>
+      ${c.badge ? `<span class="tag tag-emerald" style="margin-left:auto;font-size:11px;font-weight:700">${c.badge}</span>` : ''}
+    </div>
+  `).join("");
+  menu.style.display = "block";
+
+  const wrap = $(".city-field-wrap");
+  if (wrap) wrap.classList.add("open");
+}
+
+function openCityDropdown() {
+  const cityInput = $("#f-city");
+  renderCityDropdown(cityInput ? cityInput.value : "");
+}
+
+function closeCityDropdown() {
+  const menu = $("#city-dropdown-menu");
+  if (menu) menu.style.display = "none";
+  const wrap = $(".city-field-wrap");
+  if (wrap) wrap.classList.remove("open");
 }
 
 // Order Dispatching
@@ -273,6 +331,7 @@ function placeOrder(e) {
     ["f-phone", /^(\+92|0092|0)?3\d{9}$/.test(phone)],
     ["f-email", !g("f-email") || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g("f-email"))],
     ["f-addr", g("f-addr").length >= 5],
+    ["f-prov", g("f-prov").length >= 2],
     ["f-city", g("f-city").length >= 2]
   ];
 
@@ -301,9 +360,14 @@ function placeOrder(e) {
   }
 
   const submitBtn = (e && e.target ? (e.target.querySelector("button[type=\"submit\"]") || e.target) : null) || document.querySelector("#coForm button[type=\"submit\"]");
+  const mobBtn = $("#btn-mob-place");
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.textContent = "Placing Your Order...";
+  }
+  if (mobBtn) {
+    mobBtn.disabled = true;
+    mobBtn.textContent = "Placing Order...";
   }
 
   const cityVal = g("f-city");
@@ -468,7 +532,38 @@ function afterRender() {
 }
 
 // Global Event Listeners
+document.addEventListener("input", e => {
+  if (e.target.id === "f-city") {
+    renderCityDropdown(e.target.value);
+    updateCheckoutDelivery();
+  }
+});
+
+document.addEventListener("focusin", e => {
+  if (e.target.id === "f-city") {
+    openCityDropdown();
+  }
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "f-prov") {
+    const prov = e.target.value;
+    const cityInput = $("#f-city");
+    if (cityInput) {
+      const curCity = cityInput.value.trim();
+      const match = (window.PAKISTAN_CITIES || []).find(c => c.city.toLowerCase() === curCity.toLowerCase());
+      if (!curCity || (match && match.prov !== prov)) {
+        cityInput.value = "";
+      }
+      openCityDropdown();
+    }
+  }
+});
+
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeCityDropdown();
+  }
   if ((e.key === "Enter" || e.key === " ") && e.target && e.target.classList && e.target.classList.contains("pc")) {
     if (!e.target.closest("button") && e.target.dataset.href) {
       e.preventDefault();
@@ -478,6 +573,43 @@ document.addEventListener("keydown", e => {
 });
 
 document.addEventListener("click", e => {
+  // 1. City option item clicked from dropdown
+  const cityOpt = e.target.closest(".city-opt-item");
+  if (cityOpt) {
+    const city = cityOpt.dataset.city;
+    const prov = cityOpt.dataset.prov;
+    const cityInput = $("#f-city");
+    const provSelect = $("#f-prov");
+    if (cityInput) cityInput.value = city;
+    if (provSelect && prov) provSelect.value = prov;
+    closeCityDropdown();
+    updateCheckoutDelivery();
+    const parent = cityInput ? cityInput.closest(".f") : null;
+    if (parent) parent.classList.remove("bad");
+    const provParent = provSelect ? provSelect.closest(".f") : null;
+    if (provParent) provParent.classList.remove("bad");
+    return;
+  }
+
+  // 2. City chevron button toggle
+  if (e.target.closest("#btn-toggle-city")) {
+    const menu = $("#city-dropdown-menu");
+    if (menu && menu.style.display === "block") {
+      closeCityDropdown();
+    } else {
+      openCityDropdown();
+      const inp = $("#f-city");
+      if (inp) inp.focus();
+    }
+    return;
+  }
+
+  // 3. Click outside city field closes dropdown
+  if (!e.target.closest(".city-field-wrap")) {
+    closeCityDropdown();
+  }
+
+  // 4. Quick city selector pills
   const cityPill = e.target.closest(".btn-city-pill");
   if (cityPill) {
     const city = cityPill.dataset.city;
@@ -485,16 +617,38 @@ document.addEventListener("click", e => {
     if (cityInput && city) {
       cityInput.value = city;
       const provSelect = $("#f-prov");
-      if (provSelect) {
-        if (/kohat|peshawar|mardan|bannu|abbottabad/i.test(city)) provSelect.value = "Khyber Pakhtunkhwa";
-        else if (/islamabad/i.test(city)) provSelect.value = "Islamabad Capital Territory";
-        else if (/lahore|faisalabad|multan|rawalpindi/i.test(city)) provSelect.value = "Punjab";
-        else if (/karachi/i.test(city)) provSelect.value = "Sindh";
-        else if (/quetta/i.test(city)) provSelect.value = "Balochistan";
+      const match = (window.PAKISTAN_CITIES || []).find(c => c.city.toLowerCase() === city.toLowerCase());
+      if (provSelect && match && match.prov) {
+        provSelect.value = match.prov;
       }
+      closeCityDropdown();
       updateCheckoutDelivery();
       const parent = cityInput.closest(".f");
       if (parent) parent.classList.remove("bad");
+      const provParent = provSelect ? provSelect.closest(".f") : null;
+      if (provParent) provParent.classList.remove("bad");
+    }
+    return;
+  }
+
+  // 5. Mobile Order Summary banner toggle
+  if (e.target.closest("#mobileSummaryToggle")) {
+    const aside = $("#coAsideBox");
+    const toggle = $("#mobileSummaryToggle");
+    if (aside && toggle) {
+      aside.classList.toggle("open-mob");
+      toggle.classList.toggle("active");
+    }
+    return;
+  }
+
+  // 6. Mobile persistent bottom bar "Place Order Now" button
+  if (e.target.closest("#btn-mob-place")) {
+    const form = $("#coForm");
+    if (form) {
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.click();
+      else placeOrder(e);
     }
     return;
   }
@@ -599,7 +753,7 @@ document.addEventListener("change", e => {
   }
 });
 
-document.addEventListener("submit", e => {
+document.addEventListener("submit", async e => {
   e.preventDefault();
   if (e.target.id === "coForm") placeOrder(e);
   if (e.target.id === "contactForm") {
@@ -624,20 +778,65 @@ document.addEventListener("submit", e => {
       return;
     }
 
-    const brandName = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.name) || "MSR Foods";
-    const destEmail = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact && window.BRAND_CONFIG.contact.email) || "msrfoods.official@gmail.com";
-    const subject = encodeURIComponent(`Message from ${name} via ${brandName} Store`);
-    const body = encodeURIComponent(
-      `Customer Name: ${name}\n` +
-      `Customer Email: ${email}\n` +
-      `Customer Phone/WhatsApp: ${phone || "Not provided"}\n\n` +
-      `Inquiry / Message:\n${msg}\n\n` +
-      `-----------------------------------------\n` +
-      `Submitted from msrfoodsofficial.food contact page`
-    );
+    const btn = $("#btn-contact-submit") || e.target.querySelector('button[type="submit"]');
+    const origHTML = btn ? btn.innerHTML : "Submit";
 
-    location.href = `mailto:${destEmail}?subject=${subject}&body=${body}`;
-    toast("Opening your email client to send message... Thank you!");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="btn-spinner"></span> Sending...`;
+      btn.style.opacity = "0.9";
+      btn.style.cursor = "wait";
+    }
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, message: msg })
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        if (btn) {
+          btn.innerHTML = `✓ Sent!`;
+          btn.style.background = "#059669";
+          btn.style.color = "#ffffff";
+          btn.style.borderColor = "#059669";
+          btn.style.opacity = "1";
+        }
+        e.target.reset();
+
+        setTimeout(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+            btn.style.background = "";
+            btn.style.color = "";
+            btn.style.borderColor = "";
+            btn.style.cursor = "";
+          }
+        }, 4000);
+      } else {
+        throw new Error(data.error || "Failed to deliver message");
+      }
+    } catch (err) {
+      console.warn("Contact form submission error:", err);
+      if (btn) {
+        btn.innerHTML = `⚠️ Delivery Issue. Tap to Retry`;
+        btn.style.background = "#dc2626";
+        btn.style.color = "#ffffff";
+        setTimeout(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+            btn.style.background = "";
+            btn.style.color = "";
+            btn.style.cursor = "";
+            btn.style.opacity = "1";
+          }
+        }, 3500);
+      }
+    }
   }
 });
 

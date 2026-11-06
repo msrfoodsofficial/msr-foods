@@ -104,6 +104,24 @@ svg.i {
   stroke: currentColor !important;
 }
 
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.2px solid rgba(20, 16, 10, 0.25);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  animation: btnSpinnerRotate 0.65s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes btnSpinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .btn-dark {
   background: var(--black);
   color: var(--gold-hi);

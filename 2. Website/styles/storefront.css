@@ -1486,9 +1486,346 @@
 }
 
 .fs legend {
-  font: 600 1.4rem var(--serif);
+  font: 700 1.35rem var(--serif);
+  color: #14100a;
   padding: 0;
   margin-bottom: 16px;
+}
+
+/* =======================================================================
+ * CHECKOUT & FORM RESPONSIVENESS & LUXURY STYLING
+ * ======================================================================= */
+
+/* Prevent Chrome / Safari Autofill Light-Blue Background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #14100a !important;
+  caret-color: #14100a !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Custom Select Dropdown with Padded Arrow (Fixes arrow touching right border) */
+.custom-select,
+.page.light select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2314100a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: calc(100% - 16px) center !important;
+  background-size: 16px 16px !important;
+  padding: 13px 46px 13px 16px !important;
+  border: 1.5px solid rgba(27, 21, 12, 0.2) !important;
+  border-radius: 10px !important;
+  color: #14100a !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  line-height: 1.3;
+}
+
+.custom-select:focus,
+.page.light select:focus {
+  outline: none !important;
+  border-color: #d6a736 !important;
+  box-shadow: 0 0 0 3px rgba(214, 167, 54, 0.2) !important;
+}
+
+/* City Search Box & Chevron Toggle Button */
+.city-search-box {
+  position: relative;
+  width: 100%;
+}
+
+.city-search-box input {
+  padding-right: 44px !important;
+}
+
+.btn-city-chevron {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #14100a;
+  padding-right: 6px;
+  transition: transform 0.2s ease;
+}
+
+.city-field-wrap.open .btn-city-chevron {
+  transform: rotate(180deg);
+}
+
+/* Searchable City Dropdown Menu */
+.city-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid rgba(214, 167, 54, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(20, 15, 8, 0.16);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 200;
+  -webkit-overflow-scrolling: touch;
+}
+
+.city-opt-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(27, 21, 12, 0.06);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.city-opt-item:last-child {
+  border-bottom: none;
+}
+
+.city-opt-item:hover,
+.city-opt-item.active {
+  background: rgba(214, 167, 54, 0.12);
+}
+
+.city-opt-item.selected {
+  background: rgba(214, 167, 54, 0.18);
+}
+
+.city-name {
+  font-weight: 700;
+  color: #14100a;
+  font-size: 14.5px;
+}
+
+.city-prov-tag {
+  font-size: 12px;
+  color: #6b5d4b;
+  margin-left: 2px;
+}
+
+/* City Quick Pills Row */
+.city-pills-row {
+  margin-top: -2px;
+  margin-bottom: 8px;
+}
+
+.city-pills-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b5d4b;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.city-quick-pills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.btn-city-pill {
+  background: #f4efe6;
+  color: #374151;
+  border: 1px solid rgba(27, 21, 12, 0.15);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-city-pill:hover {
+  background: #eae2d3;
+  border-color: #d6a736;
+  color: #14100a;
+  transform: translateY(-1px);
+}
+
+.btn-city-pill.pill-kohat {
+  background: #e8f8ed !important;
+  color: #047857 !important;
+  border: 1.5px solid #25D366 !important;
+  font-weight: 700 !important;
+}
+
+.btn-city-pill.pill-kohat:hover {
+  background: #d1fae5 !important;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+}
+
+.city-delivery-msg {
+  margin-top: 10px;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  color: #047857;
+  font-weight: 600;
+}
+
+/* Payment Method Card & Warm Instructions Box */
+.checkout-pay-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1.5px solid rgba(214, 167, 54, 0.35);
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.checkout-pay-opt:hover {
+  border-color: #d6a736;
+  background: rgba(214, 167, 54, 0.04);
+}
+
+.checkout-pay-opt input[type="radio"]:checked ~ .pay-opt-body .pay-opt-title {
+  color: #14100a;
+}
+
+.pay-instructions-box {
+  margin-top: 12px;
+  background: #fcf9f2 !important;
+  border: 1.5px solid rgba(214, 167, 54, 0.35) !important;
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  color: #14100a !important;
+}
+
+/* Mobile Order Summary Collapsible Banner (Hidden on Desktop) */
+.mob-summary-bar {
+  display: none;
+  background: #fbf5e8;
+  border-bottom: 1.5px solid rgba(214, 167, 54, 0.3);
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mob-summary-bar.active .mob-caret {
+  transform: rotate(180deg);
+}
+
+/* Mobile Persistent Sticky Bottom Bar */
+.co-mob-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1.5px solid rgba(214, 167, 54, 0.3);
+  box-shadow: 0 -6px 20px rgba(20, 15, 8, 0.08);
+  padding: 12px 18px env(safe-area-inset-bottom, 12px);
+  z-index: 1000;
+}
+
+.co-mob-bar-in {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.co-mob-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.co-mob-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b5d4b;
+  font-weight: 600;
+}
+
+.co-mob-val {
+  font-size: 19px;
+  font-weight: 800;
+  color: #14100a;
+  line-height: 1.2;
+}
+
+.co-mob-sub {
+  font-size: 12px;
+  color: #047857;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-mob-place {
+  flex: 1;
+  max-width: 220px;
+  min-height: 48px;
+  font-size: 15.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Responsive Breakpoints for Mobile Checkout */
+@media (max-width: 860px) {
+  .mob-summary-bar {
+    display: block;
+  }
+
+  .co-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .co-aside-box {
+    display: none;
+    order: -1;
+    margin-bottom: 8px;
+  }
+
+  .co-aside-box.open-mob {
+    display: block !important;
+    animation: fadeInDown 0.25s ease;
+  }
+
+  .co-mob-bar {
+    display: block;
+  }
+
+  .checkout-page {
+    padding-bottom: 110px !important;
+  }
+
+  .co-form-box {
+    padding: 20px 16px !important;
+  }
 }
 
 .co-items .li {

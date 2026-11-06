@@ -6,11 +6,12 @@
 
 /* Header & Navigation */
 #app {
-  min-height: 85vh;
+  min-height: 100vh;
   display: block;
 }
 
 .hdr {
+  min-height: var(--hdr, 68px);
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 50;
@@ -940,6 +941,8 @@
   color: var(--mute-dark);
   border-top: 1px solid var(--hair);
   padding-top: 70px;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
 }
 
 .ftr-grid {

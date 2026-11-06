@@ -429,7 +429,7 @@ async function sendOrderEmails(order, env) {
   if (!apiKey) return;
 
   const targetAdminEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
-  const fromEmail = (env && env.EMAIL_FROM) || "MSR Foods <onboarding@resend.dev>";
+  const fromEmail = (env && env.EMAIL_FROM) || "MSR Foods <orders@msrfoodsofficial.food>";
 
   const cust = order.customer || {};
   const custName = cust.name || order.name || "Customer";

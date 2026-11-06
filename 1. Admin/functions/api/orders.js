@@ -38,6 +38,7 @@ export async function onRequestOptions(context) {
 export async function onRequestGet(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  headers["Cache-Control"] = "no-cache, private, must-revalidate";
   const db = getDatabase(env);
 
   if (!db) {

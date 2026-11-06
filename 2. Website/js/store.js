@@ -51,14 +51,25 @@ function getProductsApiEndpoint() {
   return "/api/products";
 }
 
-async function syncProductsRemote() {
+async function syncProductsRemote(force = false) {
+  const lastSync = Number(Store.get("app_products_last_sync") || 0);
+  const cached = Store.get("app_products");
+
+  // If local cache exists and was synced within the last 5 minutes, reuse immediately without network hit
+  if (!force && cached && Array.isArray(cached) && cached.length > 0 && (Date.now() - lastSync < 300000)) {
+    window.PRODUCTS = cached;
+    return cached;
+  }
+
   try {
-    const res = await fetch(getProductsApiEndpoint());
+    const endpoint = getProductsApiEndpoint() + (force ? `?_t=${Date.now()}` : "");
+    const res = await fetch(endpoint);
     if (res.ok) {
       const serverProds = await res.json();
       if (Array.isArray(serverProds) && serverProds.length > 0) {
         window.PRODUCTS = serverProds;
         Store.set("app_products", serverProds);
+        Store.set("app_products_last_sync", Date.now());
         if (typeof renderProductsGrid === "function") renderProductsGrid();
         return serverProds;
       }
@@ -70,6 +81,7 @@ async function syncProductsRemote() {
 }
 
 async function saveProductRemote(prod, isNew = false) {
+  Store.set("app_products_last_sync", 0);
   try {
     const endpoint = getProductsApiEndpoint();
     // Use POST if full product object is present or new product, else PATCH
@@ -96,6 +108,7 @@ async function saveProductRemote(prod, isNew = false) {
 }
 
 async function updateProductStockRemote(productId, newStock) {
+  Store.set("app_products_last_sync", 0);
   try {
     const endpoint = getProductsApiEndpoint();
     const res = await fetch(endpoint, {
@@ -118,6 +131,7 @@ async function updateProductStockRemote(productId, newStock) {
 }
 
 async function deleteProductRemote(productId) {
+  Store.set("app_products_last_sync", 0);
   try {
     const endpoint = `${getProductsApiEndpoint()}?id=${encodeURIComponent(productId)}`;
     await fetch(endpoint, { method: "DELETE" });
@@ -548,14 +562,25 @@ function loadLocalBrandSettings() {
   return false;
 }
 
-async function syncSettingsRemote() {
+async function syncSettingsRemote(force = false) {
+  const lastSync = Number(Store.get("app_brand_config_last_sync") || 0);
+  const cached = Store.get("app_brand_config");
+
+  // If local settings exist and were synced within the last 5 minutes, reuse immediately without network hit
+  if (!force && cached && !cached.error && cached.found !== false && (Date.now() - lastSync < 300000)) {
+    applyBrandSettings(cached);
+    return cached;
+  }
+
   try {
-    const endpoint = getSettingsApiEndpoint();
+    const endpoint = getSettingsApiEndpoint() + (force ? `?_t=${Date.now()}` : "");
     const res = await fetch(endpoint);
     if (res.ok) {
       const data = await res.json();
       if (data && !data.error && data.found !== false) {
         applyBrandSettings(data);
+        Store.set("app_brand_config", data);
+        Store.set("app_brand_config_last_sync", Date.now());
         return data;
       }
     }
@@ -566,6 +591,7 @@ async function syncSettingsRemote() {
 }
 
 async function saveBrandSettingsRemote(fullConfig, theme) {
+  Store.set("app_brand_config_last_sync", 0);
   const activeTheme = theme || localStorage.getItem("app_active_theme") || "luxury-gold";
   applyBrandSettings(fullConfig);
   Store.set("app_brand_config", window.BRAND_CONFIG);

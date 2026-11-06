@@ -29,6 +29,16 @@ export async function onRequestOptions(context) {
 export async function onRequestGet(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  const url = new URL(request.url);
+  const noCache = url.searchParams.has("_t") || url.searchParams.has("nocache");
+
+  if (noCache) {
+    headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+  } else {
+    // Cloudflare Edge caches for 5 mins (s-maxage=300), browser caches for 1 min (max-age=60)
+    headers["Cache-Control"] = "public, max-age=60, s-maxage=300, stale-while-revalidate=600";
+  }
+
   const db = getDatabase(env);
 
   if (!db) return new Response(JSON.stringify({ error: "Database not bound" }), { status: 500, headers });
@@ -47,6 +57,7 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
   const db = getDatabase(env);
 
   if (!db) return new Response(JSON.stringify({ error: "Database not bound" }), { status: 500, headers });

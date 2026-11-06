@@ -3066,8 +3066,27 @@ window.openCancelOrderModal = openCancelOrderModal;
 window.setCancelReasonText = setCancelReasonText;
 window.confirmCancelOrder = confirmCancelOrder;
 
-// Start periodic live order polling
-setInterval(syncRemoteOrders, 4000);
+// Manual On-Demand Live Order Sync (No background auto-polling intervals)
+async function manualRefreshOrders() {
+  const btn = $("#btnRefreshOrders");
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+  }
+  if (typeof toast === "function") toast("🔄 Checking database for latest orders...");
+  try {
+    await syncRemoteOrders();
+    if (typeof toast === "function") toast("✓ Orders up to date!");
+  } catch (e) {
+    if (typeof toast === "function") toast("⚠️ Refresh failed: " + (e.message || "Network error"));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = "";
+    }
+  }
+}
+window.manualRefreshOrders = manualRefreshOrders;
 
 if (document.readyState === "loading") {
   window.addEventListener("DOMContentLoaded", initAdmin);

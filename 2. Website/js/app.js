@@ -900,8 +900,9 @@ function initApp() {
 
   // Dynamic White-Label Brand Settings & Social Channels Sync from Cloudflare D1
   if (typeof syncSettingsRemote === "function") {
+    const prevBrandHash = JSON.stringify(window.BRAND_CONFIG || {});
     syncSettingsRemote().then(updated => {
-      if (updated) {
+      if (updated && JSON.stringify(window.BRAND_CONFIG || {}) !== prevBrandHash) {
         if (typeof shell === "function") shell();
         if (typeof route === "function") route();
       }
@@ -910,9 +911,10 @@ function initApp() {
 
   // Dynamic Multi-Niche Catalog Sync from Cloudflare D1
   if (typeof syncProductsRemote === "function") {
+    const prevProdsHash = JSON.stringify(window.PRODUCTS || []);
     syncProductsRemote().then(prods => {
-      if (prods && prods.length > 0 && typeof route === "function") {
-        route();
+      if (prods && prods.length > 0 && JSON.stringify(window.PRODUCTS || []) !== prevProdsHash) {
+        if (typeof route === "function") route();
       }
     });
   }

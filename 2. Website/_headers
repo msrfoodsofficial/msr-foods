@@ -37,3 +37,11 @@
 
 /config/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# API Endpoints: Cache read-heavy public APIs at Cloudflare Edge (5 min CDN, 1 min browser)
+/api/products
+  Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=600
+
+/api/settings
+  Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=600
+

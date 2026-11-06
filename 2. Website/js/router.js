@@ -884,33 +884,8 @@ views.track = (orderIdParam) => {
     });
   }
 
-  // Periodic heartbeat polling while on track page (every 10s)
-  if (decodedParam && !window._trackHeartbeatActive) {
-    window._trackHeartbeatActive = true;
-    if (window._trackInterval) clearInterval(window._trackInterval);
-    window._trackInterval = setInterval(() => {
-      if (!location.hash.startsWith("#/track")) {
-        clearInterval(window._trackInterval);
-        window._trackHeartbeatActive = false;
-        return;
-      }
-      if (typeof fetchOrderRemote === "function") {
-        fetchOrderRemote(decodedParam).then(remote => {
-          if (remote && o) {
-            const changed = remote.status !== o.status || remote.updatedAt !== o.updatedAt ||
-              (remote.timeline && o.timeline && remote.timeline.length !== o.timeline.length) ||
-              (remote.tracking && o.tracking && remote.tracking.trackingNumber !== o.tracking.trackingNumber);
-            if (changed && typeof route === "function") {
-              route();
-              if (typeof toast === "function") toast(`🔔 Live Status Updated: ${remote.status}`);
-            }
-          }
-        });
-      }
-    }, 10000);
-  }
-
   const isCancelled = o && (o.status || "").toLowerCase() === "cancelled";
+  const isDelivered = o && (o.status || "").toLowerCase() === "delivered";
 
   const statusLevels = {
     "pending": 1,

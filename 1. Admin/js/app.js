@@ -6,7 +6,8 @@
 
 const ICON = {
   search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
-  bag: '<svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  cart: '<svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>',
+  bag: '<svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
   user: '<svg class="i" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   menu: '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
@@ -46,14 +47,21 @@ function updateBadge(bump = false) {
   const b = $("#badge");
   if (!b) return;
   const n = itemCount();
-  b.hidden = !n;
-  b.textContent = n > 0 ? n : "";
+  if (n <= 0) {
+    b.hidden = true;
+    b.textContent = "";
+    b.style.setProperty("display", "none", "important");
+  } else {
+    b.hidden = false;
+    b.textContent = String(n);
+    b.style.setProperty("display", "flex", "important");
+  }
   const a = b.closest("a");
   const desc = n > 0 ? `Cart, ${n} item${n === 1 ? "" : "s"}` : "Cart";
   if (a) a.setAttribute("aria-label", desc);
   const lbl = $("#cartLabel");
   if (lbl) lbl.textContent = desc;
-  if (bump) {
+  if (bump && n > 0) {
     b.classList.remove("bump");
     void b.offsetWidth;
     b.classList.add("bump");
@@ -88,23 +96,22 @@ function shell() {
         <button class="ic" data-act="search" aria-label="Search">${ICON.search}</button>
         <a class="ic" href="#/cart" id="hdrCart" aria-label="Cart">
           <span class="sr" id="cartLabel">Cart</span>
-          ${ICON.bag}
+          ${ICON.cart}
           <span class="badge" id="badge" aria-hidden="true" hidden></span>
         </a>
-        <button class="ic" data-act="account" aria-label="Account">${ICON.user}</button>
         <a class="btn btn-gold btn-sm" href="#/shop">Shop Now</a>
         <button class="ic burger" data-act="menu" aria-label="Open navigation menu">${ICON.menu}</button>
       </div>
     </div>
   `;
 
-  // Dialogs
+  // Mobile Navigation Menu (Clean, Neat, Typographic)
   $("#dlg-menu").innerHTML = `
     <div class="dlg">
       <button class="ic dlg-x" data-act="close" aria-label="Close menu">${ICON.x}</button>
       <div style="height:50px"></div>
       <nav class="menu-links" aria-label="Mobile Navigation">
-        ${nav.map(n => `<a href="${n[2]}" data-nav="${n[0]}">${n[1]}</a>`).join("")}
+        ${nav.map(n => `<a href="${n[2]}" data-nav="${n[0]}" data-act="close">${n[1]}</a>`).join("")}
       </nav>
       <a class="btn btn-gold" style="margin-top:24px" href="#/shop" data-act="close">Shop Now</a>
     </div>
@@ -734,6 +741,13 @@ document.addEventListener("click", e => {
   }
 });
 
+// Close dialog when clicking on the backdrop outside the dialog box
+document.addEventListener("click", e => {
+  if (e.target && e.target.nodeName === "DIALOG" && e.target.open) {
+    e.target.close();
+  }
+});
+
 document.addEventListener("input", e => {
   if (e.target.id === "sq") runSearch(e.target.value);
   if (e.target.id === "f-city") updateCheckoutDelivery();
@@ -886,8 +900,9 @@ function initApp() {
 
   // Dynamic White-Label Brand Settings & Social Channels Sync from Cloudflare D1
   if (typeof syncSettingsRemote === "function") {
+    const prevBrandHash = JSON.stringify(window.BRAND_CONFIG || {});
     syncSettingsRemote().then(updated => {
-      if (updated) {
+      if (updated && JSON.stringify(window.BRAND_CONFIG || {}) !== prevBrandHash) {
         if (typeof shell === "function") shell();
         if (typeof route === "function") route();
       }
@@ -896,9 +911,10 @@ function initApp() {
 
   // Dynamic Multi-Niche Catalog Sync from Cloudflare D1
   if (typeof syncProductsRemote === "function") {
+    const prevProdsHash = JSON.stringify(window.PRODUCTS || []);
     syncProductsRemote().then(prods => {
-      if (prods && prods.length > 0 && typeof route === "function") {
-        route();
+      if (prods && prods.length > 0 && JSON.stringify(window.PRODUCTS || []) !== prevProdsHash) {
+        if (typeof route === "function") route();
       }
     });
   }

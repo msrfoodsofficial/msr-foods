@@ -43,6 +43,14 @@ export async function onRequestGet(context) {
   const category = url.searchParams.get("category");
   const stockFilter = url.searchParams.get("stock"); // 'instock', 'outofstock'
   const searchQuery = url.searchParams.get("search");
+  const noCache = url.searchParams.has("_t") || url.searchParams.has("nocache");
+
+  if (noCache) {
+    headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+  } else {
+    // Cloudflare Edge caches for 5 mins (s-maxage=300), browser caches for 1 min (max-age=60)
+    headers["Cache-Control"] = "public, max-age=60, s-maxage=300, stale-while-revalidate=600";
+  }
 
   try {
     // Single Product lookup
@@ -56,16 +64,6 @@ export async function onRequestGet(context) {
         return new Response(JSON.stringify({ error: "Product not found" }), { status: 404, headers });
       }
       return new Response(row.raw_json, { status: 200, headers });
-    }
-
-    // Auto-seed initial catalog into D1 if products table is empty
-    try {
-      const countRow = await db.prepare("SELECT COUNT(*) as cnt FROM products").first();
-      if (!countRow || countRow.cnt === 0) {
-        await seedDefaultProducts(db);
-      }
-    } catch (seedErr) {
-      console.warn("Auto-seed check/execution notice:", seedErr);
     }
 
     // List products
@@ -91,7 +89,19 @@ export async function onRequestGet(context) {
 
     query += " ORDER BY created_at ASC";
 
-    const { results } = await db.prepare(query).bind(...params).all();
+    let { results } = await db.prepare(query).bind(...params).all();
+
+    // Auto-seed initial catalog only if completely empty and no search filters applied
+    if ((!results || results.length === 0) && !category && !stockFilter && !searchQuery) {
+      try {
+        await seedDefaultProducts(db);
+        const refetch = await db.prepare(query).bind(...params).all();
+        results = refetch.results;
+      } catch (seedErr) {
+        console.warn("Auto-seed check/execution notice:", seedErr);
+      }
+    }
+
     const products = (results || []).map(r => {
       try {
         return JSON.parse(r.raw_json);
@@ -112,6 +122,7 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
   const db = getDatabase(env);
 
   if (!db) {
@@ -208,6 +219,7 @@ export async function onRequestPost(context) {
 export async function onRequestPatch(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
   const db = getDatabase(env);
 
   if (!db) {
@@ -369,6 +381,7 @@ export async function onRequestPatch(context) {
 export async function onRequestDelete(context) {
   const { request, env } = context;
   const headers = getCorsHeaders(request);
+  headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
   const db = getDatabase(env);
 
   if (!db) return new Response(JSON.stringify({ error: "Database missing" }), { status: 500, headers });

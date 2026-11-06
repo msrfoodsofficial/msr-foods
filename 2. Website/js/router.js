@@ -122,8 +122,8 @@ function prodCard(p) {
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
         ${buy ? `
           <div class="buy-row">
-            <button class="btn btn-line btn-sm" data-act="add" data-pid="${p.id}" title="Add to bag">
-              ${ICON.bag} Add to Cart
+            <button class="btn btn-line btn-sm" data-act="add" data-pid="${p.id}" title="Add to Cart">
+              ${ICON.cart} Add to Cart
             </button>
             <button class="btn btn-gold btn-sm" data-act="buy" data-pid="${p.id}" title="Proceed directly to checkout">
               Buy Now
@@ -436,7 +436,7 @@ views.product = (slug) => {
                 <div class="buy-row" style="margin-top:24px">
                   ${qtyCtl(qid, 1)}
                   <button class="btn btn-line btn-add-cart" data-act="add" data-q="${qid}" data-pid="${p.id}" title="Add to Cart" style="border:2px solid #14100a;color:#14100a;background:#ffffff;font-weight:700">
-                    ${ICON.bag} Add to Cart
+                    ${ICON.cart} Add to Cart
                   </button>
                   <button class="btn btn-gold" data-act="buy" data-q="${qid}" data-pid="${p.id}" title="Proceed directly to checkout">
                     Buy Now

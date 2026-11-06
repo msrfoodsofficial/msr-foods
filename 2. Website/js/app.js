@@ -6,7 +6,8 @@
 
 const ICON = {
   search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
-  bag: '<svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  cart: '<svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>',
+  bag: '<svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
   user: '<svg class="i" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   menu: '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
@@ -88,7 +89,7 @@ function shell() {
         <button class="ic" data-act="search" aria-label="Search">${ICON.search}</button>
         <a class="ic" href="#/cart" id="hdrCart" aria-label="Cart">
           <span class="sr" id="cartLabel">Cart</span>
-          ${ICON.bag}
+          ${ICON.cart}
           <span class="badge" id="badge" aria-hidden="true" hidden></span>
         </a>
         <a class="btn btn-gold btn-sm" href="#/shop">Shop Now</a>
@@ -97,81 +98,21 @@ function shell() {
     </div>
   `;
 
-  // Social Links List
-  const socEntries = [
-    { key: "facebook", name: "Facebook", icon: ICON.facebook, url: window.BRAND_CONFIG.social.facebook },
-    { key: "instagram", name: "Instagram", icon: ICON.instagram, url: window.BRAND_CONFIG.social.instagram },
-    { key: "tiktok", name: "TikTok", icon: ICON.tiktok, url: window.BRAND_CONFIG.social.tiktok },
-    { key: "youtube", name: "YouTube", icon: ICON.youtube, url: window.BRAND_CONFIG.social.youtube }
-  ];
-
-  // Mobile Navigation Drawer
+  // Mobile Navigation Menu (Clean, Neat, Typographic)
   $("#dlg-menu").innerHTML = `
-    <div class="dlg mobile-menu-drawer">
-      <div class="menu-head">
-        <a class="menu-logo" href="#/" data-act="close" aria-label="${B.name} Home">
-          ${logoHtml}
-        </a>
-        <button class="ic menu-close-btn" data-act="close" aria-label="Close navigation menu">${ICON.x}</button>
-      </div>
-
-      <div class="menu-badge-banner">
-        <span>🌿 100% Pure Mountain Honey & Nuts</span>
-        <span class="delivery-pill">⚡ Free Doorstep Delivery in Kohat · Cash on Delivery</span>
-      </div>
-
+    <div class="dlg">
+      <button class="ic dlg-x" data-act="close" aria-label="Close menu">${ICON.x}</button>
+      <div style="height:48px"></div>
       <nav class="menu-links" aria-label="Mobile Navigation">
-        <a href="#/" data-nav="home" data-act="close">
-          <span>Home</span>
-          <span class="menu-arr">→</span>
-        </a>
-        <a href="#/shop" data-nav="shop" data-act="close">
-          <span>Shop Products</span>
-          <span class="menu-arr">→</span>
-        </a>
-        <a href="#/track" data-nav="track" data-act="close">
-          <span>Track Order</span>
-          <span class="menu-arr">→</span>
-        </a>
-        <a href="#/about" data-nav="about" data-act="close">
-          <span>About Us</span>
-          <span class="menu-arr">→</span>
-        </a>
-        <a href="#/blog" data-nav="blog" data-act="close">
-          <span>Health Blog</span>
-          <span class="menu-arr">→</span>
-        </a>
-        <a href="#/contact" data-nav="contact" data-act="close">
-          <span>Contact & Help</span>
-          <span class="menu-arr">→</span>
-        </a>
+        ${nav.map(n => `<a href="${n[2]}" data-nav="${n[0]}" data-act="close">${n[1]}</a>`).join("")}
       </nav>
-
-      <div class="menu-actions">
-        <a class="btn btn-gold btn-full" href="#/shop" data-act="close">
-          Shop Now · Cash on Delivery
-        </a>
-        ${C.whatsapp ? `
-          <a class="btn-wa-drawer" href="https://wa.me/${C.whatsapp}?text=Hi%20MSR%20Foods,%20I%20would%20like%20to%20inquire%20about%20ordering." target="_blank" rel="noopener">
-            ${ICON.whatsapp} Chat on WhatsApp
-          </a>
-        ` : ''}
-      </div>
-
-      <div class="menu-social-sec">
-        <div class="menu-social-label">Follow Us</div>
-        <div class="menu-social-icons">
-          ${socEntries.map(s => s.url ? `
-            <a class="menu-soc-btn" href="${s.url}" target="_blank" rel="noopener" aria-label="${s.name}">
-              ${s.icon}
-            </a>
-          ` : '').join("")}
-        </div>
-      </div>
-
-      <div class="menu-foot">
-        <p>Direct Support: <a href="tel:${C.phoneIntl}">${C.phone}</a></p>
-        <p class="menu-copy">© ${B.foundedYear} ${B.name} · Quality Built For You</p>
+      <a class="btn btn-gold" style="margin-top:28px;width:100%" href="#/shop" data-act="close">Shop Now</a>
+      
+      <div class="menu-soc-clean">
+        <a href="${window.BRAND_CONFIG.social.facebook}" target="_blank" rel="noopener" aria-label="Facebook">${ICON.facebook}</a>
+        <a href="${window.BRAND_CONFIG.social.instagram}" target="_blank" rel="noopener" aria-label="Instagram">${ICON.instagram}</a>
+        <a href="${window.BRAND_CONFIG.social.tiktok}" target="_blank" rel="noopener" aria-label="TikTok">${ICON.tiktok}</a>
+        <a href="${window.BRAND_CONFIG.social.youtube}" target="_blank" rel="noopener" aria-label="YouTube">${ICON.youtube}</a>
       </div>
     </div>
   `;

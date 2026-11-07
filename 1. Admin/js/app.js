@@ -243,8 +243,8 @@ function updatePay() {
 
 function updateCheckoutDelivery() {
   const cityInput = $("#f-city");
-  if (!cityInput) return;
-  const city = cityInput.value.trim();
+  if (!cityInput || !cityInput.value) return;
+  const city = String(cityInput.value).trim();
   const t = totals(city);
   const shipVal = $("#co-ship-val");
   const totVal = $("#co-tot-val");

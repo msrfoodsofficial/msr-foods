@@ -21,12 +21,14 @@
 
 .hdr-in {
   height: var(--hdr);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 28px;
+  gap: 16px;
 }
 
 .logo {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   flex: none;
@@ -54,9 +56,10 @@
 }
 
 .nav {
+  justify-self: center;
   display: flex;
   gap: 6px;
-  margin-inline: auto;
+  margin: 0;
 }
 
 .nav a {
@@ -93,6 +96,7 @@
 }
 
 .hdr-r {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -122,10 +126,9 @@
 #dlg-menu .dlg {
   height: 100%;
   border-radius: var(--r-lg) 0 0 var(--r-lg);
-  padding: 22px 22px 28px;
+  padding: 24px 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
 .search-box {
@@ -202,13 +205,59 @@
 
 .menu-links a {
   display: block;
-  padding: 14px 8px;
-  font: 600 22px var(--serif);
-  border-bottom: 1px solid rgba(214, 167, 54, 0.14);
+  padding: 14px 10px;
+  font: 500 18px var(--sans);
+  color: var(--cream);
+  border-bottom: 1px solid rgba(214, 167, 54, 0.12);
+  text-decoration: none;
+  transition: color 0.2s ease, padding-left 0.2s ease;
 }
 
+.menu-links a:hover,
 .menu-links a.on {
   color: var(--gold-hi);
+  padding-left: 14px;
+}
+
+/* Header Cart Icon & Badge Placement */
+#hdrCart {
+  position: relative;
+}
+
+#hdrCart .badge {
+  position: absolute;
+  top: -2px !important;
+  right: -2px !important;
+  min-width: 17px !important;
+  height: 17px !important;
+  padding: 0 4px !important;
+  border-radius: var(--r-full) !important;
+  background: var(--gold, #d6a736) !important;
+  color: #0b0906 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+#hdrCart .badge:empty,
+#hdrCart .badge[hidden],
+.badge:empty,
+.badge[hidden] {
+  display: none !important;
+}
+
+#hdrCart svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke-width: 1.8 !important;
+  color: #e9dec3 !important;
+  display: block !important;
 }
 
 /* Hero Section */
@@ -313,6 +362,7 @@
   position: relative;
   height: min(72vh, 640px);
   width: auto;
+  opacity: 1;
   filter: drop-shadow(0 38px 38px rgba(0, 0, 0, 0.75));
   animation: rise 1.5s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   transition: transform 0.5s ease-out;
@@ -325,6 +375,7 @@
 }
 
 .hero-copy > * {
+  opacity: 1;
   animation: fadeup 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .hero-copy > *:nth-child(1) { animation-delay: 0.05s; }
@@ -2486,6 +2537,7 @@ select:-webkit-autofill:focus {
 
 /* Media Queries */
 @media (max-width: 1040px) {
+  .hdr-in { display: flex; justify-content: space-between; align-items: center; }
   .nav, .hdr .btn { display: none; }
   .burger { display: grid; }
   .hdr-r { margin-left: auto; }

@@ -362,6 +362,7 @@
   position: relative;
   height: min(72vh, 640px);
   width: auto;
+  opacity: 1;
   filter: drop-shadow(0 38px 38px rgba(0, 0, 0, 0.75));
   animation: rise 1.5s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   transition: transform 0.5s ease-out;
@@ -374,6 +375,7 @@
 }
 
 .hero-copy > * {
+  opacity: 1;
   animation: fadeup 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .hero-copy > *:nth-child(1) { animation-delay: 0.05s; }

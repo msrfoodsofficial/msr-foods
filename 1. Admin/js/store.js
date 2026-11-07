@@ -519,32 +519,48 @@ function getSettingsApiEndpoint() {
 
 function applyBrandSettings(data) {
   if (!data || typeof data !== "object") return false;
-  const cfg = data.brand_config || data.brandConfig || data.brand || data;
+
+  // Robust unwrap: handle { brand: { brand: {...}, contact: {...} } } from API, or direct BRAND_CONFIG
+  let cfg = data;
+  if (cfg.brand_config && typeof cfg.brand_config === "object") {
+    cfg = cfg.brand_config;
+  } else if (cfg.brandConfig && typeof cfg.brandConfig === "object") {
+    cfg = cfg.brandConfig;
+  } else if (cfg.brand && typeof cfg.brand === "object" && (cfg.brand.brand || cfg.brand.contact || cfg.brand.logo)) {
+    cfg = cfg.brand;
+  }
+
   if (!window.BRAND_CONFIG) window.BRAND_CONFIG = {};
 
   if (cfg.brand && typeof cfg.brand === "object") {
-    window.BRAND_CONFIG.brand = Object.assign({}, window.BRAND_CONFIG.brand, cfg.brand);
+    window.BRAND_CONFIG.brand = Object.assign({}, window.BRAND_CONFIG.brand || {}, cfg.brand);
   }
   if (cfg.contact && typeof cfg.contact === "object") {
-    window.BRAND_CONFIG.contact = Object.assign({}, window.BRAND_CONFIG.contact, cfg.contact);
+    window.BRAND_CONFIG.contact = Object.assign({}, window.BRAND_CONFIG.contact || {}, cfg.contact);
   }
   if (cfg.social && typeof cfg.social === "object") {
-    window.BRAND_CONFIG.social = Object.assign({}, window.BRAND_CONFIG.social, cfg.social);
+    window.BRAND_CONFIG.social = Object.assign({}, window.BRAND_CONFIG.social || {}, cfg.social);
   }
   if (cfg.delivery && typeof cfg.delivery === "object") {
-    window.BRAND_CONFIG.delivery = Object.assign({}, window.BRAND_CONFIG.delivery, cfg.delivery);
+    window.BRAND_CONFIG.delivery = Object.assign({}, window.BRAND_CONFIG.delivery || {}, cfg.delivery);
   }
   if (cfg.urls && typeof cfg.urls === "object") {
-    window.BRAND_CONFIG.urls = Object.assign({}, window.BRAND_CONFIG.urls, cfg.urls);
+    window.BRAND_CONFIG.urls = Object.assign({}, window.BRAND_CONFIG.urls || {}, cfg.urls);
   }
   if (cfg.logo && typeof cfg.logo === "object") {
-    window.BRAND_CONFIG.logo = Object.assign({}, window.BRAND_CONFIG.logo, cfg.logo);
+    window.BRAND_CONFIG.logo = Object.assign({}, window.BRAND_CONFIG.logo || {}, cfg.logo);
   }
   if (cfg.currency && typeof cfg.currency === "object") {
-    window.BRAND_CONFIG.currency = Object.assign({}, window.BRAND_CONFIG.currency, cfg.currency);
+    window.BRAND_CONFIG.currency = Object.assign({}, window.BRAND_CONFIG.currency || {}, cfg.currency);
   }
   if (Array.isArray(cfg.payments)) {
     window.BRAND_CONFIG.payments = cfg.payments;
+  }
+  if (Array.isArray(cfg.reviews)) {
+    window.BRAND_CONFIG.reviews = cfg.reviews;
+  }
+  if (Array.isArray(cfg.features)) {
+    window.BRAND_CONFIG.features = cfg.features;
   }
   if (data.theme && typeof applyTheme === "function") {
     applyTheme(data.theme);

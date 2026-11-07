@@ -164,7 +164,7 @@ function secFeatured() {
 }
 
 function secWhy() {
-  const features = window.BRAND_CONFIG.features || [];
+  const features = (window.BRAND_CONFIG && Array.isArray(window.BRAND_CONFIG.features)) ? window.BRAND_CONFIG.features : [];
   return `
     <section class="sec sec-cream" aria-label="Why Choose Us">
       <div class="wrap">
@@ -269,8 +269,10 @@ function secShowcase() {
 }
 
 function secAbout(full = false) {
-  const B = window.BRAND_CONFIG.brand;
-  const C = window.BRAND_CONFIG.contact;
+  const B = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR", fullName: "MSR Foods" };
+  const C = (window.BRAND_CONFIG && window.BRAND_CONFIG.contact) || { address: ["Kohat, Pakistan"] };
+  const L = (window.BRAND_CONFIG && window.BRAND_CONFIG.logo) || { src: "assets/images/logo.webp" };
+  const addr = (C.address && Array.isArray(C.address) && C.address.length > 0) ? (C.address[C.address.length - 1] || C.address[0]) : "Pakistan";
   return `
     <section class="sec sec-coal" aria-label="About Us">
       <div class="wrap about">
@@ -288,8 +290,8 @@ function secAbout(full = false) {
           <div style="margin-top:22px"><a class="link" href="#/about">Read Our Full Brand Story ${ICON.arrow}</a></div>
         </div>
         <div class="brand-tile reveal" style="--d:.2s">
-          <img src="${window.BRAND_CONFIG.logo.src}" alt="${B.name} Logo" width="406" height="224" loading="lazy" decoding="async" style="width:100%;max-width:406px;height:auto;aspect-ratio:406/224;object-fit:contain">
-          <p style="margin-top:20px;font-size:15px;color:var(--mute-dark);text-align:center">Headquartered in ${(C.address[C.address.length - 1] || C.address[0] || "Pakistan")} · Delivering Nationwide</p>
+          <img src="${L.src || 'assets/images/logo.webp'}" alt="${B.name} Logo" width="406" height="224" loading="lazy" decoding="async" style="width:100%;max-width:406px;height:auto;aspect-ratio:406/224;object-fit:contain">
+          <p style="margin-top:20px;font-size:15px;color:var(--mute-dark);text-align:center">Headquartered in ${addr} · Delivering Nationwide</p>
         </div>
       </div>
     </section>
@@ -297,7 +299,7 @@ function secAbout(full = false) {
 }
 
 function secReviews() {
-  const reviews = window.BRAND_CONFIG.reviews || [];
+  const reviews = (window.BRAND_CONFIG && Array.isArray(window.BRAND_CONFIG.reviews)) ? window.BRAND_CONFIG.reviews : [];
   return `
     <section class="sec sec-sand" aria-label="Customer Reviews">
       <div class="wrap">
@@ -325,7 +327,7 @@ function secReviews() {
 }
 
 function secCTA() {
-  const B = window.BRAND_CONFIG.brand;
+  const B = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR" };
   return `
     <section class="cta hex" aria-label="Call to Action">
       <div class="hex-layer"></div>
@@ -346,14 +348,14 @@ function secCTA() {
 // ==========================================
 
 views.home = () => ({
-  title: `${window.BRAND_CONFIG.brand.fullName} | ${window.BRAND_CONFIG.brand.tagline}`,
+  title: `${(window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.fullName) || "MSR Foods"} | ${(window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.tagline) || "Pure Taste. Natural Goodness."}`,
   html: secHero() + secTrustStrip() + secWelcome() + secFeatured() + secWhy() + secIngredients() + secMoments() + secShowcase() + secAbout() + secReviews() + secCTA()
 });
 
 views.shop = () => {
   const prods = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
   return {
-    title: `Shop | ${window.BRAND_CONFIG.brand.name}`,
+    title: `Shop | ${(window.BRAND_CONFIG && window.BRAND_CONFIG.brand && window.BRAND_CONFIG.brand.name) || "MSR Foods"}`,
     html: `
       <header class="page-head">
         <div class="wrap">

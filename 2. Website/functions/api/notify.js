@@ -172,15 +172,11 @@ export async function onRequestDelete(context) {
 // AUTOMATED ADMIN RESTOCK WAITLIST EMAIL ALERT
 // =======================================================================
 async function sendAdminRestockAlertEmail(data, env) {
-  let apiKey = (env && env.RESEND_API_KEY) || "";
+  const apiKey = (env && env.RESEND_API_KEY) || "";
   if (!apiKey) {
-    try {
-      apiKey = atob("cmVfVXY1UERZc1VfRlhkeUpITEFhcDVVUHMyeDNDMkRIZW45");
-    } catch (e) {
-      apiKey = "";
-    }
+    console.warn("[Notify Email] RESEND_API_KEY not configured in Cloudflare environment variables.");
+    return;
   }
-  if (!apiKey) return;
 
   const targetEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
   const { productId, productTitle, weight, name, email, phone, wantWhatsapp } = data;

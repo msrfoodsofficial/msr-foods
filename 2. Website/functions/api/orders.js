@@ -515,15 +515,11 @@ export async function onRequestPatch(context) {
 // AUTOMATED ORDER EMAILS (ADMIN NOTIFICATION + CUSTOMER RECEIPT)
 // =======================================================================
 async function sendOrderEmails(order, env) {
-  let apiKey = (env && env.RESEND_API_KEY) || "";
+  const apiKey = (env && env.RESEND_API_KEY) || "";
   if (!apiKey) {
-    try {
-      apiKey = atob("cmVfVXY1UERZc1VfRlhkeUpITEFhcDVVUHMyeDNDMkRIZW45");
-    } catch (e) {
-      apiKey = "";
-    }
+    console.warn("[Orders Email] RESEND_API_KEY not configured in Cloudflare environment variables.");
+    return;
   }
-  if (!apiKey) return;
 
   const targetAdminEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
   const fromEmail = (env && env.EMAIL_FROM) || "MSR Foods <orders@msrfoodsofficial.food>";
@@ -802,15 +798,11 @@ async function sendOrderEmails(order, env) {
 // 5. AUTOMATED ORDER STATUS UPDATE EMAIL (SENT TO CUSTOMER ON STATUS CHANGE)
 // =======================================================================
 async function sendOrderStatusUpdateEmail(order, env) {
-  let apiKey = (env && env.RESEND_API_KEY) || "";
+  const apiKey = (env && env.RESEND_API_KEY) || "";
   if (!apiKey) {
-    try {
-      apiKey = atob("cmVfVXY1UERZc1VfRlhkeUpITEFhcDVVUHMyeDNDMkRIZW45");
-    } catch (e) {
-      apiKey = "";
-    }
+    console.warn("[Orders Email] RESEND_API_KEY not configured in Cloudflare environment variables.");
+    return;
   }
-  if (!apiKey) return;
 
   const targetAdminEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";
   const fromEmail = (env && env.EMAIL_FROM) || "MSR Foods <orders@msrfoodsofficial.food>";

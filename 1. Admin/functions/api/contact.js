@@ -111,14 +111,7 @@ export async function onRequestPost(context) {
     let emailError = null;
 
     try {
-      let apiKey = (env && env.RESEND_API_KEY) || "";
-      if (!apiKey) {
-        try {
-          apiKey = atob("cmVfVXY1UERZc1VfRlhkeUpITEFhcDVVUHMyeDNDMkRIZW45");
-        } catch (e) {
-          apiKey = "";
-        }
-      }
+      const apiKey = (env && env.RESEND_API_KEY) || "";
 
       if (apiKey) {
         const targetEmail = (env && env.ADMIN_EMAIL) || "msrfoods.official@gmail.com";

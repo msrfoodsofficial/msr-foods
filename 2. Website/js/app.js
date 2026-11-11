@@ -714,12 +714,21 @@ document.addEventListener("click", e => {
     saveCart();
     route();
     toast("Item removed from cart");
-  } else if (act === "thumb") {
+  } else if (act === "thumb" || act === "gal-prev" || act === "gal-next") {
     const p = getP(actBtn.dataset.pid);
-    $$(".thumb").forEach(t => t.setAttribute("aria-pressed", t === actBtn));
+    const gallery = (typeof getProductGallery === "function") ? getProductGallery(p) : [];
     const mainImg = $("#galMain");
-    if (mainImg && p) {
-      mainImg.src = p.img[actBtn.dataset.src] || p.img.front;
+    if (mainImg && p && gallery.length > 0) {
+      let idx = parseInt(actBtn.dataset.idx, 10);
+      if (isNaN(idx)) {
+        const cur = parseInt(mainImg.dataset.galIdx || "0", 10) || 0;
+        idx = act === "gal-next" ? (cur + 1) % gallery.length : (cur - 1 + gallery.length) % gallery.length;
+      }
+      idx = Math.max(0, Math.min(idx, gallery.length - 1));
+      mainImg.src = gallery[idx];
+      mainImg.dataset.galIdx = String(idx);
+      const thumbs = $$(".thumb");
+      thumbs.forEach((t, ti) => t.setAttribute("aria-pressed", ti === idx ? "true" : "false"));
     }
   } else if (act === "search") {
     const d = $("#dlg-search");

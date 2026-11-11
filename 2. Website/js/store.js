@@ -170,6 +170,31 @@ const priceTxt = (p) => {
   return p.price != null ? money(p.price) : "Price on Request";
 };
 
+function getProductGallery(p) {
+  if (!p) return ["assets/images/products/front.webp"];
+  if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+    const clean = p.gallery.filter(Boolean);
+    if (clean.length > 0) return clean;
+  }
+  const imgs = [];
+  if (p.img) {
+    const isStockPath = (u) => typeof u === "string" && u.startsWith("assets/images/products/");
+    const hasCustomFront = p.img.front && !isStockPath(p.img.front);
+    if (p.img.front) imgs.push(p.img.front);
+    if (p.img.back && !imgs.includes(p.img.back) && (!hasCustomFront || !isStockPath(p.img.back))) {
+      imgs.push(p.img.back);
+    }
+    if (p.img.pair && !imgs.includes(p.img.pair) && (!hasCustomFront || !isStockPath(p.img.pair))) {
+      imgs.push(p.img.pair);
+    }
+  }
+  return imgs.length ? imgs : ["assets/images/products/front.webp"];
+}
+
+function getProductPrimaryImage(p) {
+  return getProductGallery(p)[0];
+}
+
 // Cart State
 let cart = { items: {} };
 
@@ -550,6 +575,9 @@ function applyBrandSettings(data) {
   if (cfg.logo && typeof cfg.logo === "object") {
     window.BRAND_CONFIG.logo = Object.assign({}, window.BRAND_CONFIG.logo || {}, cfg.logo);
   }
+  if (cfg.hero && typeof cfg.hero === "object") {
+    window.BRAND_CONFIG.hero = Object.assign({}, window.BRAND_CONFIG.hero || {}, cfg.hero);
+  }
   if (cfg.currency && typeof cfg.currency === "object") {
     window.BRAND_CONFIG.currency = Object.assign({}, window.BRAND_CONFIG.currency || {}, cfg.currency);
   }
@@ -660,6 +688,8 @@ async function saveBrandSettingsRemote(fullConfig, theme) {
   window.saveProductRemote = saveProductRemote;
   window.updateProductStockRemote = updateProductStockRemote;
   window.deleteProductRemote = deleteProductRemote;
+  window.getProductGallery = getProductGallery;
+  window.getProductPrimaryImage = getProductPrimaryImage;
   window.getSettingsApiEndpoint = getSettingsApiEndpoint;
   window.applyBrandSettings = applyBrandSettings;
   window.loadLocalBrandSettings = loadLocalBrandSettings;

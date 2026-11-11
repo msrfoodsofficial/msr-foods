@@ -33,6 +33,12 @@ const BRAND_CONFIG = {
     height: 64
   },
 
+  // Homepage Hero & Visual Showcase (Independent of Product Catalog)
+  hero: {
+    image: "assets/images/products/front.webp",
+    showcaseImage: "assets/images/products/pair.webp"
+  },
+
   // Currency & Locale
   currency: {
     symbol: "PKR",

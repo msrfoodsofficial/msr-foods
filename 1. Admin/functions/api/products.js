@@ -150,13 +150,22 @@ export async function onRequestPost(context) {
     p.createdAt = p.createdAt || now;
     p.updatedAt = now;
 
-    // Standardize images
-    if (!p.img) {
+    // Standardize images & gallery array
+    if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+      p.gallery = p.gallery.filter(Boolean);
       p.img = {
-        front: p.image || "assets/images/products/front.webp",
-        back: p.image || "assets/images/products/back.webp",
-        pair: p.image || "assets/images/products/pair.webp"
+        front: p.gallery[0],
+        back: p.gallery[1] || p.gallery[0],
+        pair: p.gallery[2] || p.gallery[1] || p.gallery[0]
       };
+    } else if (!p.img) {
+      const fallback = p.image || "assets/images/products/front.webp";
+      p.img = {
+        front: fallback,
+        back: fallback,
+        pair: fallback
+      };
+      p.gallery = [fallback];
     }
 
     // Verify or safely set category_id to prevent FOREIGN KEY constraint violation
@@ -288,10 +297,18 @@ export async function onRequestPatch(context) {
         updatedAt: now
       };
 
-      if (body.image) {
+      if (Array.isArray(body.gallery) && body.gallery.length > 0) {
+        newP.gallery = body.gallery.filter(Boolean);
+        newP.img = {
+          front: newP.gallery[0],
+          back: newP.gallery[1] || newP.gallery[0],
+          pair: newP.gallery[2] || newP.gallery[1] || newP.gallery[0]
+        };
+      } else if (body.image) {
         newP.img = newP.img || {};
         newP.img.front = body.image;
         newP.img.pair = body.image;
+        newP.gallery = [body.image];
       }
 
       let catId = null;
@@ -334,11 +351,23 @@ export async function onRequestPatch(context) {
     if (body.badge !== undefined) p.badge = body.badge;
     if (body.shortDesc) { p.shortDesc = body.shortDesc; p.subtitle = body.shortDesc; }
     if (body.fullDesc) p.fullDesc = body.fullDesc;
-    if (body.img) p.img = { ...(p.img || {}), ...body.img };
-    if (body.image) {
-      p.img = p.img || {};
-      p.img.front = body.image;
-      p.img.pair = body.image;
+    if (Array.isArray(body.gallery)) {
+      p.gallery = body.gallery.filter(Boolean);
+      if (p.gallery.length > 0) {
+        p.img = {
+          front: p.gallery[0],
+          back: p.gallery[1] || p.gallery[0],
+          pair: p.gallery[2] || p.gallery[1] || p.gallery[0]
+        };
+      }
+    } else {
+      if (body.img) p.img = { ...(p.img || {}), ...body.img };
+      if (body.image) {
+        p.img = p.img || {};
+        p.img.front = body.image;
+        p.img.pair = body.image;
+        p.gallery = [body.image];
+      }
     }
     p.updatedAt = now;
 

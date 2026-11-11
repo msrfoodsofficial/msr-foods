@@ -238,18 +238,290 @@ function isKohatCity(city) {
   return c.includes("kohat");
 }
 
+// =======================================================================
+// PROMO COUPONS & AUTO-DISCOUNT ENGINE
+// =======================================================================
+if (typeof window !== "undefined") {
+  window.ACTIVE_COUPONS = window.ACTIVE_COUPONS || Store.get("app_active_coupons") || [];
+  window.ALL_COUPONS = window.ALL_COUPONS || Store.get("app_all_coupons") || [];
+}
+
+function getCouponsApiEndpoint() {
+  if (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.apiUrl) {
+    return window.BRAND_CONFIG.urls.apiUrl.replace(/\/$/, "") + "/api/coupons";
+  }
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "https://msrfoodsofficial.food/api/coupons";
+  }
+  return "/api/coupons";
+}
+
+function isCouponExpiredClient(expiresAt) {
+  if (!expiresAt) return false;
+  const s = String(expiresAt).trim();
+  if (!s) return false;
+  const endTs = /^\d{4}-\d{2}-\d{2}$/.test(s)
+    ? new Date(`${s}T23:59:59+05:00`).getTime()
+    : new Date(s).getTime();
+  if (isNaN(endTs)) return false;
+  return Date.now() > endTs;
+}
+
+function formatCouponExpiry(expiresAt) {
+  if (!expiresAt) return "";
+  const s = String(expiresAt).trim();
+  if (!s) return "";
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(`${s}T12:00:00+05:00`) : new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function getActiveCoupons() {
+  const list = (typeof window !== "undefined" && Array.isArray(window.ACTIVE_COUPONS))
+    ? window.ACTIVE_COUPONS
+    : (Store.get("app_active_coupons") || []);
+  return list.filter(c =>
+    c && c.isActive !== false &&
+    !isCouponExpiredClient(c.expiresAt) &&
+    (!(Number(c.usageLimit || 0) > 0) || Number(c.usedCount || 0) < Number(c.usageLimit || 0))
+  );
+}
+
+function isProductEligibleForCoupon(product, coupon) {
+  if (!product || !coupon) return false;
+  const target = coupon.appliesTo;
+  if (!target || target === "all") return true;
+  const list = Array.isArray(target) ? target : String(target).split(",").map(s => s.trim()).filter(Boolean);
+  if (!list.length || list.includes("all")) return true;
+  return list.includes(product.id) || list.includes(product.slug);
+}
+
+function evaluateCoupon(coupon, cartLines, subtotal) {
+  if (!coupon) return { valid: false, discount: 0, freeShipping: false, reason: "Invalid coupon" };
+  if (coupon.isActive === false) return { valid: false, discount: 0, freeShipping: false, reason: `Code "${coupon.code}" is inactive` };
+  if (isCouponExpiredClient(coupon.expiresAt)) return { valid: false, discount: 0, freeShipping: false, reason: `Code "${coupon.code}" has expired` };
+  if (Number(coupon.usageLimit || 0) > 0 && Number(coupon.usedCount || 0) >= Number(coupon.usageLimit || 0)) {
+    return { valid: false, discount: 0, freeShipping: false, reason: `Code "${coupon.code}" limit reached` };
+  }
+
+  let eligibleSub = 0;
+  if (Array.isArray(cartLines) && cartLines.length > 0) {
+    eligibleSub = cartLines.reduce((sum, l) => {
+      return isProductEligibleForCoupon(l.p, coupon) ? sum + (l.qty * l.p.price) : sum;
+    }, 0);
+  } else {
+    eligibleSub = Number(subtotal || 0);
+  }
+
+  if (eligibleSub <= 0) {
+    return { valid: false, discount: 0, freeShipping: false, reason: `Code "${coupon.code}" does not apply to items in cart` };
+  }
+
+  const minOrd = Number(coupon.minOrder || 0);
+  if (minOrd > 0 && subtotal < minOrd) {
+    const needed = Math.max(1, minOrd - subtotal);
+    return { valid: false, discount: 0, freeShipping: false, reason: `Spend ${money(needed)} more to unlock ${coupon.code}` };
+  }
+
+  let discount = 0;
+  let freeShipping = false;
+  const val = Number(coupon.value || 0);
+
+  if (coupon.type === "percent") {
+    discount = Math.round(eligibleSub * (val / 100));
+    const maxD = Number(coupon.maxDiscount || 0);
+    if (maxD > 0) discount = Math.min(discount, maxD);
+    discount = Math.min(discount, eligibleSub);
+  } else if (coupon.type === "fixed") {
+    discount = Math.min(eligibleSub, Math.round(val));
+  } else if (coupon.type === "free_shipping") {
+    freeShipping = true;
+  }
+
+  return {
+    valid: true,
+    coupon,
+    discount: Math.max(0, discount),
+    freeShipping,
+    reason: "",
+    isAuto: !!coupon.autoApply
+  };
+}
+
+function getBestPromoForProduct(product) {
+  if (!product || product.price == null) return null;
+  const autos = getActiveCoupons().filter(c => c.autoApply && isProductEligibleForCoupon(product, c));
+  if (!autos.length) return null;
+
+  let best = null;
+  const orig = Number(product.price || 0);
+  for (const c of autos) {
+    if (c.type === "free_shipping") continue;
+    const minOrd = Number(c.minOrder || 0);
+    if (minOrd > orig) continue; // Only highlight card-level discount if single unit meets minOrder
+    const ev = evaluateCoupon(c, [{ p: product, qty: 1 }], orig);
+    if (ev.valid && ev.discount > 0 && (!best || ev.discount > best.savings)) {
+      const badgeText = c.type === "percent" ? `${c.value}% OFF` : `${money(ev.discount)} OFF`;
+      best = {
+        coupon: c,
+        originalPrice: orig,
+        promoPrice: Math.max(0, orig - ev.discount),
+        savings: ev.discount,
+        badgeText
+      };
+    }
+  }
+  return best;
+}
+
+function getManualCouponState() {
+  const override = Store.get("msr_coupon_override", sessionStorage);
+  if (override === "__NONE__") return { removed: true, coupon: null };
+  const manual = Store.get("msr_manual_coupon", sessionStorage);
+  return { removed: false, coupon: manual || null };
+}
+
+function removeCouponFromCart() {
+  Store.set("msr_manual_coupon", null, sessionStorage);
+  Store.set("msr_coupon_override", "__NONE__", sessionStorage);
+}
+
+async function applyCouponCodeToCart(rawCode) {
+  const code = String(rawCode || "").trim().toUpperCase();
+  if (!code) return { ok: false, error: "Please enter a promo code." };
+
+  const localMatch = getActiveCoupons().find(c => c.code === code);
+  if (localMatch) {
+    const cartLines = lines();
+    const sub = cartLines.reduce((s, l) => s + l.qty * l.p.price, 0);
+    const ev = evaluateCoupon(localMatch, cartLines, sub);
+    if (!ev.valid) return { ok: false, error: ev.reason };
+    Store.set("msr_manual_coupon", localMatch, sessionStorage);
+    Store.set("msr_coupon_override", "", sessionStorage);
+    return { ok: true, coupon: localMatch, result: ev };
+  }
+
+  try {
+    const endpoint = `${getCouponsApiEndpoint()}?code=${encodeURIComponent(code)}`;
+    const res = await fetch(endpoint, { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.valid || !data.coupon) {
+      return { ok: false, error: data.error || `Promo code "${code}" is invalid or expired.` };
+    }
+    const cartLines = lines();
+    const sub = cartLines.reduce((s, l) => s + l.qty * l.p.price, 0);
+    const ev = evaluateCoupon(data.coupon, cartLines, sub);
+    if (!ev.valid) return { ok: false, error: ev.reason };
+
+    Store.set("msr_manual_coupon", data.coupon, sessionStorage);
+    Store.set("msr_coupon_override", "", sessionStorage);
+    return { ok: true, coupon: data.coupon, result: ev };
+  } catch (e) {
+    return { ok: false, error: "Unable to verify promo code right now. Please try again." };
+  }
+}
+
+function resolveAppliedCoupon(cartLines, subtotal) {
+  const state = getManualCouponState();
+  if (state.coupon) {
+    const ev = evaluateCoupon(state.coupon, cartLines, subtotal);
+    if (ev.valid) return { ...ev, isAuto: !!state.coupon.autoApply };
+  }
+  if (state.removed) return null;
+
+  const autos = getActiveCoupons().filter(c => c.autoApply);
+  let best = null;
+  for (const c of autos) {
+    const ev = evaluateCoupon(c, cartLines, subtotal);
+    if (ev.valid) {
+      if (!best || ev.discount > best.discount || (ev.discount === best.discount && ev.freeShipping && !best.freeShipping)) {
+        best = { ...ev, isAuto: true };
+      }
+    }
+  }
+  return best;
+}
+
+async function syncCouponsRemote(force = false) {
+  try {
+    const endpoint = getCouponsApiEndpoint() + (force ? `?_t=${Date.now()}` : "?active=1");
+    const res = await fetch(endpoint, force ? { cache: "no-store" } : undefined);
+    if (res.ok) {
+      const list = await res.json();
+      if (Array.isArray(list)) {
+        if (force) {
+          window.ALL_COUPONS = list;
+          Store.set("app_all_coupons", list);
+          window.ACTIVE_COUPONS = list.filter(c => c.isActive && !isCouponExpiredClient(c.expiresAt));
+          Store.set("app_active_coupons", window.ACTIVE_COUPONS);
+        } else {
+          window.ACTIVE_COUPONS = list;
+          Store.set("app_active_coupons", list);
+        }
+        return list;
+      }
+    }
+  } catch (e) {}
+  return force ? (window.ALL_COUPONS || []) : getActiveCoupons();
+}
+
+async function saveCouponRemote(coupon, isPatch = false) {
+  try {
+    const endpoint = getCouponsApiEndpoint();
+    const res = await fetch(endpoint, {
+      method: isPatch ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coupon)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.coupon) {
+      return { ok: true, coupon: data.coupon };
+    }
+    return { ok: false, error: data.error || res.statusText || "Save failed" };
+  } catch (e) {
+    return { ok: false, error: e.message || "Network error" };
+  }
+}
+
+async function deleteCouponRemote(id) {
+  try {
+    const res = await fetch(`${getCouponsApiEndpoint()}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
 function totals(city = "") {
   if (!city && typeof document !== "undefined") {
     const el = document.getElementById("f-city") || document.getElementById("moCity");
     if (el && el.value) city = el.value;
   }
-  const sub = lines().reduce((s, l) => s + l.qty * l.p.price, 0);
+  const cartLines = lines();
+  const sub = cartLines.reduce((s, l) => s + l.qty * l.p.price, 0);
+  const couponEval = resolveAppliedCoupon(cartLines, sub);
+  const discount = couponEval ? couponEval.discount : 0;
+  const isCouponFreeShipping = couponEval ? !!couponEval.freeShipping : false;
+  const discountedSub = Math.max(0, sub - discount);
+
   const deliveryCfg = (window.BRAND_CONFIG && window.BRAND_CONFIG.delivery) || { fee: 200, freeShippingThreshold: 5000 };
   const freeThreshold = deliveryCfg.freeShippingThreshold || 999999;
   const isCityFree = isKohatCity(city);
-  const isFree = sub >= freeThreshold || isCityFree;
+  const isFree = discountedSub >= freeThreshold || isCityFree || isCouponFreeShipping;
   const ship = sub === 0 ? 0 : (isFree ? 0 : (deliveryCfg.fee || 200));
-  return { sub, ship, total: sub + ship, isFree, isCityFree };
+
+  return {
+    sub,
+    discount,
+    discountedSub,
+    ship,
+    total: discountedSub + ship,
+    isFree,
+    isCityFree,
+    isCouponFreeShipping,
+    appliedCoupon: couponEval ? couponEval.coupon : null,
+    isAutoCoupon: couponEval ? !!couponEval.isAuto : false
+  };
 }
 
 // Order Management & Tracking DB Helpers
@@ -508,7 +780,7 @@ function generateOrderWhatsAppMessage(order) {
 
 📦 *Items Ordered:*
 ${itemsText}
-
+${(order.discount > 0) ? `\n🎟️ *Promo Discount${order.couponCode ? ` (${order.couponCode})` : ""}:* -PKR ${Number(order.discount).toLocaleString()}` : ""}
 🚚 *Delivery Fee:* ${order.shipping === 0 ? ((cust.city && isKohatCity(cust.city)) ? "FREE (Kohat Local Delivery 🎉)" : "FREE SHIPPING") : `PKR ${order.shipping}`}
 💰 *TOTAL AMOUNT:* PKR ${(order.total || 0).toLocaleString()} (${order.paymentMethod || "Cash on Delivery"})
 -----------------------------------------
@@ -597,11 +869,19 @@ function applyBrandSettings(data) {
   if (data.theme && typeof applyTheme === "function") {
     applyTheme(data.theme);
   }
+  if (Array.isArray(data.activeCoupons)) {
+    window.ACTIVE_COUPONS = data.activeCoupons;
+    Store.set("app_active_coupons", data.activeCoupons);
+  }
   Store.set("app_brand_config", window.BRAND_CONFIG);
   return true;
 }
 
 function loadLocalBrandSettings() {
+  const savedCoupons = Store.get("app_active_coupons");
+  if (Array.isArray(savedCoupons)) {
+    window.ACTIVE_COUPONS = savedCoupons;
+  }
   const cached = Store.get("app_brand_config");
   if (cached) {
     applyBrandSettings(cached);
@@ -625,6 +905,10 @@ async function syncSettingsRemote(force = false) {
     const res = await fetch(endpoint, force ? { cache: "no-store" } : undefined);
     if (res.ok) {
       const data = await res.json();
+      if (data && Array.isArray(data.activeCoupons)) {
+        window.ACTIVE_COUPONS = data.activeCoupons;
+        Store.set("app_active_coupons", data.activeCoupons);
+      }
       if (data && !data.error && data.found !== false) {
         applyBrandSettings(data);
         Store.set("app_brand_config", data);
@@ -699,4 +983,15 @@ async function saveBrandSettingsRemote(fullConfig, theme) {
   window.loadLocalBrandSettings = loadLocalBrandSettings;
   window.syncSettingsRemote = syncSettingsRemote;
   window.saveBrandSettingsRemote = saveBrandSettingsRemote;
+  window.getCouponsApiEndpoint = getCouponsApiEndpoint;
+  window.getActiveCoupons = getActiveCoupons;
+  window.getBestPromoForProduct = getBestPromoForProduct;
+  window.evaluateCoupon = evaluateCoupon;
+  window.applyCouponCodeToCart = applyCouponCodeToCart;
+  window.removeCouponFromCart = removeCouponFromCart;
+  window.formatCouponExpiry = formatCouponExpiry;
+  window.isCouponExpiredClient = isCouponExpiredClient;
+  window.syncCouponsRemote = syncCouponsRemote;
+  window.saveCouponRemote = saveCouponRemote;
+  window.deleteCouponRemote = deleteCouponRemote;
 }

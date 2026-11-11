@@ -45,10 +45,60 @@ export async function onRequestGet(context) {
 
   try {
     const row = await db.prepare("SELECT value_json FROM store_settings WHERE key = 'brand_config'").first();
-    if (!row) {
-      return new Response(JSON.stringify({ found: false }), { status: 200, headers });
+    let payload = {};
+    if (row && row.value_json) {
+      try {
+        payload = JSON.parse(row.value_json);
+      } catch (e) {
+        payload = {};
+      }
+    } else {
+      payload = { found: false };
     }
-    return new Response(row.value_json, { status: 200, headers });
+
+    // Attach active public & auto-applied coupons so storefront needs 0 extra API calls
+    try {
+      const cRes = await db
+        .prepare("SELECT * FROM coupons WHERE is_active = 1 AND (auto_apply = 1 OR show_banner = 1) ORDER BY created_at DESC")
+        .all();
+      const nowMs = Date.now();
+      payload.activeCoupons = (cRes && cRes.results ? cRes.results : [])
+        .map(r => {
+          let extra = {};
+          try { if (r.raw_json) extra = JSON.parse(r.raw_json); } catch (e) {}
+          const exp = r.expires_at || "";
+          if (exp) {
+            const endTs = /^\d{4}-\d{2}-\d{2}$/.test(exp) ? new Date(`${exp}T23:59:59+05:00`).getTime() : new Date(exp).getTime();
+            if (!isNaN(endTs) && nowMs > endTs) return null;
+          }
+          const uLimit = Number(r.usage_limit || 0);
+          const uCount = Number(r.used_count || 0);
+          if (uLimit > 0 && uCount >= uLimit) return null;
+          return {
+            id: r.id,
+            code: String(r.code || "").toUpperCase().trim(),
+            title: r.title || r.code,
+            description: r.description || "",
+            type: r.type || "percent",
+            value: Number(r.value || 0),
+            autoApply: !!r.auto_apply,
+            showBanner: r.show_banner !== undefined ? !!r.show_banner : true,
+            isActive: true,
+            minOrder: Number(r.min_order || 0),
+            maxDiscount: Number(r.max_discount || 0),
+            usageLimit: uLimit,
+            usedCount: uCount,
+            appliesTo: extra.appliesTo || r.applies_to || "all",
+            expiresAt: exp
+          };
+        })
+        .filter(Boolean);
+    } catch (cErr) {
+      // Coupons table might not exist before first coupon is created
+      payload.activeCoupons = payload.activeCoupons || [];
+    }
+
+    return new Response(JSON.stringify(payload), { status: 200, headers });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }

@@ -243,8 +243,8 @@ function updatePay() {
 
 function updateCheckoutDelivery() {
   const cityInput = $("#f-city");
-  if (!cityInput || !cityInput.value) return;
-  const city = String(cityInput.value).trim();
+  if (!cityInput) return;
+  const city = (cityInput.value ? String(cityInput.value).trim() : "");
   const t = totals(city);
   const shipVal = $("#co-ship-val");
   const totVal = $("#co-tot-val");
@@ -254,7 +254,9 @@ function updateCheckoutDelivery() {
   const mobTopTot = $("#mob-total-top");
 
   if (shipVal) {
-    if (t.isCityFree) {
+    if (t.isCouponFreeShipping) {
+      shipVal.innerHTML = '<span class="tag tag-emerald">FREE (Coupon)</span>';
+    } else if (t.isCityFree) {
       shipVal.innerHTML = '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>';
     } else if (t.isFree) {
       shipVal.innerHTML = '<span class="tag tag-emerald">FREE SHIPPING</span>';
@@ -266,8 +268,8 @@ function updateCheckoutDelivery() {
   if (mobTotVal) mobTotVal.textContent = money(t.total);
   if (mobTopTot) mobTopTot.textContent = money(t.total);
   if (mobShipSub) {
-    mobShipSub.textContent = t.isCityFree ? "FREE Delivery in Kohat 🎉" : "Flat PKR 200 Delivery";
-    mobShipSub.style.color = t.isCityFree ? "#047857" : "#6b5d4b";
+    mobShipSub.textContent = t.isCouponFreeShipping ? "FREE Delivery (Promo Coupon) 🎉" : (t.isCityFree ? "FREE Delivery in Kohat 🎉" : (t.isFree ? "FREE Shipping Qualified 🎉" : `Flat ${money(t.ship)} Delivery`));
+    mobShipSub.style.color = (t.isFree || t.isCityFree || t.isCouponFreeShipping) ? "#047857" : "#6b5d4b";
   }
 
   if (msg) {
@@ -401,6 +403,9 @@ function placeOrder(e) {
       price: l.p.price
     })),
     subtotal: t.sub,
+    discount: t.discount || 0,
+    couponCode: t.appliedCoupon ? t.appliedCoupon.code : "",
+    couponTitle: t.appliedCoupon ? t.appliedCoupon.title : "",
     shipping: t.ship,
     total: t.total,
     paymentMethod: payVal,
@@ -730,6 +735,12 @@ document.addEventListener("click", e => {
       const thumbs = $$(".thumb");
       thumbs.forEach((t, ti) => t.setAttribute("aria-pressed", ti === idx ? "true" : "false"));
     }
+  } else if (act === "apply-coupon") {
+    handleApplyCouponClick();
+  } else if (act === "remove-coupon") {
+    if (typeof removeCouponFromCart === "function") removeCouponFromCart();
+    refreshRoutePreservingCheckoutForm();
+    toast("Promo code removed");
   } else if (act === "search") {
     const d = $("#dlg-search");
     if (d) {
@@ -749,6 +760,76 @@ document.addEventListener("click", e => {
     if (d) d.close();
   }
 });
+
+function refreshRoutePreservingCheckoutForm() {
+  const form = $("#coForm");
+  if (!form) {
+    route();
+    return;
+  }
+  const fieldIds = ["f-name", "f-phone", "f-email", "f-addr", "f-city", "f-prov", "f-zip", "f-note"];
+  const saved = {};
+  fieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) saved[id] = el.value;
+  });
+  const checkedPay = form.querySelector('input[name="pay"]:checked');
+  const payVal = checkedPay ? checkedPay.value : null;
+
+  route();
+
+  fieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && saved[id] !== undefined) el.value = saved[id];
+  });
+  if (payVal) {
+    const r = document.querySelector(`input[name="pay"][value="${payVal}"]`);
+    if (r) r.checked = true;
+  }
+  updateCheckoutDelivery();
+}
+
+async function handleApplyCouponClick() {
+  const input = $("#couponCodeInput");
+  const fb = $("#couponFeedbackMsg");
+  if (!input) return;
+  const code = input.value.trim().toUpperCase();
+  if (!code) {
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.color = "#dc2626";
+      fb.textContent = "Please enter a promo code.";
+    }
+    return;
+  }
+
+  const btn = document.querySelector('[data-act="apply-coupon"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Checking...";
+  }
+
+  const res = (typeof applyCouponCodeToCart === "function") ? await applyCouponCodeToCart(code) : { ok: false, error: "Unavailable" };
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = "Apply";
+  }
+
+  if (res.ok) {
+    refreshRoutePreservingCheckoutForm();
+    const sav = res.result && res.result.discount > 0 ? `You saved ${money(res.result.discount)}!` : "Free delivery unlocked!";
+    toast(`🎉 Code ${res.coupon.code} applied! ${sav}`);
+  } else {
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.color = "#dc2626";
+      fb.textContent = res.error || "Invalid promo code.";
+    }
+    toast(`⚠️ ${res.error || "Invalid promo code"}`);
+  }
+}
+window.handleApplyCouponClick = handleApplyCouponClick;
 
 // Close dialog when clicking on the backdrop outside the dialog box
 document.addEventListener("click", e => {

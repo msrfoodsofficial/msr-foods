@@ -322,8 +322,17 @@ export async function onRequestPost(context) {
       await db.prepare(`
         INSERT INTO order_activity_logs (order_id, admin_name, action, note, created_at)
         VALUES (?, ?, ?, ?, ?)
-      `).bind(orderId, "Customer", "Order Placed", "Order placed online via storefront checkout", now.toISOString()).run();
+      `).bind(orderId, "Customer", "Order Placed", order.couponCode ? `Order placed with coupon ${order.couponCode}` : "Order placed online via storefront checkout", now.toISOString()).run();
     } catch (e) {}
+
+    // Increment coupon used_count if promo code was applied
+    if (order.couponCode) {
+      try {
+        await db.prepare(`
+          UPDATE coupons SET used_count = COALESCE(used_count, 0) + 1, updated_at = ? WHERE UPPER(code) = ?
+        `).bind(updatedAt, String(order.couponCode).trim().toUpperCase()).run();
+      } catch (e) {}
+    }
 
     // Dispatch automated emails (both Admin alert + Customer confirmation receipt)
     try {
@@ -535,6 +544,8 @@ async function sendOrderEmails(order, env) {
   const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('92') ? cleanPhone : ('92' + cleanPhone.replace(/^0/, ''))}` : '';
 
   const subtotalNum = Number(order.subtotal || (order.pricing && order.pricing.subtotal) || 0);
+  const discountNum = Number(order.discount || 0);
+  const couponCode = String(order.couponCode || "").trim();
   const shippingNum = Number(order.shipping || (order.pricing && order.pricing.shipping) || 0);
   const totalNum = Number(order.total || (order.pricing && order.pricing.total) || 0);
   const payMethodName = String(order.paymentMethod || order.pay || "Cash on Delivery").toUpperCase();
@@ -607,6 +618,11 @@ async function sendOrderEmails(order, env) {
                 <td colspan="3" style="padding: 10px 10px 4px; text-align: right; color: #6b7280;">Subtotal:</td>
                 <td style="padding: 10px 10px 4px; text-align: right; font-weight: 600;">PKR ${subtotalNum.toLocaleString()}</td>
               </tr>
+              ${discountNum > 0 ? `
+              <tr>
+                <td colspan="3" style="padding: 4px 10px; text-align: right; color: #059669;">Promo Discount ${couponCode ? `(${couponCode})` : ""}:</td>
+                <td style="padding: 4px 10px; text-align: right; font-weight: 700; color: #059669;">- PKR ${discountNum.toLocaleString()}</td>
+              </tr>` : ""}
               <tr>
                 <td colspan="3" style="padding: 4px 10px 10px; text-align: right; color: #6b7280;">Shipping Fee:</td>
                 <td style="padding: 4px 10px 10px; text-align: right; font-weight: 600;">PKR ${shippingNum.toLocaleString()}</td>
@@ -707,6 +723,11 @@ async function sendOrderEmails(order, env) {
                       <td style="padding: 4px 0; color: #6b6355;">Subtotal</td>
                       <td style="padding: 4px 0; text-align: right; color: #14100a; font-weight: 600;">PKR ${subtotalNum.toLocaleString()}</td>
                     </tr>
+                    ${discountNum > 0 ? `
+                    <tr>
+                      <td style="padding: 4px 0; color: #059669; font-weight: 600;">Promo Discount ${couponCode ? `(${couponCode})` : ""}</td>
+                      <td style="padding: 4px 0; text-align: right; color: #059669; font-weight: 700;">- PKR ${discountNum.toLocaleString()}</td>
+                    </tr>` : ""}
                     <tr>
                       <td style="padding: 4px 0; color: #6b6355;">Delivery Shipping</td>
                       <td style="padding: 4px 0; text-align: right;">${shippingNum === 0 ? '<strong style="color:#16a34a">FREE</strong>' : `PKR ${shippingNum.toLocaleString()}`}</td>
@@ -827,6 +848,8 @@ async function sendOrderStatusUpdateEmail(order, env) {
   const trackUrl = `https://msrfoodsofficial.food/#/track/${encodeURIComponent(order.id)}`;
   const totalNum = Number(order.total || (order.pricing && order.pricing.total) || 0);
   const subtotalNum = Number(order.subtotal || (order.pricing && order.pricing.subtotal) || 0);
+  const discountNum = Number(order.discount || 0);
+  const couponCode = String(order.couponCode || "").trim();
   const shippingNum = Number(order.shipping !== undefined ? order.shipping : (order.pricing ? order.pricing.shipping : 0));
   const items = Array.isArray(order.items) ? order.items : [];
 
@@ -948,6 +971,11 @@ async function sendOrderStatusUpdateEmail(order, env) {
                   <td style="padding: 3px 0; color: #6b6355;">Subtotal</td>
                   <td style="padding: 3px 0; text-align: right; color: #14100a; font-weight: 600;">PKR ${subtotalNum.toLocaleString()}</td>
                 </tr>
+                ${discountNum > 0 ? `
+                <tr>
+                  <td style="padding: 3px 0; color: #059669; font-weight: 600;">Promo Discount ${couponCode ? `(${couponCode})` : ""}</td>
+                  <td style="padding: 3px 0; text-align: right; color: #059669; font-weight: 700;">- PKR ${discountNum.toLocaleString()}</td>
+                </tr>` : ""}
                 <tr>
                   <td style="padding: 3px 0; color: #6b6355;">Delivery Shipping</td>
                   <td style="padding: 3px 0; text-align: right;">${shippingNum === 0 ? '<strong style="color:#16a34a">FREE</strong>' : `PKR ${shippingNum.toLocaleString()}`}</td>

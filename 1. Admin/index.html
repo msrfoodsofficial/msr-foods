@@ -39,7 +39,7 @@
   <!-- Shared Design System & UI Kit Styles -->
   <link rel="stylesheet" href="styles/theme.css?v=4">
   <link rel="stylesheet" href="styles/ui-kit.css?v=5">
-  <link rel="stylesheet" href="styles/admin.css?v=13">
+  <link rel="stylesheet" href="styles/admin.css?v=15">
   <!-- Early Auth Guard & Styles -->
   <script>
     (function() {
@@ -579,6 +579,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
         <span>Products & Stock</span>
       </div>
+      <div class="nav-item" data-tab="coupons" onclick="switchTab('coupons')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span>Coupons & Promos</span>
+      </div>
       <div class="nav-item" data-tab="customizer" onclick="switchTab('customizer')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
         <span>White-Label Theming</span>
@@ -753,6 +757,31 @@
         </div>
 
         <div class="inventory-grid" id="inventoryGridContainer"></div>
+      </section>
+
+      <!-- TAB 3.5: COUPONS & AUTO-APPLIED PROMOS -->
+      <section class="tab-panel" id="tab-coupons">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:14px">
+          <div>
+            <h2 style="font-size:24px;color:var(--cream)">Coupons & Promotional Campaigns</h2>
+            <p style="font-size:14px;color:var(--mute-dark);margin-top:4px">Create discount codes or auto-applied launch offers (highlights automatically on the website &amp; checkout).</p>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="openCouponModal()">+ Create New Coupon</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-pills" id="couponFilterPills">
+            <span class="filter-pill active" data-coupon-filter="all">All</span>
+            <span class="filter-pill" data-coupon-filter="active">Active</span>
+            <span class="filter-pill" data-coupon-filter="auto">Auto-Applied</span>
+            <span class="filter-pill" data-coupon-filter="inactive">Paused / Expired</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--mute-dark)">
+            Auto-applied promos sync cleanly to the storefront via settings cache (~1 min).
+          </div>
+        </div>
+
+        <div class="coupons-grid" id="couponsGridContainer"></div>
       </section>
 
       <!-- TAB 4: WHITE-LABEL THEMING & UI KIT PLAYGROUND -->
@@ -1035,6 +1064,9 @@
   <!-- Product Add / Edit Modal -->
   <dialog id="dlg-product-modal" aria-label="Product Editor"></dialog>
 
+  <!-- Coupon Add / Edit Modal -->
+  <dialog id="dlg-coupon-modal" aria-label="Coupon Editor"></dialog>
+
   <!-- Restock Product Modal -->
   <dialog id="dlg-restock-modal" aria-label="Restock Product"></dialog>
 
@@ -1064,9 +1096,9 @@
   <script src="config/theme.config.js?v=7"></script>
   <script src="data/products.js?v=7"></script>
   <script src="data/cities.js?v=7"></script>
-  <script src="js/store.js?v=14"></script>
+  <script src="js/store.js?v=15"></script>
 
   <!-- Admin Controller -->
-  <script src="js/admin.js?v=14"></script>
+  <script src="js/admin.js?v=15"></script>
 </body>
 </html>

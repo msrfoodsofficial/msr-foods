@@ -472,6 +472,10 @@ function switchTab(tabId) {
     renderProductsGrid();
     if (typeof fetchWaitlists === "function") fetchWaitlists().then(() => renderProductsGrid());
   }
+  if (tabId === "coupons") {
+    renderCouponsGrid();
+    if (typeof syncCouponsRemote === "function") syncCouponsRemote(true).then(() => renderCouponsGrid());
+  }
   if (tabId === "dashboard") renderDashboard();
   if (tabId === "settings") loadStoreSettingsForm();
   try {
@@ -1352,6 +1356,11 @@ function openOrderModal(orderId) {
                 <td style="text-align:right;padding:6px 0"><b>${money(i.qty * i.price)}</b></td>
               </tr>
             `).join("")}
+            ${Number(o.discount || 0) > 0 ? `
+            <tr style="border-top:1px solid var(--hair)">
+              <td colspan="2" style="padding:6px 0;color:#6ee7b7">Promo Discount ${o.couponCode ? `<b>(${esc(o.couponCode)})</b>` : ""}</td>
+              <td style="text-align:right;padding:6px 0;color:#6ee7b7;font-weight:700">- ${money(o.discount)}</td>
+            </tr>` : ""}
             <tr style="border-top:1px solid var(--hair)">
               <td colspan="2" style="padding:6px 0">
                 Delivery Shipping
@@ -2809,6 +2818,9 @@ function initAdmin() {
   if (typeof syncProductsRemote === "function") {
     syncProductsRemote(true);
   }
+  if (typeof syncCouponsRemote === "function") {
+    syncCouponsRemote(true).then(() => renderCouponsGrid());
+  }
   if (typeof fetchWaitlists === "function") {
     fetchWaitlists().then(() => {
       if (typeof currentTab !== "undefined" && currentTab === "products") {
@@ -2857,6 +2869,17 @@ function initAdmin() {
       renderProductsGrid();
     });
   });
+
+  // Coupon Filter Pills
+  $$("#couponFilterPills .filter-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      $$("#couponFilterPills .filter-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      currentCouponFilter = pill.dataset.couponFilter;
+      renderCouponsGrid();
+    });
+  });
+
   window.addEventListener("hashchange", () => {
     if (!isAdminAuthenticated()) {
       checkAdminAuth();
@@ -2865,6 +2888,315 @@ function initAdmin() {
     const hash = (location.hash || "").replace(/^#/, "");
     if (hash && $(`#tab-${hash}`)) switchTab(hash);
   });
+}
+
+// ==========================================================================
+// Coupons & Auto-Applied Promotional Campaigns Controller
+// ==========================================================================
+let currentCouponFilter = "all";
+
+function renderCouponsGrid() {
+  const container = $("#couponsGridContainer");
+  if (!container) return;
+
+  const list = (typeof window !== "undefined" && Array.isArray(window.ALL_COUPONS))
+    ? window.ALL_COUPONS
+    : (Store.get("app_all_coupons") || []);
+
+  const filtered = list.filter(c => {
+    const expired = (typeof isCouponExpiredClient === "function") ? isCouponExpiredClient(c.expiresAt) : false;
+    const activeValid = c.isActive && !expired;
+    if (currentCouponFilter === "active") return activeValid;
+    if (currentCouponFilter === "auto") return activeValid && c.autoApply;
+    if (currentCouponFilter === "inactive") return !activeValid;
+    return true;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 48px 24px; background: var(--bg-card); border: 1px solid var(--hair); border-radius: var(--r-md); color: var(--mute-dark);">
+        <div style="font-size: 36px; margin-bottom: 10px">🎟️</div>
+        <h3 style="font-size: 18px; color: var(--cream); margin-bottom: 6px">No coupons match this view</h3>
+        <p style="font-size: 13.5px; margin-bottom: 18px">Create your first launch promo code or auto-applied discount campaign.</p>
+        <button type="button" class="btn btn-gold btn-sm" onclick="openCouponModal()">+ Create New Coupon</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(c => {
+    const expired = (typeof isCouponExpiredClient === "function") ? isCouponExpiredClient(c.expiresAt) : false;
+    const isLive = c.isActive && !expired;
+    const statusLabel = expired ? "Expired" : (c.isActive ? "Active" : "Paused");
+    const statusCls = expired ? "rose" : (c.isActive ? "emerald" : "amber");
+    const discountStr = c.type === "percent"
+      ? `${c.value}% OFF`
+      : (c.type === "fixed" ? `${money(c.value)} OFF` : "FREE SHIPPING");
+    const expFormatted = c.expiresAt
+      ? ((typeof formatCouponExpiry === "function") ? formatCouponExpiry(c.expiresAt) : c.expiresAt)
+      : "No expiry";
+
+    return `
+      <div class="coupon-card ${isLive ? "" : "is-inactive"}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="coupon-code-pill">${esc(c.code)}</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${c.autoApply ? `<span class="tag tag-gold" style="font-size:11px">⚡ Auto-Applied</span>` : ""}
+            <span class="tag tag-${statusCls}" style="font-size:11px">${statusLabel}</span>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-size:17px;margin:0;color:var(--cream)">${esc(c.title)}</h3>
+          <div style="font-size:20px;font-weight:800;color:var(--gold-hi);margin-top:4px">${discountStr}</div>
+          ${c.description ? `<p style="font-size:12.5px;color:var(--mute-dark);margin:4px 0 0;line-height:1.45">${esc(c.description)}</p>` : ""}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:rgba(0,0,0,0.22);border-radius:8px;font-size:12px;color:var(--sand)">
+          <div><span style="color:var(--mute-dark)">Valid Till:</span><br><b>${esc(expFormatted)}</b></div>
+          <div><span style="color:var(--mute-dark)">Redemptions:</span><br><b>${c.usedCount || 0}${c.usageLimit > 0 ? ` / ${c.usageLimit}` : " (Unlimited)"}</b></div>
+          <div><span style="color:var(--mute-dark)">Min Order:</span><br><b>${c.minOrder > 0 ? money(c.minOrder) : "None"}</b></div>
+          <div><span style="color:var(--mute-dark)">Applies To:</span><br><b>${!c.appliesTo || c.appliesTo === "all" ? "All Products" : esc(String(c.appliesTo))}</b></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:auto;padding-top:4px;flex-wrap:wrap">
+          <button type="button" class="btn btn-xs btn-line" style="flex:1" onclick="openCouponModal('${esc(c.id)}')">✏️ Edit</button>
+          <button type="button" class="btn btn-xs ${c.isActive ? "btn-warning" : "btn-success"}" style="flex:1" onclick="toggleCouponStatus('${esc(c.id)}', ${!c.isActive})">
+            ${c.isActive ? "⏸ Pause" : "▶ Activate"}
+          </button>
+          <button type="button" class="btn btn-xs btn-danger" onclick="deleteCouponItem('${esc(c.id)}', '${esc(c.code)}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openCouponModal(couponId = null) {
+  const list = window.ALL_COUPONS || Store.get("app_all_coupons") || [];
+  const existing = couponId ? list.find(x => x.id === couponId) : null;
+  const isEdit = !!existing;
+  const products = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
+
+  const modal = $("#dlg-coupon-modal");
+  if (!modal) return;
+
+  const curApplies = existing && existing.appliesTo
+    ? (Array.isArray(existing.appliesTo) ? existing.appliesTo[0] : String(existing.appliesTo).split(",")[0])
+    : "all";
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(660px,94vw)">
+      <style>
+        #dlg-coupon-modal label { color: #f4d77f !important; font-size: 13px !important; font-weight: 600 !important; margin-bottom: 5px !important; display: block !important; }
+        #dlg-coupon-modal input:not([type="checkbox"]), #dlg-coupon-modal select, #dlg-coupon-modal textarea { background: #14100a !important; color: #fffdf8 !important; border: 1.5px solid rgba(214, 167, 54, 0.35) !important; padding: 11px 13px !important; border-radius: 8px !important; width: 100% !important; box-sizing: border-box !important; }
+      </style>
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-coupon-modal').close()">${ICON.x}</button>
+      <h3 style="font-size:21px;margin-bottom:4px">${isEdit ? `Edit Coupon: ${esc(existing.code)}` : "Create Promotional Coupon"}</h3>
+      <p style="font-size:13.5px;color:var(--mute-dark);margin-bottom:16px">Configure manual promo codes or auto-applied launch campaigns.</p>
+
+      ${!isEdit ? `
+        <div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:rgba(214,167,54,0.08);border:1px solid rgba(214,167,54,0.3);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12.5px;color:var(--sand)">Want an instant Nov 2026 New Launch promo?</span>
+          <button type="button" class="btn btn-xs btn-gold" onclick="fillLaunchCouponPreset()">✨ Pre-Fill Launch Promo (Till Nov 30, 2026)</button>
+        </div>
+      ` : ""}
+
+      <form id="couponForm" onsubmit="event.preventDefault(); saveCouponForm(${isEdit ? `'${esc(existing.id)}'` : "null"});">
+        <div class="fgrid">
+          <div class="f">
+            <label for="coupCode">Promo Code *</label>
+            <input id="coupCode" value="${isEdit ? esc(existing.code) : ""}" placeholder="e.g. LAUNCH20" style="text-transform:uppercase;font-family:monospace;font-weight:700" required>
+          </div>
+          <div class="f">
+            <label for="coupTitle">Campaign Headline *</label>
+            <input id="coupTitle" value="${isEdit ? esc(existing.title) : ""}" placeholder="e.g. New Launch Offer" required>
+          </div>
+
+          <div class="f">
+            <label for="coupType">Discount Type *</label>
+            <select id="coupType" onchange="toggleCouponValueField()">
+              <option value="percent" ${(!existing || existing.type === "percent") ? "selected" : ""}>% Percentage Discount</option>
+              <option value="fixed" ${(existing && existing.type === "fixed") ? "selected" : ""}>PKR Fixed Amount Off</option>
+              <option value="free_shipping" ${(existing && existing.type === "free_shipping") ? "selected" : ""}>Free Delivery Shipping</option>
+            </select>
+          </div>
+          <div class="f" id="coupValueGroup">
+            <label for="coupValue" id="coupValueLabel">Discount Amount *</label>
+            <input id="coupValue" type="number" min="0" step="any" value="${isEdit ? existing.value : ""}" placeholder="e.g. 20">
+          </div>
+
+          <div class="f">
+            <label for="coupExpires">Valid Until Date <span style="font-weight:400;color:#bdae8e">(Optional)</span></label>
+            <input id="coupExpires" type="date" value="${isEdit ? esc(existing.expiresAt || "") : ""}">
+          </div>
+          <div class="f">
+            <label for="coupApplies">Applies To</label>
+            <select id="coupApplies">
+              <option value="all" ${curApplies === "all" ? "selected" : ""}>All Store Products</option>
+              ${products.map(p => `<option value="${esc(p.id)}" ${curApplies === p.id ? "selected" : ""}>${esc(p.title || p.name)} (${esc(p.weight)})</option>`).join("")}
+            </select>
+          </div>
+
+          <div class="f">
+            <label for="coupMinOrder">Minimum Subtotal (PKR)</label>
+            <input id="coupMinOrder" type="number" min="0" value="${isEdit ? (existing.minOrder || 0) : 0}">
+          </div>
+          <div class="f">
+            <label for="coupUsageLimit">Max Redemptions (0 = Unlimited)</label>
+            <input id="coupUsageLimit" type="number" min="0" value="${isEdit ? (existing.usageLimit || 0) : 0}">
+          </div>
+
+          <div class="f full">
+            <label for="coupDesc">Customer Promo Message</label>
+            <input id="coupDesc" value="${isEdit ? esc(existing.description || "") : ""}" placeholder="e.g. Launch celebration discount auto-applied on checkout till Nov 30, 2026!">
+          </div>
+
+          <div class="f full" style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <label class="coupon-toggle-row">
+              <input type="checkbox" id="coupAutoApply" ${existing && existing.autoApply ? "checked" : ""}>
+              <div>
+                <div style="font-weight:700;color:var(--cream);font-size:13.5px">⚡ Auto-Apply Automatically (Recommended for Launch Promo)</div>
+                <div style="font-size:11.5px;color:var(--mute-dark)">Applies discount automatically across store cards, product pages, cart & checkout without typing a code.</div>
+              </div>
+            </label>
+            <label class="coupon-toggle-row">
+              <input type="checkbox" id="coupShowBanner" ${(!existing || existing.showBanner !== false) ? "checked" : ""}>
+              <div>
+                <div style="font-weight:700;color:var(--cream);font-size:13.5px">📢 Highlight in Website Hero & Storefront Banner</div>
+                <div style="font-size:11.5px;color:var(--mute-dark)">Shows promotional banner on Home & Shop pages to grab shopper attention.</div>
+              </div>
+            </label>
+            <label class="coupon-toggle-row">
+              <input type="checkbox" id="coupIsActive" ${(!existing || existing.isActive) ? "checked" : ""}>
+              <div>
+                <div style="font-weight:700;color:var(--cream);font-size:13.5px">✅ Coupon Active</div>
+                <div style="font-size:11.5px;color:var(--mute-dark)">Turn off anytime to pause this promotion without deleting it.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px">
+          <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-coupon-modal').close()">Cancel</button>
+          <button type="submit" id="btnSaveCoupon" class="btn btn-gold btn-sm">${isEdit ? "Save Changes" : "Publish Coupon"}</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  toggleCouponValueField();
+  modal.showModal();
+}
+
+function toggleCouponValueField() {
+  const typeEl = $("#coupType");
+  const grp = $("#coupValueGroup");
+  const valEl = $("#coupValue");
+  const lbl = $("#coupValueLabel");
+  if (!typeEl || !grp) return;
+  if (typeEl.value === "free_shipping") {
+    grp.style.opacity = "0.45";
+    if (valEl) { valEl.value = 0; valEl.disabled = true; }
+  } else {
+    grp.style.opacity = "1";
+    if (valEl) valEl.disabled = false;
+    if (lbl) lbl.textContent = typeEl.value === "percent" ? "Percentage Off (%) *" : "Fixed Discount (PKR) *";
+  }
+}
+
+function fillLaunchCouponPreset() {
+  if ($("#coupCode")) $("#coupCode").value = "LAUNCH20";
+  if ($("#coupTitle")) $("#coupTitle").value = "New Launch Offer";
+  if ($("#coupType")) $("#coupType").value = "percent";
+  if ($("#coupValue")) $("#coupValue").value = "20";
+  if ($("#coupExpires")) $("#coupExpires").value = "2026-11-30";
+  if ($("#coupMinOrder")) $("#coupMinOrder").value = "0";
+  if ($("#coupUsageLimit")) $("#coupUsageLimit").value = "0";
+  if ($("#coupDesc")) $("#coupDesc").value = "Special Launch Celebration Discount — Auto-applied till November 30, 2026!";
+  if ($("#coupAutoApply")) $("#coupAutoApply").checked = true;
+  if ($("#coupShowBanner")) $("#coupShowBanner").checked = true;
+  if ($("#coupIsActive")) $("#coupIsActive").checked = true;
+  toggleCouponValueField();
+  toast("✨ Filled Launch Promo template! Review and click Publish Coupon.");
+}
+
+async function saveCouponForm(editingId) {
+  const code = ($("#coupCode") ? $("#coupCode").value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "") : "");
+  const title = ($("#coupTitle") ? $("#coupTitle").value.trim() : "") || code;
+  const type = ($("#coupType") ? $("#coupType").value : "percent");
+  const value = type === "free_shipping" ? 0 : Number($("#coupValue") ? $("#coupValue").value : 0);
+  const expiresAt = ($("#coupExpires") ? $("#coupExpires").value.trim() : "");
+  const appliesTo = ($("#coupApplies") ? $("#coupApplies").value : "all");
+  const minOrder = Number($("#coupMinOrder") ? $("#coupMinOrder").value : 0) || 0;
+  const usageLimit = parseInt($("#coupUsageLimit") ? $("#coupUsageLimit").value : 0, 10) || 0;
+  const description = ($("#coupDesc") ? $("#coupDesc").value.trim() : "");
+  const autoApply = $("#coupAutoApply") ? $("#coupAutoApply").checked : false;
+  const showBanner = $("#coupShowBanner") ? $("#coupShowBanner").checked : true;
+  const isActive = $("#coupIsActive") ? $("#coupIsActive").checked : true;
+
+  if (!code) {
+    toast("⚠️ Promo code is required.");
+    return;
+  }
+  if (type !== "free_shipping" && (!value || value <= 0)) {
+    toast("⚠️ Discount value must be greater than 0.");
+    return;
+  }
+
+  const btn = $("#btnSaveCoupon");
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ Saving..."; }
+
+  const payload = {
+    id: editingId || undefined,
+    code,
+    title,
+    description,
+    type,
+    value,
+    expiresAt,
+    appliesTo,
+    minOrder,
+    usageLimit,
+    autoApply,
+    showBanner,
+    isActive
+  };
+
+  const res = (typeof saveCouponRemote === "function") ? await saveCouponRemote(payload, !!editingId) : { ok: false };
+  if (btn) { btn.disabled = false; btn.textContent = editingId ? "Save Changes" : "Publish Coupon"; }
+
+  if (!res.ok) {
+    toast(`⚠️ ${res.error || "Could not save coupon"}`);
+    return;
+  }
+
+  await syncCouponsRemote(true);
+  renderCouponsGrid();
+  const modal = $("#dlg-coupon-modal");
+  if (modal) modal.close();
+  toast(`✅ Coupon ${code} saved! Website reflects updates within ~1 min as caches refresh.`);
+}
+
+async function toggleCouponStatus(id, newActive) {
+  const res = await saveCouponRemote({ id, isActive: !!newActive }, true);
+  if (res.ok) {
+    await syncCouponsRemote(true);
+    renderCouponsGrid();
+    toast(newActive ? "▶ Coupon activated! Storefront updates within ~1 min." : "⏸ Coupon paused.");
+  } else {
+    toast(`⚠️ ${res.error || "Failed to update status"}`);
+  }
+}
+
+async function deleteCouponItem(id, code) {
+  const ok = await deleteCouponRemote(id);
+  if (ok) {
+    await syncCouponsRemote(true);
+    renderCouponsGrid();
+    toast(`🗑️ Coupon ${code} deleted`);
+  } else {
+    toast("⚠️ Failed to delete coupon");
+  }
 }
 
 // ==========================================================================
@@ -3124,6 +3456,13 @@ window.handleProductImageUpload = handleProductImageUpload;
 window.handleHeroMediaUpload = handleHeroMediaUpload;
 window.resetHeroMedia = resetHeroMedia;
 window.publishHeroMediaSettings = publishHeroMediaSettings;
+window.renderCouponsGrid = renderCouponsGrid;
+window.openCouponModal = openCouponModal;
+window.toggleCouponValueField = toggleCouponValueField;
+window.fillLaunchCouponPreset = fillLaunchCouponPreset;
+window.saveCouponForm = saveCouponForm;
+window.toggleCouponStatus = toggleCouponStatus;
+window.deleteCouponItem = deleteCouponItem;
 
 // Manual On-Demand Live Order Sync (No background auto-polling intervals)
 async function manualRefreshOrders() {

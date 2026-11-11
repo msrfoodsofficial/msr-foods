@@ -26,16 +26,82 @@ function accordion(id, title, body, open = false) {
   `;
 }
 
+function getPrimaryBannerCoupon() {
+  if (typeof getActiveCoupons !== "function") return null;
+  const list = getActiveCoupons().filter(c => c.showBanner !== false);
+  if (!list.length) return null;
+  return list.find(c => c.autoApply) || list[0];
+}
+
+function formatCouponDiscountLabel(c) {
+  if (!c) return "";
+  if (c.type === "percent") return `${c.value}% OFF`;
+  if (c.type === "fixed") return `${money(c.value)} OFF`;
+  if (c.type === "free_shipping") return "FREE DELIVERY";
+  return "";
+}
+
+function renderCouponSummaryWidget(t, darkTheme = false) {
+  const c = t.appliedCoupon;
+  const expTxt = (c && c.expiresAt && typeof formatCouponExpiry === "function") ? formatCouponExpiry(c.expiresAt) : "";
+  const borderCol = darkTheme ? "rgba(214,167,54,0.28)" : "rgba(27,21,12,0.14)";
+  const bg = darkTheme ? "rgba(255,255,255,0.03)" : "#f9f6ef";
+  const textCol = darkTheme ? "#fff" : "#14100a";
+
+  return `
+    <div class="coupon-box" style="margin:14px 0;padding:12px 14px;border-radius:10px;border:1px solid ${borderCol};background:${bg}">
+      ${c ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);padding:8px 10px;border-radius:8px;margin-bottom:${t.isAutoCoupon ? '0' : '8px'}">
+          <div style="font-size:12.5px;color:${darkTheme ? '#6ee7b7' : '#047857'};line-height:1.35">
+            <b>🎟️ ${esc(c.code)}</b> ${t.isAutoCoupon ? "Auto-Applied" : "Applied"}
+            ${t.discount > 0 ? `(-${money(t.discount)})` : (t.isCouponFreeShipping ? "(FREE Delivery)" : "")}
+            ${expTxt ? `<div style="font-size:11px;opacity:0.85">Valid till ${expTxt}</div>` : ""}
+          </div>
+          <button type="button" data-act="remove-coupon" style="background:none;border:0;color:${darkTheme ? '#fca5a5' : '#b91c1c'};font-size:12px;font-weight:700;cursor:pointer;padding:2px 6px">Remove</button>
+        </div>
+      ` : ""}
+      ${(!c || !t.isAutoCoupon) ? `
+        <div style="display:flex;gap:8px;align-items:center;margin-top:${c ? '8px' : '0'}">
+          <input type="text" id="couponCodeInput" placeholder="Promo code (e.g. LAUNCH20)" style="flex:1;min-width:0;padding:8px 10px;border-radius:7px;border:1px solid ${borderCol};background:${darkTheme ? '#14100a' : '#fff'};color:${textCol};font-size:13px;text-transform:uppercase" onkeydown="if(event.key==='Enter'){event.preventDefault();handleApplyCouponClick();}">
+          <button type="button" data-act="apply-coupon" class="btn btn-gold btn-sm" style="padding:8px 14px;white-space:nowrap;font-size:12.5px">Apply</button>
+        </div>
+      ` : `
+        <details style="margin-top:8px">
+          <summary style="font-size:12px;color:${darkTheme ? '#d9ccaa' : '#6b5d4b'};cursor:pointer">Have a different promo code?</summary>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <input type="text" id="couponCodeInput" placeholder="Enter another code" style="flex:1;min-width:0;padding:8px 10px;border-radius:7px;border:1px solid ${borderCol};background:${darkTheme ? '#14100a' : '#fff'};color:${textCol};font-size:13px;text-transform:uppercase" onkeydown="if(event.key==='Enter'){event.preventDefault();handleApplyCouponClick();}">
+            <button type="button" data-act="apply-coupon" class="btn btn-gold btn-sm" style="padding:8px 14px;white-space:nowrap;font-size:12.5px">Apply</button>
+          </div>
+        </details>
+      `}
+      <div id="couponFeedbackMsg" style="display:none;margin-top:6px;font-size:12px;font-weight:600"></div>
+    </div>
+  `;
+}
+
 function secHero() {
   const B = (window.BRAND_CONFIG && window.BRAND_CONFIG.brand) || { name: "MSR", fullName: "MSR Foods", description: "" };
   const H = (window.BRAND_CONFIG && window.BRAND_CONFIG.hero) || {};
   const heroImg = H.image || "assets/images/products/front.webp";
   const P = (window.PRODUCTS && window.PRODUCTS[0]) || { slug: "honey-nut-mix-500g" };
+  const bannerCoupon = getPrimaryBannerCoupon();
+  const promoChipHtml = bannerCoupon ? `
+    <div class="hero-promo-pill">
+      <span>🎟️</span>
+      <span>
+        <b>${esc(bannerCoupon.title)}</b>: ${formatCouponDiscountLabel(bannerCoupon)}
+        ${bannerCoupon.autoApply ? `· Auto-Applied` : `· Code: <b>${esc(bannerCoupon.code)}</b>`}
+        ${bannerCoupon.expiresAt ? ` · Till ${formatCouponExpiry(bannerCoupon.expiresAt)}` : ""}
+      </span>
+    </div>
+  ` : "";
+
   return `
     <section class="hero hex" aria-label="Introduction">
       <div class="hex-layer"></div>
       <div class="wrap hero-grid">
         <div class="hero-copy">
+          ${promoChipHtml}
           <h1>
             <span>Pure Taste.</span>
             <span class="g">Natural Goodness.</span>
@@ -103,6 +169,30 @@ function secWelcome() {
   `;
 }
 
+function renderStorePromoStrip() {
+  const c = getPrimaryBannerCoupon();
+  if (!c) return "";
+  const expTxt = (c.expiresAt && typeof formatCouponExpiry === "function") ? formatCouponExpiry(c.expiresAt) : "";
+  return `
+    <div class="store-promo-strip">
+      <div class="store-promo-left">
+        <span class="store-promo-tag">🎟️ ${esc(c.code)}</span>
+        <div>
+          <b style="color:#f7de8f;font-size:14px">${esc(c.title)} · ${formatCouponDiscountLabel(c)}</b>
+          <div style="font-size:12.5px;color:#d9ccaa">
+            ${c.autoApply ? "Automatically applied at checkout!" : `Use code <b>${esc(c.code)}</b> at checkout`}
+            ${c.description ? ` — ${esc(c.description)}` : ""}
+            ${expTxt ? ` · Valid till <b>${expTxt}</b>` : ""}
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-gold btn-sm" style="white-space:nowrap" onclick="navigator.clipboard && navigator.clipboard.writeText('${esc(c.code)}'); toast('Promo code ${esc(c.code)} copied!');">
+        ${c.autoApply ? "Auto-Applied ✓" : `Copy Code: ${esc(c.code)}`}
+      </button>
+    </div>
+  `;
+}
+
 function prodCard(p) {
   const buy = canBuy(p);
   const isOutOfStock = p.stock !== undefined && p.stock <= 0;
@@ -110,18 +200,27 @@ function prodCard(p) {
   const imgSrc = (typeof getProductGallery === "function")
     ? getProductGallery(p)[0]
     : ((p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp");
+  const promo = (!isOutOfStock && typeof getBestPromoForProduct === "function") ? getBestPromoForProduct(p) : null;
+
   return `
     <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}" data-href="#/product/${p.slug}">
       <a href="#/product/${p.slug}" class="pc-img" aria-label="${esc(p.title)} details">
         <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
+        ${promo ? `<span class="pc-promo-chip">🎟️ ${promo.badgeText} · ${esc(promo.coupon.code)}</span>` : ""}
         <img src="${imgSrc}" alt="${esc(p.name)} ${esc(p.weight)}" loading="lazy" decoding="async">
       </a>
       <div class="pc-body">
         <h3><a href="#/product/${p.slug}" style="color:inherit;text-decoration:none">${p.title.replace(/\s*\([^)]*\)\s*$/, "")}</a> <span class="pc-w">(${p.weight})</span></h3>
         <p>${p.shortDesc}</p>
         <div class="price">
-          <span>${money(p.price)}</span>
-          ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+          ${promo ? `
+            <span style="color:#6ee7b7">${money(promo.promoPrice)}</span>
+            <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
+            <small class="pc-save-tag">Save ${money(promo.savings)}</small>
+          ` : `
+            <span>${money(p.price)}</span>
+            ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+          `}
           <small>${p.netWeight}</small>
         </div>
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
@@ -160,6 +259,7 @@ function secFeatured() {
           <div class="rule"></div>
           <p class="lead">Select your preferred jar size. Same gold standard recipe in each package.</p>
         </div>
+        ${renderStorePromoStrip()}
         <div class="pgrid">
           ${prods.map(p => prodCard(p)).join("")}
         </div>
@@ -372,6 +472,7 @@ views.shop = () => {
       </header>
       <section class="page-dark sec" style="padding-top:40px">
         <div class="wrap">
+          ${renderStorePromoStrip()}
           <div class="pgrid">
             ${prods.map(p => prodCard(p)).join("")}
           </div>
@@ -400,6 +501,10 @@ views.product = (slug) => {
     ? getProductGallery(p)
     : [(p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp"];
   const imgSrc = gallery[0];
+  const promo = (!isOutOfStock && typeof getBestPromoForProduct === "function") ? getBestPromoForProduct(p) : null;
+  const promoExp = (promo && promo.coupon && promo.coupon.expiresAt && typeof formatCouponExpiry === "function")
+    ? formatCouponExpiry(promo.coupon.expiresAt)
+    : "";
 
   return {
     title: `${p.name} (${p.weight}) | ${window.BRAND_CONFIG.brand.name}`,
@@ -432,10 +537,25 @@ views.product = (slug) => {
               <span class="pill pdp-badge" style="${isOutOfStock ? "color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)" : "background:#140f08;color:#f7de8f;border:1.5px solid #d6a736;font-weight:700"}">${isOutOfStock ? "Out of Stock" : (p.badge || "Signature Selection")}</span>
               <h1 style="margin-top:14px">${p.title}</h1>
               <div class="price">
-                <span>${money(p.price)}</span>
-                ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+                ${promo ? `
+                  <span style="color:#047857">${money(promo.promoPrice)}</span>
+                  <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
+                  <small class="pdp-save-pill">Save ${money(promo.savings)}</small>
+                ` : `
+                  <span>${money(p.price)}</span>
+                  ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+                `}
                 <small>${p.netWeight}</small>
               </div>
+              ${promo ? `
+                <div class="pdp-promo-box">
+                  <div style="font-weight:700;color:#065f46;font-size:14px">🎟️ ${esc(promo.coupon.title)} (${promo.badgeText})</div>
+                  <div style="font-size:12.5px;color:#047857;margin-top:3px">
+                    ${promo.coupon.autoApply ? `Automatically applied at checkout with code <b>${esc(promo.coupon.code)}</b>` : `Use promo code <b>${esc(promo.coupon.code)}</b>`}
+                    ${promoExp ? ` · Limited offer valid till <b>${promoExp}</b>` : ""}
+                  </div>
+                </div>
+              ` : ""}
               <p class="ing-line" style="color:#7a4c0c;font-weight:600;font-size:14.5px;margin-bottom:18px">Contains: Pure Honey, Almonds, Walnuts, Cashews, Pistachios & Peanuts.</p>
               ${sameGroup.length > 1 ? `
                 <div class="sizes">
@@ -571,9 +691,11 @@ views.cart = () => {
           </div>
           <aside class="box sticky">
             <h2>Order Summary</h2>
+            ${renderCouponSummaryWidget(t, false)}
             <div class="sum">
               <div><span>Subtotal</span><span>${money(t.sub)}</span></div>
-              <div><span>Delivery</span><span>${t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship)}</span></div>
+              ${t.discount > 0 ? `<div><span style="color:#047857;font-weight:600">Discount (${esc(t.appliedCoupon.code)})</span><span style="color:#047857;font-weight:700">- ${money(t.discount)}</span></div>` : ""}
+              <div><span>Delivery</span><span>${t.isCouponFreeShipping ? '<span class="tag tag-emerald">FREE (Coupon)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship))}</span></div>
               <div class="tot"><span>Total</span><span>${money(t.total)}</span></div>
               <small>${D.area} · Estimated ${D.eta}<br>${t.isFree ? '🎉 You qualified for FREE delivery!' : `Flat ${money(D.fee)} courier delivery · <b style="color:#059669">FREE in Kohat!</b>`}</small>
             </div>
@@ -753,12 +875,14 @@ views.checkout = () => {
                 </div>
               `).join("")}
             </div>
+            ${renderCouponSummaryWidget(t, false)}
             <div class="sum" style="margin-top:16px">
               <div><span>Subtotal</span><span id="co-sub-val">${money(t.sub)}</span></div>
+              ${t.discount > 0 ? `<div id="co-disc-row"><span style="color:#047857;font-weight:600">Discount (${esc(t.appliedCoupon.code)})</span><span id="co-disc-val" style="color:#047857;font-weight:700">- ${money(t.discount)}</span></div>` : ""}
               <div id="co-ship-row">
                 <span>Delivery Fee</span>
                 <span id="co-ship-val">
-                  ${t.isCityFree ? '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship))}
+                  ${t.isCouponFreeShipping ? '<span class="tag tag-emerald">FREE (Coupon)</span>' : (t.isCityFree ? '<span class="tag tag-emerald" style="font-weight:700">🎉 FREE (Kohat Local Delivery)</span>' : (t.isFree ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(t.ship)))}
                 </span>
               </div>
               <div class="tot" style="border-top:1.5px solid rgba(27,21,12,0.14);padding-top:14px;margin-top:10px">
@@ -835,7 +959,8 @@ views.confirmation = () => {
             <h2>Order Receipt</h2>
             <div class="sum">
               ${o.items.map(i => `<div><span>${esc(i.name)} (${esc(i.weight || "")}) × ${i.qty}</span><span>${money(i.qty * i.price)}</span></div>`).join("")}
-              <div><span>Shipping</span><span>${money(o.shipping || o.ship || 0)}</span></div>
+              ${Number(o.discount || 0) > 0 ? `<div><span style="color:#047857;font-weight:600">Promo Discount ${o.couponCode ? `(${esc(o.couponCode)})` : ""}</span><span style="color:#047857;font-weight:700">- ${money(o.discount)}</span></div>` : ""}
+              <div><span>Shipping</span><span>${Number(o.shipping || o.ship || 0) === 0 ? '<strong style="color:#047857">FREE</strong>' : money(o.shipping || o.ship || 0)}</span></div>
               <div class="tot"><span>Total</span><span>${money(o.total)}</span></div>
             </div>
             <hr style="border:0;border-top:1px solid rgba(27,21,12,.12);margin:22px 0">
@@ -1051,6 +1176,7 @@ views.track = (orderIdParam) => {
             </div>
             <div class="sum" style="margin-top:14px">
               <div><span>Subtotal</span><span>${money(o.subtotal || o.total)}</span></div>
+              ${Number(o.discount || 0) > 0 ? `<div><span style="color:#6ee7b7;font-weight:600">Promo Discount ${o.couponCode ? `(${esc(o.couponCode)})` : ""}</span><span style="color:#6ee7b7;font-weight:700">- ${money(o.discount)}</span></div>` : ""}
               <div><span>Delivery</span><span>${o.shipping === 0 ? '<span class="tag tag-emerald">FREE SHIPPING</span>' : money(o.shipping || 0)}</span></div>
               <div class="tot"><span>Total Amount</span><span style="color:var(--gold-hi)">${money(o.total)}</span></div>
             </div>

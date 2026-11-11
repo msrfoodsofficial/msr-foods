@@ -183,3 +183,28 @@ CREATE TABLE IF NOT EXISTS stock_notifications (
 
 CREATE INDEX IF NOT EXISTS idx_stock_notif_product ON stock_notifications(product_id);
 CREATE INDEX IF NOT EXISTS idx_stock_notif_status ON stock_notifications(status);
+
+-- 9. PROMO COUPONS & AUTO-APPLIED CAMPAIGNS
+CREATE TABLE IF NOT EXISTS coupons (
+  id TEXT PRIMARY KEY,
+  code TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL DEFAULT 'percent', -- 'percent', 'fixed', 'free_shipping'
+  value REAL NOT NULL DEFAULT 0,
+  auto_apply INTEGER DEFAULT 0,
+  show_banner INTEGER DEFAULT 1,
+  is_active INTEGER DEFAULT 1,
+  min_order REAL DEFAULT 0,
+  max_discount REAL DEFAULT 0,
+  usage_limit INTEGER DEFAULT 0,
+  used_count INTEGER DEFAULT 0,
+  applies_to TEXT DEFAULT 'all',
+  expires_at TEXT,
+  raw_json TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
+CREATE INDEX IF NOT EXISTS idx_coupons_active ON coupons(is_active);

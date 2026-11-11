@@ -1308,3 +1308,63 @@ html.admin-logged-in #adminAppContainer {
 .modal-status-select:focus {
   border-color: var(--gold-hi, #ecc56c);
 }
+
+/* Coupons & Promotional Campaigns Grid */
+.coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.coupon-card {
+  background: var(--bg-card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.coupon-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(214, 167, 54, 0.45);
+}
+
+.coupon-card.is-inactive {
+  opacity: 0.72;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.coupon-code-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: #14100a;
+  background: var(--gold-grad);
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+
+.coupon-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hair);
+  cursor: pointer;
+}
+
+.coupon-toggle-row input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #d6a736;
+  cursor: pointer;
+}

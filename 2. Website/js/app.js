@@ -93,15 +93,25 @@ function renderTopPromoTicker() {
   }
 
   const discLabel = c.type === "percent"
-    ? `${c.value}% OFF`
-    : (c.type === "fixed" ? `${money(c.value)} OFF` : "FREE DELIVERY");
+    ? `${c.value}% Off`
+    : (c.type === "fixed" ? `${money(c.value)} Off` : "Free Delivery");
   const expTxt = (c.expiresAt && typeof formatCouponExpiry === "function") ? formatCouponExpiry(c.expiresAt) : "";
-  const msgSegment = `🎟️ ${esc(c.title || "Special Offer")}: ${discLabel} ${c.autoApply ? "AUTO-APPLIED AT CHECKOUT" : `USE CODE: ${esc(c.code)}`} (${esc(c.code)})${expTxt ? ` · VALID TILL ${expTxt.toUpperCase()}` : ""}${c.description ? ` — ${esc(c.description)}` : ""}`;
+  const segHtml = `
+    <span class="promo-ticker-seg">
+      <b>${esc(c.title || "Special Offer")}</b>
+      <span class="promo-dot">·</span>
+      <span>${discLabel} ${c.autoApply ? "Auto-Applied at Checkout" : ""}</span>
+      <span class="promo-dot">·</span>
+      <span class="promo-code-inline">${esc(c.code)}</span>
+      ${expTxt ? `<span class="promo-dot">·</span><span>Valid through ${esc(expTxt)}</span>` : ""}
+    </span>
+    <span class="promo-sep" aria-hidden="true">◆</span>
+  `;
 
   bar.innerHTML = `
     <div class="promo-ticker-track" title="Click to copy code ${esc(c.code)}" onclick="navigator.clipboard && navigator.clipboard.writeText('${esc(c.code)}'); toast('Promo code ${esc(c.code)} copied!');">
-      <span class="promo-ticker-item">${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp;</span>
-      <span class="promo-ticker-item" aria-hidden="true">${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp;</span>
+      <div class="promo-ticker-group">${segHtml}${segHtml}${segHtml}${segHtml}</div>
+      <div class="promo-ticker-group" aria-hidden="true">${segHtml}${segHtml}${segHtml}${segHtml}</div>
     </div>
   `;
 }

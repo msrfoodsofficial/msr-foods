@@ -3345,51 +3345,57 @@ select:-webkit-autofill:focus {
   border-left-color: var(--gold-lo);
 }
 
-/* Promo Coupons & Auto-Applied Campaign Highlights */
-.hero-promo-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  margin-bottom: 18px;
-  border-radius: 99px;
-  background: rgba(16, 185, 129, 0.14);
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  color: #6ee7b7;
-  font-size: 13px;
-  line-height: 1.35;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.14);
-}
-
-.store-promo-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 16px 20px;
-  margin-bottom: 28px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(214, 167, 54, 0.16), rgba(16, 185, 129, 0.12));
-  border: 1.5px solid rgba(214, 167, 54, 0.42);
-}
-
-.store-promo-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.store-promo-tag {
-  background: var(--gold-grad);
+/* Top Promotional Golden Moving Marquee Bar (Above Header Menu) */
+.promo-ticker-bar {
+  width: 100%;
+  background: linear-gradient(90deg, #d6a736 0%, #f7de8f 50%, #d6a736 100%);
   color: #14100a;
-  font-weight: 800;
-  font-size: 12.5px;
-  letter-spacing: 0.05em;
-  padding: 6px 12px;
-  border-radius: 99px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(20, 16, 10, 0.2);
+  padding: 7px 0;
+  position: relative;
+  z-index: 51;
+}
+
+.promo-ticker-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
   white-space: nowrap;
+  cursor: pointer;
+  animation: promoMarquee 28s linear infinite;
+}
+
+.promo-ticker-bar:hover .promo-ticker-track {
+  animation-play-state: paused;
+}
+
+.promo-ticker-item {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: #14100a;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+
+@keyframes promoMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 620px) {
+  .promo-ticker-bar {
+    padding: 6px 0;
+  }
+  .promo-ticker-item {
+    font-size: 12px;
+  }
 }
 
 .pc-promo-chip {

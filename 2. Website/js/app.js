@@ -68,10 +68,50 @@ function updateBadge(bump = false) {
   }
 }
 
+function renderTopPromoTicker() {
+  const hdr = document.getElementById("hdr");
+  if (!hdr || !hdr.parentNode) return;
+  let bar = document.getElementById("promoTopBar");
+
+  const activeList = (typeof getActiveCoupons === "function")
+    ? getActiveCoupons().filter(c => c.showBanner !== false)
+    : [];
+  const c = activeList.find(x => x.autoApply) || activeList[0] || null;
+
+  if (!c) {
+    if (bar) bar.remove();
+    return;
+  }
+
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "promoTopBar";
+    bar.className = "promo-ticker-bar";
+    bar.setAttribute("role", "region");
+    bar.setAttribute("aria-label", "Promotional Offer");
+    hdr.parentNode.insertBefore(bar, hdr);
+  }
+
+  const discLabel = c.type === "percent"
+    ? `${c.value}% OFF`
+    : (c.type === "fixed" ? `${money(c.value)} OFF` : "FREE DELIVERY");
+  const expTxt = (c.expiresAt && typeof formatCouponExpiry === "function") ? formatCouponExpiry(c.expiresAt) : "";
+  const msgSegment = `🎟️ ${esc(c.title || "Special Offer")}: ${discLabel} ${c.autoApply ? "AUTO-APPLIED AT CHECKOUT" : `USE CODE: ${esc(c.code)}`} (${esc(c.code)})${expTxt ? ` · VALID TILL ${expTxt.toUpperCase()}` : ""}${c.description ? ` — ${esc(c.description)}` : ""}`;
+
+  bar.innerHTML = `
+    <div class="promo-ticker-track" title="Click to copy code ${esc(c.code)}" onclick="navigator.clipboard && navigator.clipboard.writeText('${esc(c.code)}'); toast('Promo code ${esc(c.code)} copied!');">
+      <span class="promo-ticker-item">${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp;</span>
+      <span class="promo-ticker-item" aria-hidden="true">${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp; ${msgSegment} &nbsp;&nbsp;★&nbsp;&nbsp;</span>
+    </div>
+  `;
+}
+
 function shell() {
   const B = window.BRAND_CONFIG.brand;
   const L = window.BRAND_CONFIG.logo;
   const C = window.BRAND_CONFIG.contact;
+
+  renderTopPromoTicker();
 
   const nav = [
     ["home", "Home", "#/"],
@@ -991,8 +1031,11 @@ function initApp() {
   // Dynamic White-Label Brand Settings & Social Channels Sync from Cloudflare D1
   if (typeof syncSettingsRemote === "function") {
     const prevBrandHash = JSON.stringify(window.BRAND_CONFIG || {});
+    const prevCouponsHash = JSON.stringify(window.ACTIVE_COUPONS || []);
     syncSettingsRemote().then(updated => {
-      if (updated && JSON.stringify(window.BRAND_CONFIG || {}) !== prevBrandHash) {
+      const brandChanged = JSON.stringify(window.BRAND_CONFIG || {}) !== prevBrandHash;
+      const couponsChanged = JSON.stringify(window.ACTIVE_COUPONS || []) !== prevCouponsHash;
+      if (brandChanged || couponsChanged) {
         if (typeof shell === "function") shell();
         if (typeof route === "function") route();
       }

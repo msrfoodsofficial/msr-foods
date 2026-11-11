@@ -84,24 +84,12 @@ function secHero() {
   const H = (window.BRAND_CONFIG && window.BRAND_CONFIG.hero) || {};
   const heroImg = H.image || "assets/images/products/front.webp";
   const P = (window.PRODUCTS && window.PRODUCTS[0]) || { slug: "honey-nut-mix-500g" };
-  const bannerCoupon = getPrimaryBannerCoupon();
-  const promoChipHtml = bannerCoupon ? `
-    <div class="hero-promo-pill">
-      <span>🎟️</span>
-      <span>
-        <b>${esc(bannerCoupon.title)}</b>: ${formatCouponDiscountLabel(bannerCoupon)}
-        ${bannerCoupon.autoApply ? `· Auto-Applied` : `· Code: <b>${esc(bannerCoupon.code)}</b>`}
-        ${bannerCoupon.expiresAt ? ` · Till ${formatCouponExpiry(bannerCoupon.expiresAt)}` : ""}
-      </span>
-    </div>
-  ` : "";
 
   return `
     <section class="hero hex" aria-label="Introduction">
       <div class="hex-layer"></div>
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          ${promoChipHtml}
           <h1>
             <span>Pure Taste.</span>
             <span class="g">Natural Goodness.</span>
@@ -259,7 +247,6 @@ function secFeatured() {
           <div class="rule"></div>
           <p class="lead">Select your preferred jar size. Same gold standard recipe in each package.</p>
         </div>
-        ${renderStorePromoStrip()}
         <div class="pgrid">
           ${prods.map(p => prodCard(p)).join("")}
         </div>
@@ -472,7 +459,6 @@ views.shop = () => {
       </header>
       <section class="page-dark sec" style="padding-top:40px">
         <div class="wrap">
-          ${renderStorePromoStrip()}
           <div class="pgrid">
             ${prods.map(p => prodCard(p)).join("")}
           </div>

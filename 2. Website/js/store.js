@@ -908,6 +908,7 @@ async function syncSettingsRemote(force = false) {
       if (data && Array.isArray(data.activeCoupons)) {
         window.ACTIVE_COUPONS = data.activeCoupons;
         Store.set("app_active_coupons", data.activeCoupons);
+        Store.set("app_brand_config_last_sync", Date.now());
       }
       if (data && !data.error && data.found !== false) {
         applyBrandSettings(data);

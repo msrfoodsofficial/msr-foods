@@ -201,13 +201,13 @@ function prodCard(p) {
         <p>${p.shortDesc}</p>
         <div class="price">
           ${promo ? `
-            <span>${money(promo.promoPrice)}</span>
-            <small style="text-decoration:line-through;opacity:0.55">${money(promo.originalPrice)}</small>
+            <span style="color:#6ee7b7">${money(promo.promoPrice)}</span>
+            <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
+            <small class="pc-save-tag">Save ${money(promo.savings)}</small>
             <small>${p.netWeight}</small>
-            <small class="pc-save-tag">${promo.coupon.type === "percent" ? `${promo.coupon.value}% Off` : `Save ${money(promo.savings)}`}</small>
           ` : `
             <span>${money(p.price)}</span>
-            ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.55">${money(p.comparePrice)}</small>` : ""}
+            ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
             <small>${p.netWeight}</small>
           `}
         </div>
@@ -524,13 +524,13 @@ views.product = (slug) => {
               <h1 style="margin-top:14px">${p.title}</h1>
               <div class="price">
                 ${promo ? `
-                  <span>${money(promo.promoPrice)}</span>
-                  <small style="text-decoration:line-through;opacity:0.55">${money(promo.originalPrice)}</small>
+                  <span style="color:#047857">${money(promo.promoPrice)}</span>
+                  <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
+                  <small class="pdp-save-pill">Save ${money(promo.savings)}</small>
                   <small>${p.netWeight}</small>
-                  <small class="pdp-save-pill">${promo.coupon.type === "percent" ? `${promo.coupon.value}% Off` : `Save ${money(promo.savings)}`}</small>
                 ` : `
                   <span>${money(p.price)}</span>
-                  ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.55">${money(p.comparePrice)}</small>` : ""}
+                  ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
                   <small>${p.netWeight}</small>
                 `}
               </div>

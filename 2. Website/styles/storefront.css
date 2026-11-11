@@ -3440,29 +3440,27 @@ select:-webkit-autofill:focus {
 }
 
 .pc-save-tag {
-  background: rgba(214, 167, 54, 0.14);
-  color: #f4d77f;
-  border: 1px solid rgba(214, 167, 54, 0.38);
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.35);
   padding: 2px 8px;
   border-radius: 99px;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.03em;
+  font-weight: 700 !important;
 }
 
 .pdp-promo-box {
   margin-top: 12px;
   margin-bottom: 16px;
   padding: 12px 16px;
-  border-radius: 10px;
-  background: #fbf7ec;
-  border: 1px solid rgba(180, 130, 30, 0.35);
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1.5px solid #6ee7b7;
 }
 
 .pdp-save-pill {
-  background: rgba(214, 167, 54, 0.18);
-  color: #7a4c0c;
-  border: 1px solid rgba(180, 130, 30, 0.3);
+  background: #d1fae5;
+  color: #065f46;
   padding: 3px 9px;
   border-radius: 99px;
   font-size: 12px !important;

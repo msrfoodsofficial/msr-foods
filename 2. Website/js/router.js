@@ -194,7 +194,6 @@ function prodCard(p) {
     <article class="pc reveal ${isOutOfStock ? "pc-out" : ""} ${isProminent ? "pc-prominent" : ""}" data-href="#/product/${p.slug}">
       <a href="#/product/${p.slug}" class="pc-img" aria-label="${esc(p.title)} details">
         <span class="pill pc-size ${isOutOfStock ? "pc-size-oos" : ""}">${isOutOfStock ? "Out of Stock" : (p.badge || p.weight)}</span>
-        ${promo ? `<span class="pc-promo-chip">🎟️ ${promo.badgeText} · ${esc(promo.coupon.code)}</span>` : ""}
         <img src="${imgSrc}" alt="${esc(p.name)} ${esc(p.weight)}" loading="lazy" decoding="async">
       </a>
       <div class="pc-body">
@@ -202,14 +201,15 @@ function prodCard(p) {
         <p>${p.shortDesc}</p>
         <div class="price">
           ${promo ? `
-            <span style="color:#6ee7b7">${money(promo.promoPrice)}</span>
-            <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
-            <small class="pc-save-tag">Save ${money(promo.savings)}</small>
+            <span>${money(promo.promoPrice)}</span>
+            <small style="text-decoration:line-through;opacity:0.55">${money(promo.originalPrice)}</small>
+            <small>${p.netWeight}</small>
+            <small class="pc-save-tag">${promo.coupon.type === "percent" ? `${promo.coupon.value}% Off` : `Save ${money(promo.savings)}`}</small>
           ` : `
             <span>${money(p.price)}</span>
-            ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+            ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.55">${money(p.comparePrice)}</small>` : ""}
+            <small>${p.netWeight}</small>
           `}
-          <small>${p.netWeight}</small>
         </div>
         ${p.note ? `<p class="pc-note">${p.note}</p>` : ""}
         ${buy ? `
@@ -524,21 +524,22 @@ views.product = (slug) => {
               <h1 style="margin-top:14px">${p.title}</h1>
               <div class="price">
                 ${promo ? `
-                  <span style="color:#047857">${money(promo.promoPrice)}</span>
-                  <small style="text-decoration:line-through;opacity:0.6">${money(promo.originalPrice)}</small>
-                  <small class="pdp-save-pill">Save ${money(promo.savings)}</small>
+                  <span>${money(promo.promoPrice)}</span>
+                  <small style="text-decoration:line-through;opacity:0.55">${money(promo.originalPrice)}</small>
+                  <small>${p.netWeight}</small>
+                  <small class="pdp-save-pill">${promo.coupon.type === "percent" ? `${promo.coupon.value}% Off` : `Save ${money(promo.savings)}`}</small>
                 ` : `
                   <span>${money(p.price)}</span>
-                  ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.6">${money(p.comparePrice)}</small>` : ""}
+                  ${p.comparePrice ? `<small style="text-decoration:line-through;opacity:0.55">${money(p.comparePrice)}</small>` : ""}
+                  <small>${p.netWeight}</small>
                 `}
-                <small>${p.netWeight}</small>
               </div>
               ${promo ? `
                 <div class="pdp-promo-box">
-                  <div style="font-weight:700;color:#065f46;font-size:14px">🎟️ ${esc(promo.coupon.title)} (${promo.badgeText})</div>
-                  <div style="font-size:12.5px;color:#047857;margin-top:3px">
-                    ${promo.coupon.autoApply ? `Automatically applied at checkout with code <b>${esc(promo.coupon.code)}</b>` : `Use promo code <b>${esc(promo.coupon.code)}</b>`}
-                    ${promoExp ? ` · Limited offer valid till <b>${promoExp}</b>` : ""}
+                  <div style="font-weight:700;color:#14100a;font-size:13.5px">${esc(promo.coupon.title)} · ${promo.badgeText}</div>
+                  <div style="font-size:12.5px;color:#524737;margin-top:2px">
+                    ${promo.coupon.autoApply ? `Auto-applied at checkout with code <b>${esc(promo.coupon.code)}</b>` : `Use promo code <b>${esc(promo.coupon.code)}</b>`}
+                    ${promoExp ? ` · Valid through <b>${promoExp}</b>` : ""}
                   </div>
                 </div>
               ` : ""}

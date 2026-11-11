@@ -2118,7 +2118,7 @@ async function handleProductImageUpload(e) {
 }
 
 // Save Product Form (Add or Edit)
-function saveProductForm(editingId) {
+async function saveProductForm(editingId) {
   const title = $("#prodTitle").value.trim();
   const weight = $("#prodWeight").value.trim();
   const price = +$("#prodPrice").value;
@@ -2154,6 +2154,13 @@ function saveProductForm(editingId) {
     return;
   }
 
+  const submitBtn = $("#productForm button[type='submit']");
+  const origBtnText = submitBtn ? submitBtn.textContent : "Save";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Saving to Database...";
+  }
+
   const imgObj = {
     front: gallery[0],
     back: gallery[1] || gallery[0],
@@ -2161,6 +2168,7 @@ function saveProductForm(editingId) {
   };
 
   const allProducts = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
+  let savedItem = null;
 
   if (editingId) {
     const target = allProducts.find(p => p.id === editingId);
@@ -2179,13 +2187,13 @@ function saveProductForm(editingId) {
       target.fullDesc = fullDesc;
       target.gallery = gallery;
       target.img = imgObj;
-      toast(`Product "${title}" updated with ${gallery.length} ${gallery.length === 1 ? "photo" : "photos"}!`);
+      savedItem = target;
     }
   } else {
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + weight.toLowerCase().replace(/[^a-z0-9]+/g, "");
     const id = "prod-" + Date.now();
 
-    const newProd = {
+    savedItem = {
       id,
       slug,
       group,
@@ -2209,8 +2217,21 @@ function saveProductForm(editingId) {
       note: ""
     };
 
-    allProducts.unshift(newProd);
-    toast(`Product "${title}" created successfully!`);
+    allProducts.unshift(savedItem);
+  }
+
+  // Wait for Cloudflare D1 Remote Sync so admin knows for sure it saved
+  if (savedItem && typeof saveProductRemote === "function") {
+    const remoteSaved = await saveProductRemote(savedItem, !editingId);
+    if (!remoteSaved) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origBtnText;
+      }
+      return;
+    }
+    const idx = allProducts.findIndex(x => x.id === savedItem.id);
+    if (idx !== -1) allProducts[idx] = remoteSaved;
   }
 
   if (typeof saveProducts === "function") {
@@ -2219,17 +2240,18 @@ function saveProductForm(editingId) {
     Store.set("app_products", allProducts);
     window.PRODUCTS = allProducts;
   }
+  Store.set("app_products_last_sync", Date.now());
 
-  // Cloudflare D1 Remote Sync
-  if (typeof saveProductRemote === "function") {
-    const savedItem = editingId ? allProducts.find(p => p.id === editingId) : allProducts[0];
-    if (savedItem) saveProductRemote(savedItem, !editingId);
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = origBtnText;
   }
 
   const modal = $("#dlg-product-modal");
   if (modal) modal.close();
 
   renderProductsGrid();
+  toast(`✅ "${title}" saved with ${gallery.length} ${gallery.length === 1 ? "photo" : "photos"}! Note: Customer website reflects updates within ~1–2 min as caches refresh.`);
 }
 
 // Mark Product Out of Stock
@@ -2779,13 +2801,13 @@ function initAdmin() {
   initCustomizer();
   loadStoreSettingsForm();
   if (typeof syncSettingsRemote === "function") {
-    syncSettingsRemote().then(() => {
+    syncSettingsRemote(true).then(() => {
       loadStoreSettingsForm();
     });
   }
   syncRemoteOrders();
   if (typeof syncProductsRemote === "function") {
-    syncProductsRemote();
+    syncProductsRemote(true);
   }
   if (typeof fetchWaitlists === "function") {
     fetchWaitlists().then(() => {
@@ -2934,7 +2956,7 @@ async function publishHeroMediaSettings() {
     } else {
       Store.set("app_brand_config", window.BRAND_CONFIG);
     }
-    toast("✅ Homepage Hero & Showcase images published live!");
+    toast("✅ Homepage images saved to database! Live website reflects changes within ~1–2 mins as caches refresh.");
   } catch (e) {
     toast("⚠️ Failed to publish images: " + (e.message || "Network error"));
   } finally {

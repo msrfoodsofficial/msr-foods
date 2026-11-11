@@ -55,15 +55,15 @@ async function syncProductsRemote(force = false) {
   const lastSync = Number(Store.get("app_products_last_sync") || 0);
   const cached = Store.get("app_products");
 
-  // If local cache exists and was synced within the last 5 minutes, reuse immediately without network hit
-  if (!force && cached && Array.isArray(cached) && cached.length > 0 && (Date.now() - lastSync < 300000)) {
+  // Reuse local cache within 60s to shield API quota while keeping storefront fresh
+  if (!force && cached && Array.isArray(cached) && cached.length > 0 && (Date.now() - lastSync < 60000)) {
     window.PRODUCTS = cached;
     return cached;
   }
 
   try {
     const endpoint = getProductsApiEndpoint() + (force ? `?_t=${Date.now()}` : "");
-    const res = await fetch(endpoint);
+    const res = await fetch(endpoint, force ? { cache: "no-store" } : undefined);
     if (res.ok) {
       const serverProds = await res.json();
       if (Array.isArray(serverProds) && serverProds.length > 0) {
@@ -81,7 +81,6 @@ async function syncProductsRemote(force = false) {
 }
 
 async function saveProductRemote(prod, isNew = false) {
-  Store.set("app_products_last_sync", 0);
   try {
     const endpoint = getProductsApiEndpoint();
     // Use POST if full product object is present or new product, else PATCH
@@ -93,18 +92,23 @@ async function saveProductRemote(prod, isNew = false) {
     });
     if (res.ok) {
       const data = await res.json();
+      Store.set("app_products_last_sync", Date.now());
       return data && data.product ? data.product : prod;
     } else {
       const errData = await res.json().catch(() => ({}));
       console.warn("D1 Sync failed:", errData.error || res.statusText);
       if (typeof toast === "function") {
-        toast(`⚠️ Cloud Sync Warning: ${errData.error || "Failed to update database"}`);
+        toast(`⚠️ Cloud Save Failed: ${errData.error || res.statusText || "Database error"}`);
       }
+      return null;
     }
   } catch (e) {
     console.warn("Could not sync product to Cloudflare D1 immediately:", e);
+    if (typeof toast === "function") {
+      toast(`⚠️ Network error saving to database: ${e.message || "Check connection"}`);
+    }
+    return null;
   }
-  return prod;
 }
 
 async function updateProductStockRemote(productId, newStock) {
@@ -610,15 +614,15 @@ async function syncSettingsRemote(force = false) {
   const lastSync = Number(Store.get("app_brand_config_last_sync") || 0);
   const cached = Store.get("app_brand_config");
 
-  // If local settings exist and were synced within the last 5 minutes, reuse immediately without network hit
-  if (!force && cached && !cached.error && cached.found !== false && (Date.now() - lastSync < 300000)) {
+  // Reuse local settings within 60s to shield API quota while keeping updates fast
+  if (!force && cached && !cached.error && cached.found !== false && (Date.now() - lastSync < 60000)) {
     applyBrandSettings(cached);
     return cached;
   }
 
   try {
     const endpoint = getSettingsApiEndpoint() + (force ? `?_t=${Date.now()}` : "");
-    const res = await fetch(endpoint);
+    const res = await fetch(endpoint, force ? { cache: "no-store" } : undefined);
     if (res.ok) {
       const data = await res.json();
       if (data && !data.error && data.found !== false) {
@@ -635,10 +639,10 @@ async function syncSettingsRemote(force = false) {
 }
 
 async function saveBrandSettingsRemote(fullConfig, theme) {
-  Store.set("app_brand_config_last_sync", 0);
   const activeTheme = theme || localStorage.getItem("app_active_theme") || "luxury-gold";
   applyBrandSettings(fullConfig);
   Store.set("app_brand_config", window.BRAND_CONFIG);
+  Store.set("app_brand_config_last_sync", Date.now());
 
   try {
     if (typeof BroadcastChannel !== "undefined") {

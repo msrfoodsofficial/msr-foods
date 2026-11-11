@@ -48,8 +48,8 @@ export async function onRequestGet(context) {
   if (noCache) {
     headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
   } else {
-    // Cloudflare Edge caches for 5 mins (s-maxage=300), browser caches for 1 min (max-age=60)
-    headers["Cache-Control"] = "public, max-age=60, s-maxage=300, stale-while-revalidate=600";
+    // Edge caches for 60s so admin edits appear swiftly while shielding D1 from traffic spikes
+    headers["Cache-Control"] = "public, max-age=0, s-maxage=60, stale-while-revalidate=60";
   }
 
   try {

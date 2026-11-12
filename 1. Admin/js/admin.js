@@ -11,14 +11,26 @@ const ICON = {
 };
 
 let toastTimer = null;
-function toast(msg) {
+let toastActionHandler = null;
+function toast(msg, actionLabel = "", onAction = null) {
   const t = document.getElementById("toast");
   if (!t) return;
-  t.innerHTML = `<span>${msg}</span>`;
+  toastActionHandler = typeof onAction === "function" ? onAction : null;
+  const safeAction = actionLabel && toastActionHandler
+    ? `<button type="button" class="btn btn-xs btn-gold" style="padding:4px 12px;font-size:12px" onclick="if(window._runToastAction) window._runToastAction()">${esc(actionLabel)}</button>`
+    : "";
+  t.innerHTML = `<span>${msg}</span>${safeAction}`;
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+  toastTimer = setTimeout(() => t.classList.remove("show"), actionLabel ? 6000 : 3500);
 }
+window._runToastAction = () => {
+  const fn = toastActionHandler;
+  toastActionHandler = null;
+  const t = document.getElementById("toast");
+  if (t) t.classList.remove("show");
+  if (typeof fn === "function") fn();
+};
 
 // ==========================================================================
 // Admin Authentication & Session Management
@@ -307,7 +319,7 @@ async function syncRemoteOrders() {
             localMap.set(so.id, so);
           } else {
             const current = localMap.get(so.id);
-            if (current.status !== so.status || (so.updatedAt && current.updatedAt !== so.updatedAt)) {
+            if (current.status !== so.status || !!current.isDeleted !== !!so.isDeleted || (so.updatedAt && current.updatedAt !== so.updatedAt)) {
               hasChanged = true;
               localMap.set(so.id, so);
             }
@@ -503,11 +515,11 @@ function initTabs() {
 
 // Render Dashboard Overview
 function renderDashboard() {
-  const orders = Store.get("app_orders") || [];
+  const allOrders = Store.get("app_orders") || [];
+  const orders = allOrders.filter(o => !o.isDeleted);
   const totalRevenue = orders
     .filter(o => o.status !== "Cancelled")
     .reduce((sum, o) => sum + (o.total || 0), 0);
-  const activeOrdersCount = orders.filter(o => o.status === "Pending" || o.status === "Processing").length;
   const totalUnits = orders
     .filter(o => o.status !== "Cancelled")
     .reduce((sum, o) => sum + (o.items || []).reduce((s, i) => s + (i.qty || 0), 0), 0);
@@ -526,7 +538,7 @@ function renderDashboard() {
   recentTbody.innerHTML = recent.map(o => `
     <tr>
       <td>
-        <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view full order details & change status">
+        <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view full order details & manage status">
           #${o.id}
         </button>
       </td>
@@ -552,9 +564,21 @@ function renderOrdersTable() {
   const tbody = $("#ordersTableBody");
   if (!tbody) return;
 
-  let orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
-  if (currentOrderFilter !== "all") {
-    orders = orders.filter(o => (o.status || "").toLowerCase() === currentOrderFilter.toLowerCase());
+  const allOrders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const deletedCount = allOrders.filter(o => !!o.isDeleted).length;
+  const trashPill = $("#deletedOrdersFilterPill");
+  if (trashPill) {
+    trashPill.textContent = deletedCount > 0 ? `Trash (${deletedCount})` : "Trash";
+  }
+
+  let orders;
+  if (currentOrderFilter === "deleted") {
+    orders = allOrders.filter(o => !!o.isDeleted);
+  } else {
+    orders = allOrders.filter(o => !o.isDeleted);
+    if (currentOrderFilter !== "all") {
+      orders = orders.filter(o => (o.status || "").toLowerCase() === currentOrderFilter.toLowerCase());
+    }
   }
 
   const query = $("#orderSearchInput") ? $("#orderSearchInput").value.trim().toLowerCase() : "";
@@ -572,7 +596,10 @@ function renderOrdersTable() {
   }
 
   if (!orders.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--mute-dark)">No orders found matching filter "${esc(currentOrderFilter)}".</td></tr>`;
+    const emptyMsg = currentOrderFilter === "deleted"
+      ? "Trash is empty. Soft-deleted orders will appear here and can be restored anytime."
+      : `No orders found matching filter "${esc(currentOrderFilter)}".`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--mute-dark)">${emptyMsg}</td></tr>`;
     return;
   }
 
@@ -584,9 +611,9 @@ function renderOrdersTable() {
     const statusLower = (o.status || "pending").toLowerCase();
 
     return `
-      <tr>
+      <tr ${o.isDeleted ? 'style="opacity:0.8"' : ''}>
         <td>
-          <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view full order details & change status">
+          <button class="order-id-link" onclick="openOrderModal('${o.id}')" title="Click to view order details, edit, or manage status">
             #${o.id}
           </button>
           <div style="font-size:11.5px;color:var(--mute-dark);margin-top:2px">${dateFormatted}</div>
@@ -605,10 +632,11 @@ function renderOrdersTable() {
         </td>
         <td>
           <b>${money(o.total)}</b>
-          <br><small style="text-transform:uppercase;color:var(--gold)">${o.paymentMethod || o.pay || "COD"}</small>
+          <br><small style="text-transform:uppercase;color:var(--gold)">${esc(o.paymentMethod || o.pay || "COD")}</small>
         </td>
         <td>
           <span class="status-pill status-${statusLower}">${o.status}</span>
+          ${o.isDeleted ? `<div style="font-size:10.5px;color:#fca5a5;margin-top:4px;font-weight:600">IN TRASH · <a href="#" onclick="event.preventDefault(); restoreDeletedOrder('${o.id}')" style="color:#6ee7b7;text-decoration:underline">Restore</a></div>` : ""}
           ${o.tracking && o.tracking.trackingNumber ? `
             <div style="font-size:11px;color:var(--gold-hi);margin-top:4px">
               🚚 ${esc(o.tracking.courier)}: <span style="font-family:monospace">${esc(o.tracking.trackingNumber)}</span>
@@ -630,6 +658,17 @@ function renderOrdersTable() {
 }
 
 // Global 3-Dots Floating Actions Menu
+const _POP_SVG = {
+  eye: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  edit: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+  msg: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  status: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  truck: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  ban: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  trash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  restore: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>'
+};
+
 let activeActionOrderId = null;
 
 function toggleActionsMenu(e, orderId) {
@@ -649,71 +688,83 @@ function toggleActionsMenu(e, orderId) {
 
   const statusLower = (o.status || "pending").toLowerCase();
 
-  pop.innerHTML = `
-    <div class="pop-header">
-      <span class="pop-order-id">#${esc(o.id)}</span>
-      <span class="status-pill status-${statusLower}" style="font-size:10px;padding:2px 8px">${o.status}</span>
-    </div>
-    
-    <button class="pop-item" onclick="execOrderAction('${o.id}', 'details')">
-      <span class="pop-icon">👁️</span>
-      <span>View Order Details</span>
-    </button>
-    <button class="pop-item" onclick="execOrderAction('${o.id}', 'whatsapp')">
-      <span class="pop-icon">💬</span>
-      <span>Send WhatsApp Receipt</span>
-    </button>
-
-    <div class="pop-divider"></div>
-
-    ${statusLower === 'pending' ? `
-      <button class="pop-item pop-highlight" onclick="execOrderAction('${o.id}', 'approve')">
-        <span class="pop-icon">✓</span>
-        <span>Approve & Confirm</span>
+  if (o.isDeleted) {
+    pop.innerHTML = `
+      <div class="pop-header">
+        <span class="pop-order-id">#${esc(o.id)}</span>
+        <span class="status-pill status-cancelled" style="font-size:10px;padding:2px 8px">In Trash</span>
+      </div>
+      <button class="pop-item" onclick="execOrderAction('${o.id}', 'details')">
+        <span class="pop-icon">${_POP_SVG.eye}</span>
+        <span>View Order Details</span>
       </button>
-    ` : ''}
-    ${(statusLower === 'approved' || statusLower === 'processing') ? `
+      <div class="pop-divider"></div>
+      <button class="pop-item pop-highlight" onclick="execOrderAction('${o.id}', 'restore')">
+        <span class="pop-icon">${_POP_SVG.restore}</span>
+        <span>Restore Order</span>
+      </button>
+    `;
+  } else {
+    pop.innerHTML = `
+      <div class="pop-header">
+        <span class="pop-order-id">#${esc(o.id)}</span>
+        <span class="status-pill status-${statusLower}" style="font-size:10px;padding:2px 8px">${o.status}</span>
+      </div>
+
+      <div class="pop-section-label">Order</div>
+      <button class="pop-item" onclick="execOrderAction('${o.id}', 'details')">
+        <span class="pop-icon">${_POP_SVG.eye}</span>
+        <span>View Order Details</span>
+      </button>
+      <button class="pop-item" onclick="execOrderAction('${o.id}', 'edit')">
+        <span class="pop-icon">${_POP_SVG.edit}</span>
+        <span>Edit Order Details</span>
+      </button>
+      <button class="pop-item" onclick="execOrderAction('${o.id}', 'whatsapp')">
+        <span class="pop-icon">${_POP_SVG.msg}</span>
+        <span>WhatsApp Receipt</span>
+      </button>
+
+      <div class="pop-divider"></div>
+      <div class="pop-section-label">Fulfillment & Status</div>
+      <button class="pop-item pop-highlight" onclick="execOrderAction('${o.id}', 'change_status')">
+        <span class="pop-icon">${_POP_SVG.status}</span>
+        <span>Change Status…</span>
+      </button>
       <button class="pop-item pop-dispatch" onclick="execOrderAction('${o.id}', 'dispatch')">
-        <span class="pop-icon">🚚</span>
-        <span>Dispatch with Courier</span>
+        <span class="pop-icon">${_POP_SVG.truck}</span>
+        <span>${o.tracking && o.tracking.trackingNumber ? "Update Courier Tracking…" : "Set Courier Tracking…"}</span>
       </button>
-    ` : ''}
-    ${statusLower !== 'delivered' && statusLower !== 'cancelled' ? `
-      <button class="pop-item pop-delivered" onclick="execOrderAction('${o.id}', 'delivered')">
-        <span class="pop-icon">✅</span>
-        <span>Mark as Delivered</span>
+      ${statusLower !== "cancelled" ? `
+        <button class="pop-item pop-warn" onclick="execOrderAction('${o.id}', 'cancel')">
+          <span class="pop-icon">${_POP_SVG.ban}</span>
+          <span>Cancel Order…</span>
+        </button>
+      ` : ""}
+
+      <div class="pop-divider"></div>
+      <button class="pop-item pop-danger" onclick="execOrderAction('${o.id}', 'soft_delete')">
+        <span class="pop-icon">${_POP_SVG.trash}</span>
+        <span>Move to Trash</span>
       </button>
-    ` : ''}
+    `;
+  }
 
-    <div class="pop-divider"></div>
-    <div class="pop-label">Change Status:</div>
-    <div class="pop-status-chips">
-      <button class="pop-chip ${statusLower === 'pending' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Pending')">Pending</button>
-      <button class="pop-chip ${statusLower === 'approved' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Approved')">Approved</button>
-      <button class="pop-chip ${statusLower === 'processing' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Processing')">Processing</button>
-      <button class="pop-chip ${statusLower === 'dispatched' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Dispatched')">Dispatched</button>
-      <button class="pop-chip ${statusLower === 'delivered' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Delivered')">Delivered</button>
-      <button class="pop-chip ${statusLower === 'cancelled' ? 'active' : ''}" onclick="execOrderAction('${o.id}', 'status_Cancelled')">Cancel</button>
-    </div>
-  `;
-
-  // Calculate position relative to clicked 3-dots button
   const rect = e.currentTarget.getBoundingClientRect();
   pop.style.display = "block";
-  const popWidth = 240;
+  const popWidth = 248;
   let left = rect.right - popWidth;
   if (left < 10) left = 10;
-  
+
+  const actualHeight = pop.offsetHeight || 295;
   let top = rect.bottom + 6;
-  const estimatedHeight = 310;
-  if (top + estimatedHeight > window.innerHeight) {
-    top = Math.max(10, rect.top - estimatedHeight - 6);
+  if (top + actualHeight > window.innerHeight - 10) {
+    top = Math.max(10, rect.top - actualHeight - 6);
   }
 
   pop.style.top = `${top}px`;
   pop.style.left = `${left}px`;
 
-  // Highlight active button
   $$(".btn-dots").forEach(b => b.classList.remove("active"));
   e.currentTarget.classList.add("active");
 }
@@ -746,17 +797,20 @@ function execOrderAction(orderId, action) {
   if (!action) return;
   if (action === "details") {
     openOrderModal(orderId);
+  } else if (action === "edit") {
+    openEditOrderModal(orderId);
   } else if (action === "whatsapp") {
     sendCustomerWhatsAppMessage(orderId);
-  } else if (action === "approve") {
-    approveOrder(orderId);
+  } else if (action === "change_status") {
+    openChangeStatusModal(orderId);
   } else if (action === "dispatch") {
     openDispatchModal(orderId);
-  } else if (action === "delivered") {
-    markOrderDelivered(orderId);
-  } else if (action.startsWith("status_")) {
-    const newStatus = action.replace("status_", "");
-    updateOrderStatus(orderId, newStatus);
+  } else if (action === "cancel") {
+    openCancelOrderModal(orderId);
+  } else if (action === "soft_delete") {
+    confirmSoftDeleteOrder(orderId);
+  } else if (action === "restore") {
+    restoreDeletedOrder(orderId);
   }
 }
 
@@ -1013,14 +1067,14 @@ function _getManualOrderCoupons() {
   return (raw || []).filter(c => c && c.isActive !== false && !(typeof isCouponExpiredClient === "function" && isCouponExpiredClient(c.expiresAt)));
 }
 
-// Compute live line items, coupon/custom discount, Kohat/free shipping & totals for Manual Order Modal
-function getManualOrderCalculation() {
+// Compute live line items, coupon/custom discount, Kohat/free shipping & totals for Add/Edit Order modals
+function _computeOrderFormCalculation(prefix = "mo") {
   const prods = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
   const items = [];
   const cartLines = [];
   let subtotal = 0;
 
-  $$(".mo-item-qty").forEach(inp => {
+  $$(`.${prefix}-item-qty`).forEach(inp => {
     const qty = Math.max(parseInt(inp.value) || 0, 0);
     const price = parseFloat(inp.dataset.price) || 0;
     const lineSub = qty * price;
@@ -1043,13 +1097,13 @@ function getManualOrderCalculation() {
     }
   });
 
-  const cityEl = $("#moCustCity");
+  const cityEl = $(`#${prefix}CustCity`);
   const cityVal = cityEl ? cityEl.value.trim() : "";
   const isCityFree = (typeof isKohatCity === "function")
     ? isKohatCity(cityVal)
     : cityVal.toLowerCase().includes("kohat");
 
-  const couponSel = $("#moCouponSelect");
+  const couponSel = $(`#${prefix}CouponSelect`);
   const selectedCode = couponSel ? couponSel.value : "";
   let discount = 0;
   let isCouponFreeShipping = false;
@@ -1059,7 +1113,7 @@ function getManualOrderCalculation() {
   let isCouponValid = false;
 
   if (selectedCode === "__CUSTOM__") {
-    const customInp = $("#moCustomDiscount");
+    const customInp = $(`#${prefix}CustomDiscount`);
     const rawCustom = customInp ? Math.max(parseFloat(customInp.value) || 0, 0) : 0;
     discount = Math.min(rawCustom, subtotal);
     if (discount > 0) {
@@ -1097,7 +1151,7 @@ function getManualOrderCalculation() {
   const isAutoFreeShip = isCityFree || isCouponFreeShipping || isThresholdFree;
   const defaultFee = Number(deliveryCfg.fee ?? 200) || 0;
 
-  const shipInput = $("#moShipping");
+  const shipInput = $(`#${prefix}Shipping`);
   const isManualShip = shipInput && shipInput.dataset && shipInput.dataset.manualShip === "1";
   const shipping = isManualShip
     ? Math.max(parseFloat(shipInput.value) || 0, 0)
@@ -1123,45 +1177,27 @@ function getManualOrderCalculation() {
   };
 }
 
-// Re-evaluate free Kohat delivery when Destination City changes
-function handleManualOrderCityChange() {
-  const shipInput = $("#moShipping");
-  if (shipInput && shipInput.dataset) shipInput.dataset.manualShip = "0";
-  recalcManualOrderTotal();
-}
-
-// Toggle custom discount input & recalculate when Promo Coupon changes
-function handleManualOrderCouponChange() {
-  const sel = $("#moCouponSelect");
-  const customWrap = $("#moCustomDiscountWrap");
-  if (customWrap) {
-    customWrap.style.display = (sel && sel.value === "__CUSTOM__") ? "block" : "none";
-  }
-  recalcManualOrderTotal();
-}
-
-// Recalculate Live Subtotal, Discount, Shipping and Total for Manual Order Form
-function recalcManualOrderTotal() {
-  $$(".mo-item-qty").forEach(inp => {
+function _syncOrderFormTotalsUI(prefix = "mo") {
+  $$(`.${prefix}-item-qty`).forEach(inp => {
     const qty = Math.max(parseInt(inp.value) || 0, 0);
     const price = parseFloat(inp.dataset.price) || 0;
-    const lineDisplay = $(`#moLineSub_${inp.dataset.pid}`);
+    const lineDisplay = $(`#${prefix}LineSub_${inp.dataset.pid}`);
     if (lineDisplay) lineDisplay.textContent = money(qty * price);
   });
 
-  const calc = getManualOrderCalculation();
-  const shipInput = $("#moShipping");
+  const calc = _computeOrderFormCalculation(prefix);
+  const shipInput = $(`#${prefix}Shipping`);
   if (shipInput && !calc.isManualShip) {
     shipInput.value = calc.shipping;
   }
 
-  const subDisplay = $("#moSubtotalDisplay");
-  const discRow = $("#moDiscountRow");
-  const discLabel = $("#moDiscountLabel");
-  const discDisplay = $("#moDiscountDisplay");
-  const shipBadge = $("#moShipFreeBadge");
-  const couponHint = $("#moCouponHint");
-  const totalDisplay = $("#moTotalDisplay");
+  const subDisplay = $(`#${prefix}SubtotalDisplay`);
+  const discRow = $(`#${prefix}DiscountRow`);
+  const discLabel = $(`#${prefix}DiscountLabel`);
+  const discDisplay = $(`#${prefix}DiscountDisplay`);
+  const shipBadge = $(`#${prefix}ShipFreeBadge`);
+  const couponHint = $(`#${prefix}CouponHint`);
+  const totalDisplay = $(`#${prefix}TotalDisplay`);
 
   if (subDisplay) subDisplay.textContent = money(calc.subtotal);
 
@@ -1205,6 +1241,32 @@ function recalcManualOrderTotal() {
   }
 
   if (totalDisplay) totalDisplay.textContent = money(calc.total);
+}
+
+function getManualOrderCalculation() {
+  return _computeOrderFormCalculation("mo");
+}
+
+// Re-evaluate free Kohat delivery when Destination City changes
+function handleManualOrderCityChange() {
+  const shipInput = $("#moShipping");
+  if (shipInput && shipInput.dataset) shipInput.dataset.manualShip = "0";
+  recalcManualOrderTotal();
+}
+
+// Toggle custom discount input & recalculate when Promo Coupon changes
+function handleManualOrderCouponChange() {
+  const sel = $("#moCouponSelect");
+  const customWrap = $("#moCustomDiscountWrap");
+  if (customWrap) {
+    customWrap.style.display = (sel && sel.value === "__CUSTOM__") ? "block" : "none";
+  }
+  recalcManualOrderTotal();
+}
+
+// Recalculate Live Subtotal, Discount, Shipping and Total for Manual Order Form
+function recalcManualOrderTotal() {
+  _syncOrderFormTotalsUI("mo");
 }
 
 // Create Manual Order and Save to Database
@@ -1453,7 +1515,7 @@ function updateOrderStatus(orderId, newStatus, cancelReason = "") {
   renderOrdersTable();
 }
 
-// Order Details & Timeline Modal
+// View Order Details & Timeline Modal (Clean Read-Only View + Staged Status + Edit & Soft Delete Entry Points)
 function openOrderModal(orderId) {
   const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
   const o = orders.find(x => x.id === orderId);
@@ -1469,141 +1531,185 @@ function openOrderModal(orderId) {
   const trackUrl = (window.BRAND_CONFIG && window.BRAND_CONFIG.urls && window.BRAND_CONFIG.urls.websiteUrl)
     ? `${window.BRAND_CONFIG.urls.websiteUrl.replace(/\/$/, "")}/#/track/${o.id}`
     : `#/track/${o.id}`;
+  const isKohat = (typeof isKohatCity === "function") ? isKohatCity(cust.city || "") : String(cust.city || "").toLowerCase().includes("kohat");
+  const itemsSubtotal = Number(o.subtotal !== undefined ? o.subtotal : (o.items || []).reduce((s, i) => s + (i.qty * i.price), 0));
 
   modal.innerHTML = `
-    <div class="dlg" style="width:min(760px,95vw);max-height:92vh;overflow-y:auto">
+    <div class="dlg ov-shell">
       <button class="ic dlg-x" onclick="document.getElementById('dlg-order-details').close()">${ICON.x}</button>
-      
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--hair);padding-bottom:14px">
+
+      <div class="ov-head">
         <div>
-          <span style="font-size:12px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:0.05em">Order Information</span>
-          <h3 style="font-size:22px;margin:2px 0 0;color:var(--cream);display:flex;align-items:center;gap:8px">
-            Order #${o.id}
-            <button class="btn btn-xs btn-line" onclick="navigator.clipboard.writeText('${o.id}'); toast('Order ID copied!');" title="Copy Order ID" style="font-size:11px;padding:2px 8px">📋 Copy</button>
+          <span class="ov-eyebrow">Order Record</span>
+          <h3 class="ov-title">
+            <span>#${esc(o.id)}</span>
+            <span class="status-pill status-${statusLower}" style="font-size:12px;padding:4px 12px">${esc(o.status)}</span>
+            <button type="button" class="btn btn-xs btn-line" onclick="navigator.clipboard.writeText('${esc(o.id)}'); toast('Order ID copied!');" title="Copy Order ID" style="font-size:11px;padding:3px 9px">Copy ID</button>
           </h3>
-          <small style="color:var(--mute-dark)">Placed on ${o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString())}</small>
-        </div>
-        <div style="text-align:right">
-          <span class="status-pill status-${statusLower}" style="font-size:13px;padding:6px 14px">${o.status}</span>
-          <div style="margin-top:4px;font-size:13px;color:var(--sand)">Payment: <b>${o.paymentMethod || o.pay || "Cash on Delivery (COD)"}</b></div>
-        </div>
-      </div>
-
-      <!-- Interactive Order Status & Fulfillment Control Bar -->
-      <div class="status-change-box">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <label for="modalOrderStatusSelect" style="font-weight:700;color:var(--cream);font-size:13.5px;display:flex;align-items:center;gap:6px">
-            <span>⚡ Change Status:</span>
-          </label>
-          <select id="modalOrderStatusSelect" class="modal-status-select" onchange="updateOrderStatusFromModal('${o.id}', this.value)">
-            <option value="Pending" ${o.status === "Pending" ? "selected" : ""}>⏳ Pending</option>
-            <option value="Approved" ${o.status === "Approved" ? "selected" : ""}>✓ Approved</option>
-            <option value="Processing" ${o.status === "Processing" ? "selected" : ""}>⚙️ Processing</option>
-            <option value="Dispatched" ${o.status === "Dispatched" ? "selected" : ""}>🚚 Dispatched</option>
-            <option value="Delivered" ${o.status === "Delivered" ? "selected" : ""}>✅ Delivered</option>
-            <option value="Cancelled" ${o.status === "Cancelled" ? "selected" : ""}>❌ Cancelled</option>
-          </select>
-          <button class="btn btn-xs btn-gold" onclick="updateOrderStatusFromModal('${o.id}')">Apply Status</button>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-xs btn-warning" onclick="document.getElementById('dlg-order-details').close(); openDispatchModal('${o.id}');">🚚 Set Courier Tracking</button>
-          <button class="btn btn-xs btn-line" style="color:#ef4444;border-color:rgba(239,68,68,0.4)" onclick="openCancelOrderModal('${o.id}')">❌ Cancel Order with Reason</button>
-          ${cleanPhone ? `<a class="btn btn-xs btn-line" href="${waReceiptUrl}" target="_blank" rel="noopener" style="color:#25D366;border-color:rgba(37,211,102,0.4)">💬 WhatsApp Customer</a>` : ""}
-        </div>
-      </div>
-
-      <!-- Cancelled State Banner (if order is cancelled) -->
-      ${o.status === "Cancelled" ? `
-        <div style="background:rgba(239,68,68,0.12);border:1.5px solid rgba(239,68,68,0.38);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px">
-          <div style="font-size:22px;color:#ef4444;line-height:1">🚫</div>
-          <div style="flex:1">
-            <b style="color:#fca5a5;font-size:14px;text-transform:uppercase;letter-spacing:0.04em">Order Cancelled</b>
-            <div style="color:#fff;font-size:13.5px;margin-top:3px">
-              <b>Reason:</b> <span style="color:var(--sand)">${esc(o.cancelReason || o.cancellationReason || "No specific reason recorded.")}</span>
-            </div>
-            <button class="btn btn-xs btn-line" style="margin-top:8px;padding:3px 10px;font-size:11px" onclick="openCancelOrderModal('${o.id}')">✏️ Edit Cancellation Reason</button>
+          <div class="ov-head-meta">
+            <span>Placed ${esc(o.dateFormatted || (typeof formatOrderDate === "function" ? formatOrderDate(o.createdAt) : new Date(o.createdAt).toLocaleString()))}</span>
+            <span>•</span>
+            <span>Payment: <b style="color:var(--cream)">${esc(o.paymentMethod || o.pay || "Cash on Delivery (COD)")}</b></span>
           </div>
+        </div>
+        <div class="ov-head-actions" style="padding-right:28px">
+          ${!o.isDeleted ? `
+            <button type="button" class="btn btn-gold btn-sm" onclick="openEditOrderModal('${esc(o.id)}')" style="display:inline-flex;align-items:center;gap:6px">
+              ${_POP_SVG.edit}
+              <span>Edit Order</span>
+            </button>
+            <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-order-details').close(); openDispatchModal('${esc(o.id)}');" title="Assign courier partner, consignment tracking number & mark order Dispatched" style="display:inline-flex;align-items:center;gap:6px">
+              ${_POP_SVG.truck}
+              <span>${o.tracking && o.tracking.trackingNumber ? "Update Tracking" : "Set Courier Tracking"}</span>
+            </button>
+          ` : `
+            <button type="button" class="btn btn-gold btn-sm" onclick="restoreDeletedOrder('${esc(o.id)}')" style="display:inline-flex;align-items:center;gap:6px">
+              ${_POP_SVG.restore}
+              <span>Restore Order</span>
+            </button>
+          `}
+        </div>
+      </div>
+
+      ${o.isDeleted ? `
+        <div class="ov-trash-banner">
+          <div>
+            <b style="color:#fca5a5;font-size:13.5px;text-transform:uppercase;letter-spacing:0.04em">Order In Trash (Soft Deleted)</b>
+            <div style="font-size:12.5px;color:var(--sand);margin-top:2px">Hidden from active orders and revenue totals. Restore anytime to resume fulfillment.</div>
+          </div>
+          <button type="button" class="btn btn-xs btn-gold" onclick="restoreDeletedOrder('${esc(o.id)}')">Undo Delete / Restore</button>
+        </div>
+      ` : `
+        <div class="ov-status-bar">
+          <div class="ov-status-controls">
+            <label for="modalOrderStatusSelect" style="margin:0 !important;color:var(--cream) !important;font-size:13px !important">Change Status:</label>
+            <select id="modalOrderStatusSelect" class="modal-status-select" data-current-status="${esc(o.status)}" onchange="handleOrderModalStatusSelection('${esc(o.id)}', this.value)">
+              <option value="Pending" ${o.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option value="Approved" ${o.status === "Approved" ? "selected" : ""}>Approved</option>
+              <option value="Processing" ${o.status === "Processing" ? "selected" : ""}>Processing</option>
+              <option value="Dispatched" ${o.status === "Dispatched" ? "selected" : ""}>Dispatched</option>
+              <option value="Delivered" ${o.status === "Delivered" ? "selected" : ""}>Delivered</option>
+              <option value="Cancelled" ${o.status === "Cancelled" ? "selected" : ""}>Cancelled (with reason)</option>
+            </select>
+            <button type="button" id="btnApplyModalStatus" class="btn btn-xs btn-line" disabled style="opacity:0.55" onclick="updateOrderStatusFromModal('${esc(o.id)}')">Apply Status</button>
+            <span id="ovStagedStatusPill" class="ov-staged-pill" style="display:none"></span>
+          </div>
+          <small style="color:var(--mute-dark);font-size:11.5px">Select status then click <b>Apply Status</b> to confirm</small>
+        </div>
+      `}
+
+      ${o.status === "Cancelled" ? `
+        <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:13px 16px;margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <b style="color:#fca5a5;font-size:13px;text-transform:uppercase;letter-spacing:0.04em">Order Cancelled</b>
+            <div style="color:var(--cream);font-size:13.5px;margin-top:3px"><b>Reason:</b> <span style="color:var(--sand)">${esc(o.cancelReason || o.cancellationReason || "No specific reason recorded.")}</span></div>
+          </div>
+          <button type="button" class="btn btn-xs btn-line" onclick="openCancelOrderModal('${esc(o.id)}')">Edit Reason</button>
         </div>
       ` : ""}
 
-      <!-- Consignment Tracking Details (if any) -->
       ${o.tracking && o.tracking.trackingNumber ? `
-        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.35);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+        <div class="ov-track-card">
           <div>
-            <div style="font-size:12px;color:#d8b4fe;text-transform:uppercase;font-weight:600">Active Consignment</div>
-            <div style="font-size:16px;color:#fff;font-weight:700">🚚 ${esc(o.tracking.courier)}</div>
+            <div style="font-size:11px;color:#d8b4fe;text-transform:uppercase;font-weight:700;letter-spacing:0.06em">Courier Consignment Assigned</div>
+            <div style="font-size:15.5px;color:#fff;font-weight:700;margin-top:2px">${esc(o.tracking.courier || "Courier Partner")}</div>
             <div style="font-size:13px;color:var(--sand)">Tracking ID: <b style="font-family:monospace;color:var(--gold-hi)">${esc(o.tracking.trackingNumber)}</b></div>
           </div>
-          <button class="btn btn-xs btn-line" onclick="navigator.clipboard.writeText('${esc(o.tracking.trackingNumber)}'); toast('Tracking number copied!');">Copy</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button type="button" class="btn btn-xs btn-line" onclick="navigator.clipboard.writeText('${esc(o.tracking.trackingNumber)}'); toast('Tracking number copied!');">Copy ID</button>
+            ${!o.isDeleted ? `<button type="button" class="btn btn-xs btn-line" onclick="document.getElementById('dlg-order-details').close(); openDispatchModal('${esc(o.id)}');">Update</button>` : ""}
+          </div>
         </div>
-      ` : ""}
+      ` : `
+        <div class="ov-track-empty">
+          <span><b style="color:var(--sand)">Courier Tracking:</b> Not assigned yet. Use <b>Set Courier Tracking</b> to attach a courier & consignment ID for customer live tracking.</span>
+        </div>
+      `}
 
-      <!-- 2 Columns: Customer Info & Ordered Items -->
-      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-bottom:20px">
-        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:var(--r-sm);padding:16px">
-          <h4 style="color:var(--gold-hi);margin:0 0 10px;font-size:14px;text-transform:uppercase">Customer & Destination</h4>
-          <p style="margin:0 0 6px"><b>Name:</b> ${esc(cust.name || "Customer")}</p>
-          <p style="margin:0 0 6px"><b>Phone:</b> ${cust.phone ? `<a href="tel:${cust.phone}" style="color:var(--gold-hi)">${esc(cust.phone)}</a>` : "N/A"}</p>
-          ${cust.email ? `<p style="margin:0 0 6px"><b>Email:</b> ${esc(cust.email)}</p>` : ""}
-          <p style="margin:0 0 6px"><b>Address:</b> ${esc(cust.address || "")}, ${esc(cust.city || "")}, ${esc(cust.province || "")}</p>
-          ${cust.notes ? `<p style="margin:0;font-size:12.5px;color:var(--mute-dark)"><b>Notes:</b> <i>${esc(cust.notes)}</i></p>` : ""}
+      <div class="ov-grid">
+        <div class="ov-card">
+          <div class="ov-card-title">
+            <span>Customer & Delivery</span>
+            ${isKohat ? `<span class="tag tag-emerald" style="font-size:10px;padding:2px 8px">Kohat Free Delivery</span>` : ""}
+          </div>
+          <div class="ov-kv-list">
+            <div class="ov-kv"><span class="ov-kv-label">Customer</span><span class="ov-kv-val"><b>${esc(cust.name || "Customer")}</b></span></div>
+            <div class="ov-kv"><span class="ov-kv-label">Phone</span><span class="ov-kv-val">${cust.phone ? `<a href="tel:${esc(cust.phone)}" style="color:var(--gold-hi)">${esc(cust.phone)}</a>` : "N/A"}</span></div>
+            ${cust.email ? `<div class="ov-kv"><span class="ov-kv-label">Email</span><span class="ov-kv-val">${esc(cust.email)}</span></div>` : ""}
+            <div class="ov-kv"><span class="ov-kv-label">Address</span><span class="ov-kv-val">${esc(cust.address || "—")}${cust.city ? `, ${esc(cust.city)}` : ""}${cust.province ? `, ${esc(cust.province)}` : ""}</span></div>
+            <div class="ov-kv"><span class="ov-kv-label">Payment</span><span class="ov-kv-val">${esc(o.paymentMethod || o.pay || "Cash on Delivery (COD)")}</span></div>
+            ${cust.notes ? `<div class="ov-kv"><span class="ov-kv-label">Notes</span><span class="ov-kv-val" style="color:var(--sand);font-style:italic">${esc(cust.notes)}</span></div>` : ""}
+          </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:var(--r-sm);padding:16px">
-          <h4 style="color:var(--gold-hi);margin:0 0 10px;font-size:14px;text-transform:uppercase">Ordered Products</h4>
-          <table class="admin-table" style="font-size:13.5px">
+        <div class="ov-card">
+          <div class="ov-card-title">
+            <span>Ordered Items & Summary</span>
+            <span>${(o.items || []).reduce((s, i) => s + (Number(i.qty) || 0), 0)} units</span>
+          </div>
+          <table class="admin-table" style="font-size:13px">
             ${(o.items || []).map(i => `
               <tr>
-                <td style="padding:6px 0"><b>${esc(i.name)}</b><br><small style="color:var(--mute-dark)">${esc(i.weight || "")}</small></td>
-                <td style="text-align:center;padding:6px 0">× ${i.qty}</td>
-                <td style="text-align:right;padding:6px 0"><b>${money(i.qty * i.price)}</b></td>
+                <td style="padding:6px 0"><b>${esc(i.name)}</b><br><small style="color:var(--mute-dark)">${esc(i.weight || "")} · ${money(i.price)} each</small></td>
+                <td style="text-align:center;padding:6px 6px;white-space:nowrap">× ${i.qty}</td>
+                <td style="text-align:right;padding:6px 0;white-space:nowrap"><b>${money(i.qty * i.price)}</b></td>
               </tr>
             `).join("")}
+            <tr style="border-top:1px solid var(--hair)">
+              <td colspan="2" style="padding:7px 0;color:var(--mute-dark)">Products Subtotal</td>
+              <td style="text-align:right;padding:7px 0;color:var(--sand)">${money(itemsSubtotal)}</td>
+            </tr>
             ${Number(o.discount || 0) > 0 ? `
-            <tr style="border-top:1px solid var(--hair)">
-              <td colspan="2" style="padding:6px 0;color:#6ee7b7">Promo Discount ${o.couponCode ? `<b>(${esc(o.couponCode)})</b>` : ""}</td>
-              <td style="text-align:right;padding:6px 0;color:#6ee7b7;font-weight:700">- ${money(o.discount)}</td>
-            </tr>` : ""}
-            <tr style="border-top:1px solid var(--hair)">
-              <td colspan="2" style="padding:6px 0">
-                Delivery Shipping
-                ${o.shipping > 0 ? `
-                  <button class="btn btn-xs btn-line" style="margin-left:8px;padding:2px 8px;font-size:11px;color:#22c55e;border-color:rgba(34,197,94,0.3)" onclick="updateOrderDeliveryFee('${o.id}', 0)">
-                    ⚡ Make Free (Kohat)
-                  </button>
+              <tr>
+                <td colspan="2" style="padding:5px 0;color:#6ee7b7">Discount ${o.couponCode ? `<b>(${esc(o.couponCode)})</b>` : ""}</td>
+                <td style="text-align:right;padding:5px 0;color:#6ee7b7;font-weight:700">- ${money(o.discount)}</td>
+              </tr>
+            ` : ""}
+            <tr>
+              <td colspan="2" style="padding:5px 0;color:var(--mute-dark)">
+                Courier Shipping
+                ${o.shipping > 0 && !o.isDeleted ? `
+                  <button type="button" class="btn btn-xs btn-line" style="margin-left:6px;padding:1px 7px;font-size:10.5px;color:#22c55e;border-color:rgba(34,197,94,0.3)" onclick="updateOrderDeliveryFee('${esc(o.id)}', 0)">Free (Kohat)</button>
                 ` : ""}
               </td>
-              <td style="text-align:right;padding:6px 0">${o.shipping === 0 ? '<span class="tag tag-emerald">FREE (Kohat)</span>' : money(o.shipping || 200)}</td>
+              <td style="text-align:right;padding:5px 0">${Number(o.shipping) === 0 ? `<span class="tag tag-emerald">${isKohat ? "FREE (Kohat)" : "FREE"}</span>` : money(o.shipping || 200)}</td>
             </tr>
             <tr style="border-top:1.5px solid var(--gold)">
-              <td colspan="2" style="padding:8px 0"><b style="font-size:15px;color:var(--cream)">Total Amount</b></td>
-              <td style="text-align:right;padding:8px 0"><b style="font-size:17px;color:var(--gold-hi)">${money(o.total)}</b></td>
+              <td colspan="2" style="padding:9px 0 2px"><b style="font-size:14.5px;color:var(--cream)">Total Amount</b></td>
+              <td style="text-align:right;padding:9px 0 2px"><b style="font-size:17px;color:var(--gold-hi)">${money(o.total)}</b></td>
             </tr>
           </table>
         </div>
       </div>
 
-      <!-- Live Order Lifecycle Milestones Timeline -->
-      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:var(--r-sm);padding:18px;margin-bottom:20px">
-        <h4 style="color:var(--gold-hi);margin:0 0 12px;font-size:14px;text-transform:uppercase">Consignment Milestones & History</h4>
-        <div style="display:flex;flex-direction:column;gap:12px;border-left:2px solid var(--gold);padding-left:16px;margin-left:6px">
+      <div class="ov-card" style="margin-bottom:18px">
+        <div class="ov-card-title">Consignment Milestones & Audit History</div>
+        <div class="ov-timeline">
           ${(o.timeline || []).slice().reverse().map(ev => `
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <b style="color:var(--cream);font-size:14px">${esc(ev.title)}</b>
-                <small style="color:var(--mute-dark);font-size:12px">${esc(ev.time)}</small>
+            <div class="ov-timeline-item">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                <b style="color:var(--cream);font-size:13.5px">${esc(ev.title)}</b>
+                <small style="color:var(--mute-dark);font-size:11.5px">${esc(ev.time)}</small>
               </div>
-              <p style="margin:2px 0 0;font-size:13px;color:var(--sand)">${esc(ev.note || "")}</p>
+              <p style="margin:2px 0 0;font-size:12.5px;color:var(--sand)">${esc(ev.note || "")}</p>
             </div>
           `).join("")}
         </div>
       </div>
 
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <a class="btn btn-line btn-sm" href="${trackUrl}" target="_blank" rel="noopener">View Customer Tracking Page ↗</a>
-        <div style="display:flex;gap:10px">
-          ${cleanPhone ? `<a class="btn btn-gold btn-sm" href="${waReceiptUrl}" target="_blank" rel="noopener">Send WhatsApp Invoice</a>` : ""}
-          <button class="btn btn-line btn-sm" onclick="document.getElementById('dlg-order-details').close()">Close</button>
+      <div class="ov-footer">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          ${!o.isDeleted ? `
+            <button type="button" class="btn btn-xs btn-line" style="color:#f87171;border-color:rgba(239,68,68,0.35)" onclick="confirmSoftDeleteOrder('${esc(o.id)}')">Move to Trash</button>
+          ` : `
+            <button type="button" class="btn btn-xs btn-gold" onclick="restoreDeletedOrder('${esc(o.id)}')">Restore Order</button>
+          `}
+          <a class="btn btn-line btn-xs" href="${trackUrl}" target="_blank" rel="noopener">Customer Tracking ↗</a>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${cleanPhone ? `<a class="btn btn-line btn-sm" href="${waReceiptUrl}" target="_blank" rel="noopener" style="color:#25D366;border-color:rgba(37,211,102,0.4)">WhatsApp Receipt</a>` : ""}
+          ${!o.isDeleted ? `<button type="button" class="btn btn-gold btn-sm" onclick="openEditOrderModal('${esc(o.id)}')">Edit Order</button>` : ""}
+          <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-order-details').close()">Close</button>
         </div>
       </div>
     </div>
@@ -1612,12 +1718,38 @@ function openOrderModal(orderId) {
   modal.showModal();
 }
 
-function updateOrderStatusFromModal(orderId, chosenStatus) {
-  if (!chosenStatus) {
-    const sel = document.getElementById("modalOrderStatusSelect");
-    if (sel) chosenStatus = sel.value;
+// Stage status dropdown selection WITHOUT applying until admin clicks Apply Status
+function handleOrderModalStatusSelection(orderId, chosenStatus) {
+  const sel = document.getElementById("modalOrderStatusSelect");
+  const applyBtn = document.getElementById("btnApplyModalStatus");
+  const stagedPill = document.getElementById("ovStagedStatusPill");
+  const current = sel ? (sel.dataset.currentStatus || "") : "";
+  const hasChanged = Boolean(chosenStatus && chosenStatus !== current);
+
+  if (applyBtn) {
+    applyBtn.disabled = !hasChanged;
+    applyBtn.style.opacity = hasChanged ? "1" : "0.55";
+    applyBtn.className = hasChanged ? "btn btn-xs btn-gold" : "btn btn-xs btn-line";
   }
-  if (!chosenStatus) return;
+  if (stagedPill) {
+    if (hasChanged) {
+      stagedPill.style.display = "inline-block";
+      stagedPill.textContent = `Staged → ${chosenStatus}`;
+    } else {
+      stagedPill.style.display = "none";
+    }
+  }
+}
+
+// Apply status ONLY when Apply Status button is clicked
+function updateOrderStatusFromModal(orderId) {
+  const sel = document.getElementById("modalOrderStatusSelect");
+  const chosenStatus = sel ? sel.value : "";
+  const current = sel ? (sel.dataset.currentStatus || "") : "";
+  if (!chosenStatus || chosenStatus === current) {
+    toast("Select a different status first before clicking Apply Status.");
+    return;
+  }
 
   if (chosenStatus === "Cancelled") {
     openCancelOrderModal(orderId);
@@ -1625,6 +1757,490 @@ function updateOrderStatusFromModal(orderId, chosenStatus) {
   }
 
   updateOrderStatus(orderId, chosenStatus);
+  openOrderModal(orderId);
+}
+
+// Prompt/Confirmation Modal for Changing Order Status from Actions Dropdown
+function openChangeStatusModal(orderId) {
+  const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const cust = o.customer || { name: o.name, city: o.city };
+  let modal = document.getElementById("dlg-change-status");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-change-status";
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(490px,94vw);padding:24px">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-change-status').close()">${ICON.x}</button>
+      <div style="margin-bottom:14px">
+        <span class="ov-eyebrow">Status Confirmation</span>
+        <h3 style="margin:4px 0 2px;font-size:20px;color:var(--cream)">Change Status — #${esc(o.id)}</h3>
+        <small style="color:var(--mute-dark)">Customer: ${esc(cust.name || "Customer")} · Current: <b style="color:var(--gold-hi)">${esc(o.status)}</b></small>
+      </div>
+
+      <form onsubmit="event.preventDefault(); applyChangeStatusModal('${esc(o.id)}');">
+        <div class="f" style="margin-bottom:14px">
+          <label for="csStatusSelect">New Order Status</label>
+          <select id="csStatusSelect" style="padding:11px 12px" onchange="const w = document.getElementById('csCancelHint'); if(w) w.style.display = this.value==='Cancelled' ? 'block' : 'none';">
+            <option value="Pending" ${o.status === "Pending" ? "selected" : ""}>Pending</option>
+            <option value="Approved" ${o.status === "Approved" ? "selected" : ""}>Approved</option>
+            <option value="Processing" ${o.status === "Processing" ? "selected" : ""}>Processing</option>
+            <option value="Dispatched" ${o.status === "Dispatched" ? "selected" : ""}>Dispatched</option>
+            <option value="Delivered" ${o.status === "Delivered" ? "selected" : ""}>Delivered</option>
+            <option value="Cancelled" ${o.status === "Cancelled" ? "selected" : ""}>Cancelled (Opens Reason Prompt)</option>
+          </select>
+        </div>
+
+        <div id="csCancelHint" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);font-size:12.5px;color:#fca5a5">
+          Clicking Apply will open the Cancellation Reason prompt before cancelling.
+        </div>
+
+        <div class="f" style="margin-bottom:18px">
+          <label for="csStatusNote">Optional Timeline Note <span class="hint">(Optional)</span></label>
+          <input id="csStatusNote" placeholder="e.g. Verified via WhatsApp call">
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px">
+          <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-change-status').close()">Cancel</button>
+          <button type="submit" class="btn btn-gold btn-sm">Apply Status Change</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  modal.showModal();
+}
+
+function applyChangeStatusModal(orderId) {
+  const sel = document.getElementById("csStatusSelect");
+  const noteInp = document.getElementById("csStatusNote");
+  const newStatus = sel ? sel.value : "";
+  const note = noteInp ? noteInp.value.trim() : "";
+
+  const dlg = document.getElementById("dlg-change-status");
+  if (dlg) dlg.close();
+
+  if (!newStatus) return;
+  if (newStatus === "Cancelled") {
+    openCancelOrderModal(orderId);
+    return;
+  }
+
+  if (typeof updateOrderStatusInDb === "function") {
+    updateOrderStatusInDb(orderId, newStatus, note || `Status updated to ${newStatus}`);
+  } else {
+    updateOrderStatus(orderId, newStatus);
+  }
+  toast(`Order #${orderId} updated to ${newStatus}`);
+  renderDashboard();
+  renderOrdersTable();
+}
+
+// Soft Delete Order with Confirmation + Recoverable Trash & Undo Toast
+function confirmSoftDeleteOrder(orderId) {
+  const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const cust = o.customer || { name: o.name };
+  let modal = document.getElementById("dlg-confirm-delete");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-confirm-delete";
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(460px,94vw);padding:24px">
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-confirm-delete').close()">${ICON.x}</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:rgba(239,68,68,0.16);color:#f87171;display:grid;place-items:center;flex-shrink:0">${_POP_SVG.trash}</div>
+        <div>
+          <h3 style="margin:0;font-size:18px;color:#fca5a5">Move Order to Trash?</h3>
+          <small style="color:var(--mute-dark)">Order #${esc(o.id)} · ${esc(cust.name || "Customer")} · ${money(o.total)}</small>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--sand);line-height:1.5;margin:0 0 18px">
+        This soft-deletes the order and hides it from active orders and revenue metrics. You can restore it anytime from the <b>Trash</b> filter tab.
+      </p>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-confirm-delete').close()">Keep Order</button>
+        <button type="button" class="btn btn-sm" style="background:#dc2626;color:#fff;border:0;padding-inline:18px;font-weight:600" onclick="softDeleteOrder('${esc(o.id)}')">Move to Trash</button>
+      </div>
+    </div>
+  `;
+
+  modal.showModal();
+}
+
+function softDeleteOrder(orderId) {
+  if (typeof toggleSoftDeleteOrderInDb === "function") {
+    toggleSoftDeleteOrderInDb(orderId, true);
+  } else {
+    const orders = Store.get("app_orders") || [];
+    const target = orders.find(x => x.id === orderId);
+    if (target) {
+      target.isDeleted = true;
+      target.deletedAt = new Date().toISOString();
+      Store.set("app_orders", orders);
+    }
+  }
+
+  ["dlg-confirm-delete", "dlg-order-details"].forEach(id => {
+    const dlg = document.getElementById(id);
+    if (dlg && dlg.open) dlg.close();
+  });
+
+  renderDashboard();
+  renderOrdersTable();
+  toast(`Order #${orderId} moved to Trash.`, "Undo", () => restoreDeletedOrder(orderId));
+}
+
+function restoreDeletedOrder(orderId) {
+  if (typeof toggleSoftDeleteOrderInDb === "function") {
+    toggleSoftDeleteOrderInDb(orderId, false);
+  } else {
+    const orders = Store.get("app_orders") || [];
+    const target = orders.find(x => x.id === orderId);
+    if (target) {
+      target.isDeleted = false;
+      target.deletedAt = null;
+      Store.set("app_orders", orders);
+    }
+  }
+
+  const detailsDlg = document.getElementById("dlg-order-details");
+  const reopen = detailsDlg && detailsDlg.open;
+  renderDashboard();
+  renderOrdersTable();
+  toast(`Order #${orderId} restored to active orders!`);
+  if (reopen) openOrderModal(orderId);
+}
+
+// Full Edit Existing Order Modal (Customer Info, Items, Coupon/Discount, Shipping & Tracking)
+function openEditOrderModal(orderId) {
+  const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const viewDlg = document.getElementById("dlg-order-details");
+  if (viewDlg && viewDlg.open) viewDlg.close();
+
+  let modal = document.getElementById("dlg-edit-order-modal");
+  if (!modal) {
+    modal = document.createElement("dialog");
+    modal.id = "dlg-edit-order-modal";
+    document.body.appendChild(modal);
+  }
+
+  const cust = o.customer || { name: o.name, phone: o.phone, email: o.email, address: o.addr, city: o.city, province: o.prov, notes: o.note };
+  const catalogProds = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
+  const existingItems = Array.isArray(o.items) ? o.items : [];
+
+  // Merge catalog products with any legacy/custom items on the order so nothing is lost
+  const mergedProds = catalogProds.map(p => {
+    const match = existingItems.find(it => it.id === p.id || (it.name && p.name && it.name === p.name));
+    return {
+      id: p.id,
+      name: p.name,
+      weight: p.weight,
+      badge: p.badge,
+      price: match ? (Number(match.price) || p.price) : p.price,
+      qty: match ? (Number(match.qty) || 0) : 0,
+      img: (typeof getProductGallery === "function") ? getProductGallery(p)[0] : ((p.img && (p.img.front || p.img.pair)) || "assets/images/products/front.webp")
+    };
+  });
+
+  existingItems.forEach((it, idx) => {
+    const already = mergedProds.some(mp => mp.id === it.id || (mp.name && it.name && mp.name === it.name));
+    if (!already) {
+      mergedProds.push({
+        id: it.id || `legacy_${idx}`,
+        name: it.name || "Custom Item",
+        weight: it.weight || "",
+        badge: "Order Item",
+        price: Number(it.price) || 0,
+        qty: Number(it.qty) || 0,
+        img: "assets/images/products/front.webp"
+      });
+    }
+  });
+
+  const allCoupons = _getManualOrderCoupons();
+  const matchedCoupon = o.couponCode
+    ? allCoupons.find(c => String(c.code || "").toUpperCase() === String(o.couponCode).toUpperCase())
+    : null;
+  const hasCustomDiscount = !matchedCoupon && (Number(o.discount || 0) > 0 || String(o.couponCode || "").toUpperCase() === "CUSTOM");
+
+  const provList = [
+    "Punjab", "Sindh", "Islamabad Capital Territory", "Khyber Pakhtunkhwa",
+    "Balochistan", "Gilgit-Baltistan", "Azad Jammu & Kashmir"
+  ];
+  const curProv = cust.province || "Khyber Pakhtunkhwa";
+  if (curProv && !provList.includes(curProv)) provList.unshift(curProv);
+
+  const payOptions = [
+    "Cash on Delivery (COD)",
+    "Direct Bank Transfer",
+    "JazzCash Mobile Account",
+    "Easypaisa Mobile Account",
+    "Advance Paid (Verified)"
+  ];
+  const rawPay = o.paymentMethod || o.pay || "Cash on Delivery (COD)";
+  const normalizedPay = rawPay.toLowerCase() === "cod" ? "Cash on Delivery (COD)" : rawPay;
+  if (normalizedPay && !payOptions.includes(normalizedPay)) payOptions.unshift(normalizedPay);
+
+  const curTracking = o.tracking || {};
+  const courierOptions = ["", "TCS Express", "Leopards Courier", "Trax Logistics", "Call Courier", "M&P Express", "PostEx", "Pakistan Post"];
+  if (curTracking.courier && !courierOptions.includes(curTracking.courier)) courierOptions.push(curTracking.courier);
+
+  modal.innerHTML = `
+    <div class="dlg" style="width:min(780px,95vw);max-height:92vh;overflow-y:auto">
+      <style>
+        #dlg-edit-order-modal label { color: #f4d77f !important; font-size: 13px !important; font-weight: 600 !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; }
+        #dlg-edit-order-modal input, #dlg-edit-order-modal select, #dlg-edit-order-modal textarea { background: #14100a !important; color: #fffdf8 !important; border: 1.5px solid rgba(214, 167, 54, 0.35) !important; padding: 10px 12px !important; border-radius: 8px !important; width: 100% !important; box-sizing: border-box !important; }
+      </style>
+      <button class="ic dlg-x" onclick="document.getElementById('dlg-edit-order-modal').close()">${ICON.x}</button>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--hair);padding-bottom:14px">
+        <div>
+          <span class="ov-eyebrow">Edit Existing Order</span>
+          <h3 style="font-size:21px;margin:2px 0 0;color:var(--cream)">Modify Order #${esc(o.id)}</h3>
+          <p style="font-size:13px;color:var(--mute-dark);margin:2px 0 0">Update customer info, city, items, launch coupon/discount, shipping or payment method.</p>
+        </div>
+        <button type="button" class="btn btn-xs btn-line" style="margin-right:34px" onclick="document.getElementById('dlg-edit-order-modal').close(); openOrderModal('${esc(o.id)}');">← Back to View</button>
+      </div>
+
+      <form id="editOrderForm" onsubmit="event.preventDefault(); saveEditedOrder('${esc(o.id)}');">
+        <h4 style="color:var(--cream);font-size:14.5px;margin-bottom:10px">1. Customer & Delivery Information</h4>
+        <div class="fgrid">
+          <div class="f">
+            <label for="eoCustName">Customer Full Name <span class="req">*</span></label>
+            <input id="eoCustName" value="${esc(cust.name || "")}" required>
+          </div>
+          <div class="f">
+            <label for="eoCustPhone">WhatsApp / Mobile <span class="req">*</span></label>
+            <input id="eoCustPhone" value="${esc(cust.phone || "")}" required>
+          </div>
+          <div class="f full">
+            <label for="eoCustEmail">Email Address <span class="hint">(Optional)</span></label>
+            <input id="eoCustEmail" type="email" value="${esc(cust.email || "")}">
+          </div>
+          <div class="f full">
+            <label for="eoCustAddress">Street Address / House / Landmark <span class="req">*</span></label>
+            <input id="eoCustAddress" value="${esc(cust.address || "")}" required>
+          </div>
+          <div class="f">
+            <label for="eoCustCity">Destination City <span class="req">*</span></label>
+            <input id="eoCustCity" value="${esc(cust.city || "")}" oninput="handleEditOrderCityChange()" required>
+          </div>
+          <div class="f">
+            <label for="eoCustProvince">Province <span class="req">*</span></label>
+            <select id="eoCustProvince">
+              ${provList.map(p => `<option value="${esc(p)}" ${p === curProv ? "selected" : ""}>${esc(p)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="f full">
+            <label for="eoCustNotes">Order Notes / Instructions <span class="hint">(Optional)</span></label>
+            <textarea id="eoCustNotes" rows="2">${esc(cust.notes || "")}</textarea>
+          </div>
+        </div>
+
+        <h4 style="color:var(--cream);font-size:14.5px;margin:20px 0 10px">2. Products, Coupon Discount & Shipping</h4>
+        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--hair);border-radius:var(--r-md);padding:14px;margin-bottom:16px">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1px solid var(--hair);color:var(--gold-hi);font-size:12px;text-transform:uppercase">
+                <th style="text-align:left;padding:8px">Product Item</th>
+                <th style="text-align:center;padding:8px">Price</th>
+                <th style="text-align:center;padding:8px;width:110px">Qty</th>
+                <th style="text-align:right;padding:8px">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mergedProds.map(p => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                  <td style="padding:9px 8px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <img src="${esc(p.img)}" alt="${esc(p.name)}" style="width:34px;height:34px;object-fit:contain;border-radius:4px;background:#000">
+                      <div>
+                        <b style="color:var(--cream);font-size:13px">${esc(p.name)}</b>
+                        <div style="font-size:11.5px;color:var(--sand)">${esc(p.weight)}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align:center;padding:9px 8px;font-size:13px;color:var(--sand)">${money(p.price)}</td>
+                  <td style="text-align:center;padding:9px 8px">
+                    <input type="number" min="0" max="100" value="${p.qty}" class="eo-item-qty" data-pid="${esc(p.id)}" data-price="${p.price}" data-name="${esc(p.name)}" data-weight="${esc(p.weight)}" oninput="recalcEditOrderTotal()" style="width:76px !important;text-align:center !important;padding:6px !important;margin:0 auto !important">
+                  </td>
+                  <td style="text-align:right;padding:9px 8px;font-weight:700;color:var(--cream);font-size:13.5px" id="eoLineSub_${esc(p.id)}">${money(p.qty * p.price)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)">
+            <div style="flex:1;min-width:240px">
+              <label for="eoCouponSelect" style="margin-bottom:6px">Promo Coupon / Discount <span class="hint">(Optional)</span></label>
+              <select id="eoCouponSelect" onchange="handleEditOrderCouponChange()" style="padding:9px 12px !important;font-size:13px !important">
+                <option value="">No Coupon / Full Price</option>
+                ${allCoupons.map(c => {
+                  const valLabel = c.type === "percent" ? `${c.value}% Off` : (c.type === "free_shipping" ? "Free Shipping" : `${money(c.value)} Off`);
+                  const selected = matchedCoupon && matchedCoupon.code === c.code ? "selected" : "";
+                  return `<option value="${esc(c.code)}" ${selected}>${esc(c.code)} — ${esc(c.title || valLabel)} (${valLabel})</option>`;
+                }).join("")}
+                <option value="__CUSTOM__" ${hasCustomDiscount ? "selected" : ""}>Custom Manual Discount (PKR)</option>
+              </select>
+              <div id="eoCouponHint" style="font-size:11.5px;color:#34d399;margin-top:6px;min-height:16px"></div>
+              <div id="eoCustomDiscountWrap" style="display:${hasCustomDiscount ? "block" : "none"};margin-top:8px">
+                <label for="eoCustomDiscount" style="font-size:12px !important;margin-bottom:4px !important">Custom Discount Amount (PKR)</label>
+                <input type="number" id="eoCustomDiscount" value="${hasCustomDiscount ? Number(o.discount || 0) : 0}" min="0" oninput="recalcEditOrderTotal()" style="padding:8px 10px !important;font-size:13px !important">
+              </div>
+            </div>
+
+            <div style="width:295px;font-size:13.5px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="color:var(--mute-dark)">Products Subtotal:</span>
+                <b id="eoSubtotalDisplay" style="color:var(--cream)">PKR 0</b>
+              </div>
+              <div id="eoDiscountRow" style="display:none;justify-content:space-between;margin-bottom:6px;color:#34d399">
+                <span id="eoDiscountLabel">Promo Discount:</span>
+                <b id="eoDiscountDisplay">- PKR 0</b>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="color:var(--mute-dark);display:flex;align-items:center;gap:6px">
+                  <span>Courier Shipping:</span>
+                  <span id="eoShipFreeBadge" style="display:none;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(16,185,129,0.16);color:#34d399;border:1px solid rgba(16,185,129,0.35)">FREE</span>
+                </span>
+                <div style="width:110px">
+                  <input type="number" id="eoShipping" value="${Number(o.shipping ?? 200)}" min="0" data-manual-ship="1" oninput="this.dataset.manualShip='1'; recalcEditOrderTotal()" style="padding:4px 8px !important;font-size:13px !important;text-align:right !important">
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--hair);font-size:16px">
+                <span style="font-weight:700;color:var(--gold-hi)">Total Amount:</span>
+                <b id="eoTotalDisplay" style="font-weight:700;color:var(--gold-hi)">PKR 0</b>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="color:var(--cream);font-size:14.5px;margin:18px 0 10px">3. Payment & Courier Tracking</h4>
+        <div class="fgrid">
+          <div class="f">
+            <label for="eoPaymentMethod">Payment Method</label>
+            <select id="eoPaymentMethod">
+              ${payOptions.map(pm => `<option value="${esc(pm)}" ${pm === normalizedPay ? "selected" : ""}>${esc(pm)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="f">
+            <label for="eoCourier">Courier Partner <span class="hint">(Optional)</span></label>
+            <select id="eoCourier">
+              ${courierOptions.map(c => `<option value="${esc(c)}" ${c === (curTracking.courier || "") ? "selected" : ""}>${esc(c || "Not Assigned")}</option>`).join("")}
+            </select>
+          </div>
+          <div class="f full">
+            <label for="eoTrackingNumber">Consignment / Tracking Number <span class="hint">(Optional)</span></label>
+            <input id="eoTrackingNumber" value="${esc(curTracking.trackingNumber || "")}" placeholder="e.g. TCS-77291048">
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px;border-top:1px solid var(--hair);padding-top:16px">
+          <button type="button" class="btn btn-line btn-sm" onclick="document.getElementById('dlg-edit-order-modal').close()">Cancel</button>
+          <button type="submit" class="btn btn-gold btn-sm">Save Order Changes</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  modal.showModal();
+  recalcEditOrderTotal();
+}
+
+function handleEditOrderCityChange() {
+  const shipInput = $("#eoShipping");
+  if (shipInput && shipInput.dataset) shipInput.dataset.manualShip = "0";
+  recalcEditOrderTotal();
+}
+
+function handleEditOrderCouponChange() {
+  const sel = $("#eoCouponSelect");
+  const customWrap = $("#eoCustomDiscountWrap");
+  if (customWrap) {
+    customWrap.style.display = (sel && sel.value === "__CUSTOM__") ? "block" : "none";
+  }
+  recalcEditOrderTotal();
+}
+
+function recalcEditOrderTotal() {
+  _syncOrderFormTotalsUI("eo");
+}
+
+function saveEditedOrder(orderId) {
+  const calc = _computeOrderFormCalculation("eo");
+  if (!calc.items.length) {
+    alert("Order must contain at least 1 product item.");
+    return;
+  }
+
+  const name = $("#eoCustName").value.trim();
+  const phone = $("#eoCustPhone").value.trim();
+  const email = $("#eoCustEmail").value.trim();
+  const address = $("#eoCustAddress").value.trim();
+  const city = $("#eoCustCity").value.trim();
+  const province = $("#eoCustProvince").value;
+  const notes = $("#eoCustNotes").value.trim();
+  const paymentMethod = $("#eoPaymentMethod").value;
+  const courier = $("#eoCourier") ? $("#eoCourier").value : "";
+  const trackingNumber = $("#eoTrackingNumber") ? $("#eoTrackingNumber").value.trim() : "";
+
+  const orders = (typeof getAllOrders === "function") ? getAllOrders() : (Store.get("app_orders") || []);
+  const existing = orders.find(x => x.id === orderId) || {};
+  const existingTrack = existing.tracking || {};
+
+  const updates = {
+    customer: { name, phone, email, address, city, province, notes },
+    name,
+    phone,
+    email,
+    addr: address,
+    city,
+    prov: province,
+    note: notes,
+    items: calc.items,
+    subtotal: calc.subtotal,
+    discount: calc.discount,
+    couponCode: calc.couponCode || null,
+    couponTitle: calc.couponTitle || null,
+    shipping: calc.shipping,
+    total: calc.total,
+    paymentMethod,
+    pay: paymentMethod,
+    tracking: {
+      ...existingTrack,
+      courier,
+      trackingNumber
+    }
+  };
+
+  const summaryNote = `Updated order (${calc.items.reduce((s, i) => s + i.qty, 0)} items, Total: ${money(calc.total)}${calc.isCityFree && calc.shipping === 0 ? ", Free Kohat Delivery" : ""})`;
+  if (typeof updateOrderDetailsInDb === "function") {
+    updateOrderDetailsInDb(orderId, updates, summaryNote);
+  } else {
+    Object.assign(existing, updates);
+    Store.set("app_orders", orders);
+  }
+
+  const editDlg = document.getElementById("dlg-edit-order-modal");
+  if (editDlg) editDlg.close();
+
+  renderDashboard();
+  renderOrdersTable();
+  toast(`Order #${orderId} updated successfully!`);
   openOrderModal(orderId);
 }
 
@@ -1699,7 +2315,8 @@ function confirmCancelOrder(orderId) {
   const dlg = document.getElementById("dlg-cancel-order");
   if (dlg) dlg.close();
 
-  openOrderModal(orderId);
+  const detailsDlg = document.getElementById("dlg-order-details");
+  if (detailsDlg && detailsDlg.open) openOrderModal(orderId);
 }
 
 async function updateOrderDeliveryFee(orderId, newShippingFee = 0) {
@@ -1710,7 +2327,7 @@ async function updateOrderDeliveryFee(orderId, newShippingFee = 0) {
   const newShipping = Number(newShippingFee);
   o.shipping = newShipping;
   if (o.pricing) o.pricing.shipping = newShipping;
-  o.total = Number(o.subtotal || 0) + newShipping;
+  o.total = Math.max(0, Number(o.subtotal || 0) - Number(o.discount || 0)) + newShipping;
   if (o.pricing) o.pricing.total = o.total;
   o.updatedAt = new Date().toISOString();
 
@@ -1758,6 +2375,17 @@ window.openDispatchModal = openDispatchModal;
 window.applyDispatch = applyDispatch;
 window.markOrderDelivered = markOrderDelivered;
 window.openOrderModal = openOrderModal;
+window.handleOrderModalStatusSelection = handleOrderModalStatusSelection;
+window.openChangeStatusModal = openChangeStatusModal;
+window.applyChangeStatusModal = applyChangeStatusModal;
+window.confirmSoftDeleteOrder = confirmSoftDeleteOrder;
+window.softDeleteOrder = softDeleteOrder;
+window.restoreDeletedOrder = restoreDeletedOrder;
+window.openEditOrderModal = openEditOrderModal;
+window.handleEditOrderCityChange = handleEditOrderCityChange;
+window.handleEditOrderCouponChange = handleEditOrderCouponChange;
+window.recalcEditOrderTotal = recalcEditOrderTotal;
+window.saveEditedOrder = saveEditedOrder;
 
 // Product Catalog & Inventory State
 let currentProdFilter = "all";

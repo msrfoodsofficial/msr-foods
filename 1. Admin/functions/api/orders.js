@@ -411,16 +411,73 @@ export async function onRequestPatch(context) {
       orderObj.cancellationReason = cReason;
     }
 
+    if (body.customer && typeof body.customer === "object") {
+      const c = body.customer;
+      const prev = orderObj.customer || {};
+      const mergedCust = {
+        name: c.name !== undefined ? String(c.name).trim() : (prev.name ?? orderObj.name ?? ""),
+        phone: c.phone !== undefined ? String(c.phone).trim() : (prev.phone ?? orderObj.phone ?? ""),
+        email: c.email !== undefined ? String(c.email).trim() : (prev.email ?? orderObj.email ?? ""),
+        address: c.address !== undefined ? String(c.address).trim() : (prev.address ?? orderObj.addr ?? ""),
+        city: c.city !== undefined ? String(c.city).trim() : (prev.city ?? orderObj.city ?? ""),
+        province: c.province !== undefined ? String(c.province).trim() : (prev.province ?? orderObj.prov ?? ""),
+        zip: c.zip !== undefined ? String(c.zip).trim() : (prev.zip ?? orderObj.zip ?? ""),
+        notes: c.notes !== undefined ? String(c.notes).trim() : (prev.notes ?? orderObj.note ?? "")
+      };
+      orderObj.customer = mergedCust;
+      orderObj.name = mergedCust.name;
+      orderObj.phone = mergedCust.phone;
+      orderObj.email = mergedCust.email;
+      orderObj.addr = mergedCust.address;
+      orderObj.city = mergedCust.city;
+      orderObj.prov = mergedCust.province;
+      orderObj.note = mergedCust.notes;
+    }
+
+    if (Array.isArray(body.items)) {
+      orderObj.items = body.items;
+    }
+
+    if (body.subtotal !== undefined) {
+      orderObj.subtotal = Number(body.subtotal);
+      if (orderObj.pricing) orderObj.pricing.subtotal = orderObj.subtotal;
+    }
+
+    if (body.discount !== undefined) {
+      orderObj.discount = Number(body.discount);
+      if (orderObj.pricing) orderObj.pricing.discount = orderObj.discount;
+    }
+
+    if (body.couponCode !== undefined) {
+      orderObj.couponCode = body.couponCode || null;
+    }
+
+    if (body.couponTitle !== undefined) {
+      orderObj.couponTitle = body.couponTitle || null;
+    }
+
+    if (body.paymentMethod !== undefined) {
+      orderObj.paymentMethod = body.paymentMethod;
+      orderObj.pay = body.paymentMethod;
+    }
+
     if (body.shipping !== undefined) {
       orderObj.shipping = Number(body.shipping);
       if (orderObj.pricing) orderObj.pricing.shipping = Number(body.shipping);
-      orderObj.total = Number(orderObj.subtotal || 0) + Number(body.shipping);
-      if (orderObj.pricing) orderObj.pricing.total = orderObj.total;
+      if (body.total === undefined) {
+        orderObj.total = Math.max(0, Number(orderObj.subtotal || 0) - Number(orderObj.discount || 0)) + Number(body.shipping);
+        if (orderObj.pricing) orderObj.pricing.total = orderObj.total;
+      }
     }
 
     if (body.total !== undefined) {
       orderObj.total = Number(body.total);
       if (orderObj.pricing) orderObj.pricing.total = Number(body.total);
+    }
+
+    if (body.isDeleted !== undefined) {
+      orderObj.isDeleted = Boolean(body.isDeleted);
+      orderObj.deletedAt = orderObj.isDeleted ? (body.deletedAt || now.toISOString()) : null;
     }
 
     if (body.tracking) {
@@ -431,13 +488,29 @@ export async function onRequestPatch(context) {
 
     if (body.timeline && Array.isArray(body.timeline)) {
       orderObj.timeline = body.timeline;
+    } else if (body.isDeleted !== undefined) {
+      if (!orderObj.timeline) orderObj.timeline = [];
+      orderObj.timeline.push({
+        status: orderObj.status || "Pending",
+        title: orderObj.isDeleted ? "Moved to Trash (Soft Deleted)" : "Restored from Trash",
+        time: timeFormatted,
+        note: body.note || (orderObj.isDeleted ? "Order soft-deleted by admin (recoverable from Trash)" : "Order restored to active queue by admin")
+      });
+    } else if (body.isEdit || body.customer || Array.isArray(body.items)) {
+      if (!orderObj.timeline) orderObj.timeline = [];
+      orderObj.timeline.push({
+        status: orderObj.status || "Pending",
+        title: "Order Details Updated",
+        time: timeFormatted,
+        note: body.note || "Order customer, items, or pricing details updated by admin"
+      });
     } else if (body.shipping !== undefined) {
       if (!orderObj.timeline) orderObj.timeline = [];
       orderObj.timeline.push({
         status: orderObj.status || "Pending",
-        title: "Delivery Price Adjusted to FREE (Kohat)",
+        title: Number(orderObj.shipping) === 0 ? "Delivery Price Adjusted to FREE (Kohat)" : "Delivery Fee Adjusted",
         time: timeFormatted,
-        note: body.note || `Delivery fee adjusted to PKR ${orderObj.shipping} (Kohat Free Delivery applied). Total payable: PKR ${orderObj.total.toLocaleString()}.`
+        note: body.note || `Delivery fee adjusted to PKR ${orderObj.shipping}. Total payable: PKR ${orderObj.total.toLocaleString()}.`
       });
     } else if (body.status || body.note || body.cancelReason) {
       if (!orderObj.timeline) orderObj.timeline = [];
@@ -462,6 +535,8 @@ export async function onRequestPatch(context) {
 
     orderObj.updatedAt = now.toISOString();
 
+    const cust = orderObj.customer || {};
+    const itemsJson = JSON.stringify(orderObj.items || []);
     const trackingJson = JSON.stringify(orderObj.tracking || {});
     const timelineJson = JSON.stringify(orderObj.timeline || []);
     const rawJson = JSON.stringify(orderObj);
@@ -470,9 +545,20 @@ export async function onRequestPatch(context) {
       .prepare(`
         UPDATE orders SET
           status = ?,
+          customer_name = ?,
+          customer_phone = ?,
+          customer_email = ?,
+          customer_address = ?,
+          customer_city = ?,
+          customer_province = ?,
+          customer_zip = ?,
+          customer_notes = ?,
+          subtotal = ?,
           shipping = ?,
           total = ?,
+          payment_method = ?,
           updated_at = ?,
+          items_json = ?,
           tracking_json = ?,
           timeline_json = ?,
           raw_json = ?
@@ -480,9 +566,20 @@ export async function onRequestPatch(context) {
       `)
       .bind(
         orderObj.status,
+        cust.name || orderObj.name || "",
+        cust.phone || orderObj.phone || "",
+        cust.email || orderObj.email || "",
+        cust.address || orderObj.addr || "",
+        cust.city || orderObj.city || "",
+        cust.province || orderObj.prov || "",
+        cust.zip || orderObj.zip || "",
+        cust.notes || orderObj.note || "",
+        Number(orderObj.subtotal !== undefined ? orderObj.subtotal : 0),
         Number(orderObj.shipping !== undefined ? orderObj.shipping : 0),
         Number(orderObj.total !== undefined ? orderObj.total : 0),
+        orderObj.paymentMethod || orderObj.pay || "Cash on Delivery (COD)",
         orderObj.updatedAt,
+        itemsJson,
         trackingJson,
         timelineJson,
         rawJson,
@@ -492,16 +589,18 @@ export async function onRequestPatch(context) {
 
     // Record in order_activity_logs audit trail
     try {
-      const actionTitle = body.status ? `Status updated to ${body.status}` : "Order details modified";
+      const actionTitle = body.isDeleted !== undefined
+        ? (orderObj.isDeleted ? "Moved to Trash" : "Restored from Trash")
+        : (body.status ? `Status updated to ${body.status}` : "Order details modified");
       await db.prepare(`
         INSERT INTO order_activity_logs (order_id, admin_name, action, note, created_at)
         VALUES (?, ?, ?, ?, ?)
       `).bind(orderId, body.adminName || "Admin", actionTitle, body.note || (body.tracking && body.tracking.courier ? `Courier: ${body.tracking.courier} (#${body.tracking.trackingNumber})` : ""), now.toISOString()).run();
     } catch (e) {}
 
-    // Dispatch status update email to customer whenever order status/tracking is modified
+    // Dispatch status update email to customer when order status/tracking/cancellation changes (skip soft-delete/restore/edit)
     try {
-      if (body.status || body.cancelReason || body.tracking) {
+      if (!orderObj.isDeleted && body.isDeleted === undefined && !body.isEdit && (body.status || body.cancelReason || body.tracking)) {
         await sendOrderStatusUpdateEmail(orderObj, env);
       }
     } catch (emailErr) {
@@ -517,6 +616,78 @@ export async function onRequestPatch(context) {
       JSON.stringify({ error: "Failed to update order", details: err.message }),
       { status: 500, headers }
     );
+  }
+}
+
+// -----------------------------------------------------------------------
+// 5. DELETE — Soft Delete (or ?permanent=1 Purge) Order (Admin Portal)
+// -----------------------------------------------------------------------
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+  const headers = getCorsHeaders(request);
+  const db = getDatabase(env);
+
+  if (!db) {
+    return new Response(JSON.stringify({ error: "D1 database binding missing" }), { status: 500, headers });
+  }
+
+  try {
+    const url = new URL(request.url);
+    let orderId = url.searchParams.get("id");
+    const permanent = url.searchParams.get("permanent") === "1";
+
+    if (!orderId) {
+      try {
+        const body = await request.json();
+        orderId = body && body.id;
+      } catch (e) {}
+    }
+
+    if (!orderId) {
+      return new Response(JSON.stringify({ error: "Missing order id" }), { status: 400, headers });
+    }
+
+    if (permanent) {
+      await db.prepare("DELETE FROM orders WHERE id = ?").bind(orderId).run();
+      return new Response(JSON.stringify({ success: true, deletedPermanent: true, id: orderId }), { status: 200, headers });
+    }
+
+    const existingRow = await db.prepare("SELECT raw_json FROM orders WHERE id = ?").bind(orderId).first();
+    if (!existingRow) {
+      return new Response(JSON.stringify({ error: `Order #${orderId} not found` }), { status: 404, headers });
+    }
+
+    const orderObj = JSON.parse(existingRow.raw_json);
+    const now = new Date();
+    const timeFormatted = now.toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+
+    orderObj.isDeleted = true;
+    orderObj.deletedAt = now.toISOString();
+    orderObj.updatedAt = now.toISOString();
+    if (!orderObj.timeline) orderObj.timeline = [];
+    orderObj.timeline.push({
+      status: orderObj.status || "Pending",
+      title: "Moved to Trash (Soft Deleted)",
+      time: timeFormatted,
+      note: "Order soft-deleted by admin (recoverable from Trash)"
+    });
+
+    await db.prepare(`
+      UPDATE orders SET updated_at = ?, timeline_json = ?, raw_json = ? WHERE id = ?
+    `).bind(orderObj.updatedAt, JSON.stringify(orderObj.timeline), JSON.stringify(orderObj), orderId).run();
+
+    try {
+      await db.prepare(`
+        INSERT INTO order_activity_logs (order_id, admin_name, action, note, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(orderId, "Admin", "Moved to Trash", "Soft deleted via Admin", now.toISOString()).run();
+    } catch (e) {}
+
+    return new Response(JSON.stringify({ success: true, softDeleted: true, order: orderObj }), { status: 200, headers });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Failed to delete order", details: err.message }), { status: 500, headers });
   }
 }
 

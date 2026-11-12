@@ -39,7 +39,7 @@
   <!-- Shared Design System & UI Kit Styles -->
   <link rel="stylesheet" href="styles/theme.css?v=4">
   <link rel="stylesheet" href="styles/ui-kit.css?v=5">
-  <link rel="stylesheet" href="styles/admin.css?v=15">
+  <link rel="stylesheet" href="styles/admin.css?v=16">
   <!-- Early Auth Guard & Styles -->
   <script>
     (function() {
@@ -707,6 +707,7 @@
             <span class="filter-pill" data-filter="dispatched">Dispatched</span>
             <span class="filter-pill" data-filter="delivered">Delivered</span>
             <span class="filter-pill" data-filter="cancelled">Cancelled</span>
+            <span class="filter-pill filter-pill-trash" data-filter="deleted" id="deletedOrdersFilterPill">Trash</span>
           </div>
           <div class="f" style="width:280px">
             <input type="search" id="orderSearchInput" placeholder="Search orders by ID, name, city...">
@@ -1082,6 +1083,12 @@
   <!-- In-App Confirm Settings Modal -->
   <dialog id="dlg-confirm-settings" aria-label="Confirm Store Settings Update"></dialog>
 
+  <!-- Edit Existing Order Modal -->
+  <dialog id="dlg-edit-order-modal" aria-label="Edit Order Details"></dialog>
+
+  <!-- Change Order Status Confirmation Modal -->
+  <dialog id="dlg-change-status" aria-label="Change Order Status"></dialog>
+
   <!-- Cancel Order with Reason Modal -->
   <dialog id="dlg-cancel-order" aria-label="Cancel Order with Reason"></dialog>
 
@@ -1096,9 +1103,9 @@
   <script src="config/theme.config.js?v=7"></script>
   <script src="data/products.js?v=8"></script>
   <script src="data/cities.js?v=7"></script>
-  <script src="js/store.js?v=15"></script>
+  <script src="js/store.js?v=16"></script>
 
   <!-- Admin Controller -->
-  <script src="js/admin.js?v=16"></script>
+  <script src="js/admin.js?v=17"></script>
 </body>
 </html>

@@ -558,7 +558,7 @@ function findOrder(query) {
   const orders = getAllOrders();
 
   return orders.find(o => {
-    if (!o) return false;
+    if (!o || o.isDeleted) return false;
     const cust = o.customer || {};
     const oId = String(o.id || "").toLowerCase();
     const cleanOId = oId.replace(/^#/, "");
@@ -607,6 +607,84 @@ async function sendOrderToServer(order) {
     console.warn("Could not sync order to Cloudflare D1 immediately (offline or local dev):", err);
   }
   return order;
+}
+
+async function sendOrderDetailsUpdateToServer(payload) {
+  try {
+    const endpoint = getOrdersApiEndpoint();
+    const res = await fetch(endpoint, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("Could not sync order update to Cloudflare D1:", err);
+  }
+  return null;
+}
+
+function updateOrderDetailsInDb(orderId, updates = {}, note = "") {
+  const orders = getAllOrders();
+  const target = orders.find(o => o.id === orderId);
+  if (!target) return null;
+
+  const now = new Date();
+  const timeFormatted = formatOrderDate(now);
+  Object.assign(target, updates);
+  target.updatedAt = now.toISOString();
+  if (!target.timeline) target.timeline = [];
+  target.timeline.push({
+    status: target.status || "Pending",
+    title: "Order Details Updated",
+    time: timeFormatted,
+    note: note || "Order customer, items, or pricing details updated by admin"
+  });
+
+  Store.set("app_orders", orders);
+  if (lastOrder && lastOrder.id === orderId) {
+    lastOrder = target;
+    Store.set("app_last_order", target, sessionStorage);
+    Store.set("msr_order", target, sessionStorage);
+  }
+
+  sendOrderDetailsUpdateToServer({
+    id: orderId,
+    isEdit: true,
+    note: note || "Order details updated by admin",
+    ...updates
+  });
+  return target;
+}
+
+function toggleSoftDeleteOrderInDb(orderId, isDeleted = true) {
+  const orders = getAllOrders();
+  const target = orders.find(o => o.id === orderId);
+  if (!target) return null;
+
+  const now = new Date();
+  const timeFormatted = formatOrderDate(now);
+  target.isDeleted = Boolean(isDeleted);
+  target.deletedAt = target.isDeleted ? now.toISOString() : null;
+  target.updatedAt = now.toISOString();
+  if (!target.timeline) target.timeline = [];
+  target.timeline.push({
+    status: target.status || "Pending",
+    title: target.isDeleted ? "Moved to Trash (Soft Deleted)" : "Restored from Trash",
+    time: timeFormatted,
+    note: target.isDeleted ? "Order soft-deleted by admin (recoverable from Trash)" : "Order restored to active queue by admin"
+  });
+
+  Store.set("app_orders", orders);
+  sendOrderDetailsUpdateToServer({
+    id: orderId,
+    isDeleted: target.isDeleted,
+    deletedAt: target.deletedAt,
+    note: target.isDeleted ? "Order soft-deleted by admin" : "Order restored from Trash by admin"
+  });
+  return target;
 }
 
 async function sendOrderStatusUpdateToServer(orderId, newStatus, note = "", trackingInfo = null, cancelReason = "") {
@@ -966,6 +1044,9 @@ async function saveBrandSettingsRemote(fullConfig, theme) {
   window.findOrder = findOrder;
   window.saveOrder = saveOrder;
   window.updateOrderStatusInDb = updateOrderStatusInDb;
+  window.updateOrderDetailsInDb = updateOrderDetailsInDb;
+  window.toggleSoftDeleteOrderInDb = toggleSoftDeleteOrderInDb;
+  window.sendOrderDetailsUpdateToServer = sendOrderDetailsUpdateToServer;
   window.formatOrderDate = formatOrderDate;
   window.generateOrderWhatsAppMessage = generateOrderWhatsAppMessage;
   window.getOrdersApiEndpoint = getOrdersApiEndpoint;

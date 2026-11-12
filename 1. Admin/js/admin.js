@@ -810,6 +810,8 @@ function openAddOrderModal() {
 
   const prods = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
   const deliveryCfg = (window.BRAND_CONFIG && window.BRAND_CONFIG.delivery) || { fee: 200, freeShippingThreshold: 5000 };
+  const allCoupons = _getManualOrderCoupons();
+  const defaultAutoCoupon = allCoupons.find(c => c.autoApply) || null;
 
   const prov = [
     "Punjab", "Sindh", "Islamabad Capital Territory", "Khyber Pakhtunkhwa",
@@ -862,7 +864,7 @@ function openAddOrderModal() {
 
           <div class="f">
             <label for="moCustCity">Destination City <span class="req">*</span></label>
-            <input id="moCustCity" placeholder="e.g. Lahore, Karachi, Islamabad" required>
+            <input id="moCustCity" placeholder="e.g. Lahore, Karachi, Islamabad, Kohat" oninput="handleManualOrderCityChange()" required>
           </div>
 
           <div class="f">
@@ -918,16 +920,41 @@ function openAddOrderModal() {
             </tbody>
           </table>
 
-          <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)">
-            <div style="width:280px;font-size:13.5px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)">
+            <div style="flex:1;min-width:240px">
+              <label for="moCouponSelect" style="margin-bottom:6px">Promo Coupon / Launch Discount <span class="hint">(Optional)</span></label>
+              <select id="moCouponSelect" onchange="handleManualOrderCouponChange()" style="padding:9px 12px !important;font-size:13px !important">
+                <option value="">No Coupon / Full Price</option>
+                ${allCoupons.map(c => {
+                  const valLabel = c.type === "percent" ? `${c.value}% Off` : (c.type === "free_shipping" ? "Free Shipping" : `${money(c.value)} Off`);
+                  const selected = defaultAutoCoupon && defaultAutoCoupon.code === c.code ? "selected" : "";
+                  return `<option value="${esc(c.code)}" ${selected}>${esc(c.code)} — ${esc(c.title || valLabel)} (${valLabel})${c.autoApply ? " [Auto]" : ""}</option>`;
+                }).join("")}
+                <option value="__CUSTOM__">Custom Manual Discount (PKR)</option>
+              </select>
+              <div id="moCouponHint" style="font-size:11.5px;color:#34d399;margin-top:6px;min-height:16px"></div>
+              <div id="moCustomDiscountWrap" style="display:none;margin-top:8px">
+                <label for="moCustomDiscount" style="font-size:12px !important;margin-bottom:4px !important">Custom Discount Amount (PKR)</label>
+                <input type="number" id="moCustomDiscount" value="0" min="0" oninput="recalcManualOrderTotal()" style="padding:8px 10px !important;font-size:13px !important">
+              </div>
+            </div>
+
+            <div style="width:295px;font-size:13.5px">
               <div style="display:flex;justify-content:space-between;margin-bottom:6px">
                 <span style="color:var(--mute-dark)">Products Subtotal:</span>
                 <b id="moSubtotalDisplay" style="color:var(--cream)">PKR 0</b>
               </div>
+              <div id="moDiscountRow" style="display:none;justify-content:space-between;margin-bottom:6px;color:#34d399">
+                <span id="moDiscountLabel">Promo Discount:</span>
+                <b id="moDiscountDisplay">- PKR 0</b>
+              </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                <span style="color:var(--mute-dark)">Courier Shipping:</span>
+                <span style="color:var(--mute-dark);display:flex;align-items:center;gap:6px">
+                  <span>Courier Shipping:</span>
+                  <span id="moShipFreeBadge" style="display:none;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(16,185,129,0.16);color:#34d399;border:1px solid rgba(16,185,129,0.35)">FREE</span>
+                </span>
                 <div style="width:110px">
-                  <input type="number" id="moShipping" value="${deliveryCfg.fee || 200}" min="0" oninput="recalcManualOrderTotal()" style="padding:4px 8px !important;font-size:13px !important;text-align:right !important">
+                  <input type="number" id="moShipping" value="${deliveryCfg.fee || 200}" min="0" data-manual-ship="0" oninput="this.dataset.manualShip='1'; recalcManualOrderTotal()" style="padding:4px 8px !important;font-size:13px !important;text-align:right !important">
                 </div>
               </div>
               <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--hair);font-size:16px">
@@ -976,28 +1003,208 @@ function openAddOrderModal() {
   recalcManualOrderTotal();
 }
 
-// Recalculate Live Subtotal and Total for Manual Order Form
-function recalcManualOrderTotal() {
-  const inputs = $$(".mo-item-qty");
+// Shared active coupon resolver for Admin manual orders
+function _getManualOrderCoupons() {
+  const raw = (window.ALL_COUPONS && window.ALL_COUPONS.length)
+    ? window.ALL_COUPONS
+    : ((window.ACTIVE_COUPONS && window.ACTIVE_COUPONS.length)
+      ? window.ACTIVE_COUPONS
+      : (Store.get("app_active_coupons") || Store.get("app_all_coupons") || []));
+  return (raw || []).filter(c => c && c.isActive !== false && !(typeof isCouponExpiredClient === "function" && isCouponExpiredClient(c.expiresAt)));
+}
+
+// Compute live line items, coupon/custom discount, Kohat/free shipping & totals for Manual Order Modal
+function getManualOrderCalculation() {
+  const prods = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
+  const items = [];
+  const cartLines = [];
   let subtotal = 0;
 
-  inputs.forEach(inp => {
+  $$(".mo-item-qty").forEach(inp => {
     const qty = Math.max(parseInt(inp.value) || 0, 0);
     const price = parseFloat(inp.dataset.price) || 0;
     const lineSub = qty * price;
     subtotal += lineSub;
-    const lineDisplay = $(`#moLineSub_${inp.dataset.pid}`);
-    if (lineDisplay) lineDisplay.textContent = money(lineSub);
+    if (qty > 0) {
+      const prodObj = prods.find(p => p.id === inp.dataset.pid) || {
+        id: inp.dataset.pid,
+        name: inp.dataset.name,
+        weight: inp.dataset.weight,
+        price
+      };
+      items.push({
+        id: inp.dataset.pid,
+        name: inp.dataset.name,
+        weight: inp.dataset.weight,
+        qty,
+        price
+      });
+      cartLines.push({ p: prodObj, qty });
+    }
   });
 
+  const cityEl = $("#moCustCity");
+  const cityVal = cityEl ? cityEl.value.trim() : "";
+  const isCityFree = (typeof isKohatCity === "function")
+    ? isKohatCity(cityVal)
+    : cityVal.toLowerCase().includes("kohat");
+
+  const couponSel = $("#moCouponSelect");
+  const selectedCode = couponSel ? couponSel.value : "";
+  let discount = 0;
+  let isCouponFreeShipping = false;
+  let couponCode = null;
+  let couponTitle = null;
+  let couponReason = "";
+  let isCouponValid = false;
+
+  if (selectedCode === "__CUSTOM__") {
+    const customInp = $("#moCustomDiscount");
+    const rawCustom = customInp ? Math.max(parseFloat(customInp.value) || 0, 0) : 0;
+    discount = Math.min(rawCustom, subtotal);
+    if (discount > 0) {
+      couponCode = "CUSTOM";
+      couponTitle = "Manual Admin Discount";
+      isCouponValid = true;
+    }
+  } else if (selectedCode) {
+    const matched = _getManualOrderCoupons().find(c => String(c.code || "").toUpperCase() === selectedCode.toUpperCase());
+    if (matched && typeof evaluateCoupon === "function") {
+      const ev = evaluateCoupon(matched, cartLines, subtotal);
+      if (ev && ev.valid) {
+        discount = ev.discount || 0;
+        isCouponFreeShipping = !!ev.freeShipping;
+        couponCode = matched.code;
+        couponTitle = matched.title || matched.code;
+        isCouponValid = true;
+      } else if (ev && ev.reason) {
+        couponReason = ev.reason;
+      }
+    } else if (matched) {
+      if (matched.type === "percent") discount = Math.min(subtotal, Math.round((subtotal * (Number(matched.value) || 0)) / 100));
+      else if (matched.type === "fixed") discount = Math.min(subtotal, Math.round(Number(matched.value) || 0));
+      else if (matched.type === "free_shipping") isCouponFreeShipping = true;
+      couponCode = matched.code;
+      couponTitle = matched.title || matched.code;
+      isCouponValid = true;
+    }
+  }
+
+  const discountedSub = Math.max(0, subtotal - discount);
+  const deliveryCfg = (window.BRAND_CONFIG && window.BRAND_CONFIG.delivery) || { fee: 200, freeShippingThreshold: 5000 };
+  const freeThreshold = deliveryCfg.freeShippingThreshold || 999999;
+  const isThresholdFree = discountedSub > 0 && discountedSub >= freeThreshold;
+  const isAutoFreeShip = isCityFree || isCouponFreeShipping || isThresholdFree;
+  const defaultFee = Number(deliveryCfg.fee ?? 200) || 0;
+
   const shipInput = $("#moShipping");
-  const shipping = shipInput ? Math.max(parseFloat(shipInput.value) || 0, 0) : 0;
-  const total = subtotal + shipping;
+  const isManualShip = shipInput && shipInput.dataset && shipInput.dataset.manualShip === "1";
+  const shipping = isManualShip
+    ? Math.max(parseFloat(shipInput.value) || 0, 0)
+    : (isAutoFreeShip ? 0 : defaultFee);
+
+  return {
+    items,
+    subtotal,
+    discount,
+    discountedSub,
+    shipping,
+    total: discountedSub + shipping,
+    couponCode,
+    couponTitle,
+    couponReason,
+    isCouponValid,
+    selectedCode,
+    isCityFree,
+    isCouponFreeShipping,
+    isThresholdFree,
+    isAutoFreeShip,
+    isManualShip
+  };
+}
+
+// Re-evaluate free Kohat delivery when Destination City changes
+function handleManualOrderCityChange() {
+  const shipInput = $("#moShipping");
+  if (shipInput && shipInput.dataset) shipInput.dataset.manualShip = "0";
+  recalcManualOrderTotal();
+}
+
+// Toggle custom discount input & recalculate when Promo Coupon changes
+function handleManualOrderCouponChange() {
+  const sel = $("#moCouponSelect");
+  const customWrap = $("#moCustomDiscountWrap");
+  if (customWrap) {
+    customWrap.style.display = (sel && sel.value === "__CUSTOM__") ? "block" : "none";
+  }
+  recalcManualOrderTotal();
+}
+
+// Recalculate Live Subtotal, Discount, Shipping and Total for Manual Order Form
+function recalcManualOrderTotal() {
+  $$(".mo-item-qty").forEach(inp => {
+    const qty = Math.max(parseInt(inp.value) || 0, 0);
+    const price = parseFloat(inp.dataset.price) || 0;
+    const lineDisplay = $(`#moLineSub_${inp.dataset.pid}`);
+    if (lineDisplay) lineDisplay.textContent = money(qty * price);
+  });
+
+  const calc = getManualOrderCalculation();
+  const shipInput = $("#moShipping");
+  if (shipInput && !calc.isManualShip) {
+    shipInput.value = calc.shipping;
+  }
 
   const subDisplay = $("#moSubtotalDisplay");
+  const discRow = $("#moDiscountRow");
+  const discLabel = $("#moDiscountLabel");
+  const discDisplay = $("#moDiscountDisplay");
+  const shipBadge = $("#moShipFreeBadge");
+  const couponHint = $("#moCouponHint");
   const totalDisplay = $("#moTotalDisplay");
-  if (subDisplay) subDisplay.textContent = money(subtotal);
-  if (totalDisplay) totalDisplay.textContent = money(total);
+
+  if (subDisplay) subDisplay.textContent = money(calc.subtotal);
+
+  if (discRow && discDisplay) {
+    if (calc.discount > 0) {
+      discRow.style.display = "flex";
+      if (discLabel) discLabel.textContent = calc.couponCode ? `Discount (${calc.couponCode}):` : "Promo Discount:";
+      discDisplay.textContent = `- ${money(calc.discount)}`;
+    } else {
+      discRow.style.display = "none";
+    }
+  }
+
+  if (shipBadge) {
+    if (calc.shipping === 0) {
+      shipBadge.style.display = "inline-block";
+      shipBadge.textContent = calc.isCityFree
+        ? "FREE • KOHAT"
+        : (calc.isCouponFreeShipping ? "FREE • COUPON" : (calc.isThresholdFree ? "FREE • 5,000+" : "FREE"));
+    } else {
+      shipBadge.style.display = "none";
+    }
+  }
+
+  if (couponHint) {
+    if (calc.selectedCode === "__CUSTOM__") {
+      couponHint.style.color = "#34d399";
+      couponHint.textContent = calc.discount > 0 ? `✓ Manual discount of ${money(calc.discount)} applied` : "Enter a custom discount amount in PKR above.";
+    } else if (calc.selectedCode && calc.couponReason) {
+      couponHint.style.color = "#f59e0b";
+      couponHint.textContent = `⚠ ${calc.couponReason}`;
+    } else if (calc.isCouponValid && calc.couponCode) {
+      couponHint.style.color = "#34d399";
+      const parts = [`✓ ${calc.couponCode}`];
+      if (calc.discount > 0) parts.push(`Saving ${money(calc.discount)}`);
+      if (calc.isCouponFreeShipping) parts.push("Free Shipping");
+      couponHint.textContent = parts.join(" · ");
+    } else {
+      couponHint.textContent = "";
+    }
+  }
+
+  if (totalDisplay) totalDisplay.textContent = money(calc.total);
 }
 
 // Create Manual Order and Save to Database
@@ -1012,29 +1219,18 @@ function createManualOrder() {
   const status = $("#moStatus").value;
   const paymentMethod = $("#moPaymentMethod").value;
 
-  const items = [];
-  $$(".mo-item-qty").forEach(inp => {
-    const qty = Math.max(parseInt(inp.value) || 0, 0);
-    if (qty > 0) {
-      items.push({
-        id: inp.dataset.pid,
-        name: inp.dataset.name,
-        weight: inp.dataset.weight,
-        qty: qty,
-        price: parseFloat(inp.dataset.price) || 0
-      });
-    }
-  });
+  const calc = getManualOrderCalculation();
+  const items = calc.items;
 
   if (!items.length) {
     alert("Please select at least 1 product quantity for this order.");
     return;
   }
 
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const shipInput = $("#moShipping");
-  const shipping = shipInput ? Math.max(parseFloat(shipInput.value) || 0, 0) : 0;
-  const total = subtotal + shipping;
+  const subtotal = calc.subtotal;
+  const discount = calc.discount;
+  const shipping = calc.shipping;
+  const total = calc.total;
 
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);
@@ -1044,12 +1240,16 @@ function createManualOrder() {
   const orderId = `MSR-${yy}${mm}${dd}-${rand}`;
   const dateFormatted = (typeof formatOrderDate === "function") ? formatOrderDate(now) : now.toLocaleString();
 
+  const timelineExtras = [];
+  if (calc.couponCode && discount > 0) timelineExtras.push(`Promo ${calc.couponCode}: -${money(discount)}`);
+  if (calc.isCityFree && shipping === 0) timelineExtras.push("Free Kohat Delivery");
+
   const timeline = [
     {
       status: "Pending",
       title: "Order Created Manually",
       time: dateFormatted,
-      note: "Order recorded manually via Admin Portal"
+      note: "Order recorded manually via Admin Portal" + (timelineExtras.length ? ` (${timelineExtras.join(", ")})` : "")
     }
   ];
 
@@ -1084,6 +1284,9 @@ function createManualOrder() {
     paymentMethod,
     pay: paymentMethod,
     subtotal,
+    discount,
+    couponCode: calc.couponCode || null,
+    couponTitle: calc.couponTitle || null,
     shipping,
     total,
     items,
@@ -3463,6 +3666,9 @@ window.fillLaunchCouponPreset = fillLaunchCouponPreset;
 window.saveCouponForm = saveCouponForm;
 window.toggleCouponStatus = toggleCouponStatus;
 window.deleteCouponItem = deleteCouponItem;
+window.handleManualOrderCityChange = handleManualOrderCityChange;
+window.handleManualOrderCouponChange = handleManualOrderCouponChange;
+window.recalcManualOrderTotal = recalcManualOrderTotal;
 
 // Manual On-Demand Live Order Sync (No background auto-polling intervals)
 async function manualRefreshOrders() {

@@ -34,10 +34,12 @@ MSR Foods is a premium Pakistani superfood brand — not a local or small-scale 
      - X (Twitter) & Threads: Active customer support & order booking
   4. **Direct Phone Call:** 03159935600 (24/7 Customer Support)
   5. **Official Email:** msrfoods.official@gmail.com
+- **Active Promotion (New Launch Offer):**
+  - **Code:** `NEWLAUNCH` (20% Off — **Auto-Applied at Checkout**, valid through November 30, 2026)
 - **Accurate Product Sizes & Pricing:**
-  1. MSR Honey Nut Mix 250g Starter Jar: PKR 899
-  2. MSR Honey Nut Mix 500g Everyday Jar: PKR 1,599
-  3. MSR Honey Nut Mix 1kg Family Value Pack: PKR 2,999
+  1. MSR Honey Nut Mix 250g Starter Jar: PKR 959 Launch Offer (Regular PKR 1,199)
+  2. MSR Honey Nut Mix 500g Everyday Jar: PKR 1,599 Launch Offer (Regular PKR 1,999)
+  3. MSR Honey Nut Mix 1kg Family Value Pack: PKR 3,039 Launch Offer (Regular PKR 3,799)
 
 ## What We Sell
 
@@ -68,19 +70,22 @@ MSR Honey Nut Mix is a natural superfood suitable for:
 ## Products & Pricing
 
 ### MSR Honey Nut Mix 500g — Most Popular
-- Price: PKR 1,599 (regular PKR 1,850)
+- Launch Promo Price: PKR 1,599 (20% Off auto-applied with `NEWLAUNCH` till Nov 30, 2026)
+- Regular Price: PKR 1,999
 - Availability: In Stock
 - Best for: daily personal use, gym nutrition, gifting
 - URL: https://msrfoodsofficial.food/products/honey-nut-mix-500g
 
 ### MSR Honey Nut Mix 1kg Family Pack — Best Value
-- Price: PKR 2,999 (regular PKR 3,499)
+- Launch Promo Price: PKR 3,039 (20% Off auto-applied with `NEWLAUNCH` till Nov 30, 2026)
+- Regular Price: PKR 3,799
 - Availability: In Stock
 - Best for: families, monthly pantry stock, bulk personal use
 - URL: https://msrfoodsofficial.food/products/honey-nut-mix-1kg
 
 ### MSR Honey Nut Mix 250g Starter Jar — New
-- Price: PKR 899 (regular PKR 1,099)
+- Launch Promo Price: PKR 959 (20% Off auto-applied with `NEWLAUNCH` till Nov 30, 2026)
+- Regular Price: PKR 1,199
 - Availability: In Stock
 - Best for: first-time buyers, trial, travel, desk snacking
 - URL: https://msrfoodsofficial.food/products/honey-nut-mix-250g

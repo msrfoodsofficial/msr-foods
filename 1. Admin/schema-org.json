@@ -121,7 +121,7 @@
             "url": "https://msrfoodsofficial.food/products/honey-nut-mix-500g",
             "priceCurrency": "PKR",
             "price": "1599",
-            "priceValidUntil": "2027-12-31",
+            "priceValidUntil": "2026-11-30",
             "availability": "https://schema.org/InStock",
             "itemCondition": "https://schema.org/NewCondition",
             "seller": {
@@ -263,8 +263,8 @@
             "@type": "Offer",
             "url": "https://msrfoodsofficial.food/products/honey-nut-mix-1kg",
             "priceCurrency": "PKR",
-            "price": "2999",
-            "priceValidUntil": "2027-12-31",
+            "price": "3039",
+            "priceValidUntil": "2026-11-30",
             "availability": "https://schema.org/InStock",
             "itemCondition": "https://schema.org/NewCondition",
             "seller": {
@@ -406,8 +406,8 @@
             "@type": "Offer",
             "url": "https://msrfoodsofficial.food/products/honey-nut-mix-250g",
             "priceCurrency": "PKR",
-            "price": "899",
-            "priceValidUntil": "2027-12-31",
+            "price": "959",
+            "priceValidUntil": "2026-11-30",
             "availability": "https://schema.org/InStock",
             "itemCondition": "https://schema.org/NewCondition",
             "seller": {

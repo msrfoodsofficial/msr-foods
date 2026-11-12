@@ -1025,6 +1025,71 @@ try {
   }
 } catch (e) {}
 
+// Synchronize JSON-LD Product Catalog & Social Meta Tags with Live Pricing / Coupons
+function syncStructuredDataJsonLd() {
+  if (typeof document === "undefined") return;
+  const prods = (typeof getProducts === "function") ? getProducts() : (window.PRODUCTS || []);
+  if (!prods || !prods.length) return;
+
+  const getEffPrice = (p) => {
+    const promo = (typeof getBestPromoForProduct === "function") ? getBestPromoForProduct(p) : null;
+    return {
+      price: promo ? promo.promoPrice : (Number(p.price) || 0),
+      regular: promo ? promo.originalPrice : (Number(p.price) || 0),
+      promo
+    };
+  };
+
+  try {
+    const ldEl = document.getElementById("ld-product-catalog");
+    if (ldEl && ldEl.textContent) {
+      const schema = JSON.parse(ldEl.textContent);
+      if (Array.isArray(schema.itemListElement)) {
+        schema.itemListElement.forEach(entry => {
+          const item = entry && entry.item;
+          if (!item) return;
+          const match = prods.find(p =>
+            (item.sku && p.sku && String(item.sku).toLowerCase() === String(p.sku).toLowerCase()) ||
+            (item.name && p.name && item.name.toLowerCase().includes(String(p.weight || "").toLowerCase()))
+          );
+          if (match && item.offers) {
+            const { price, promo } = getEffPrice(match);
+            if (price > 0) item.offers.price = String(price);
+            if (promo && promo.coupon && promo.coupon.expiresAt) {
+              item.offers.priceValidUntil = promo.coupon.expiresAt;
+            }
+          }
+        });
+        ldEl.textContent = JSON.stringify(schema, null, 2);
+      }
+    }
+  } catch (e) {}
+
+  try {
+    const findByWeight = (w) => prods.find(p => String(p.weight || "").toLowerCase().includes(w));
+    const p250 = findByWeight("250g");
+    const p500 = findByWeight("500g");
+    const p1kg = findByWeight("1kg");
+    if (p250 && p500 && p1kg) {
+      const e250 = getEffPrice(p250);
+      const e500 = getEffPrice(p500);
+      const e1kg = getEffPrice(p1kg);
+      const activePromo = e500.promo || e1kg.promo || e250.promo;
+      const fmt = (n) => Number(n).toLocaleString("en-US");
+      const ogDesc = activePromo
+        ? `Order authentic pure honey & handpicked dry fruits online in Pakistan. Launch Offer ${activePromo.badgeText ? `(${activePromo.badgeText})` : ""}: 250g PKR ${fmt(e250.price)}, 500g PKR ${fmt(e500.price)}, 1kg PKR ${fmt(e1kg.price)}. Nationwide COD & Kohat Free Delivery.`
+        : `Order authentic pure honey & handpicked dry fruits online in Pakistan. 250g PKR ${fmt(e250.price)}, 500g PKR ${fmt(e500.price)}, 1kg PKR ${fmt(e1kg.price)}. Nationwide COD & Kohat Free Delivery.`;
+      const twDesc = activePromo
+        ? `Handcrafted in Pakistan. Launch Offer: 250g PKR ${fmt(e250.price)}, 500g PKR ${fmt(e500.price)}, 1kg PKR ${fmt(e1kg.price)}. 100% Natural. Nationwide Cash on Delivery.`
+        : `Handcrafted in Pakistan. 250g PKR ${fmt(e250.price)}, 500g PKR ${fmt(e500.price)}, 1kg PKR ${fmt(e1kg.price)}. 100% Natural. Nationwide Cash on Delivery.`;
+      const ogEl = document.querySelector('meta[property="og:description"]');
+      const twEl = document.querySelector('meta[name="twitter:description"]');
+      if (ogEl) ogEl.setAttribute("content", ogDesc.replace(/\s+/g, " ").trim());
+      if (twEl) twEl.setAttribute("content", twDesc);
+    }
+  } catch (e) {}
+}
+
 // Application Bootstrap
 function initApp() {
   if ("scrollRestoration" in history) {
@@ -1037,6 +1102,7 @@ function initApp() {
   initCart();
   shell();
   route();
+  syncStructuredDataJsonLd();
 
   // Dynamic White-Label Brand Settings & Social Channels Sync from Cloudflare D1
   if (typeof syncSettingsRemote === "function") {
@@ -1048,6 +1114,7 @@ function initApp() {
       if (brandChanged || couponsChanged) {
         if (typeof shell === "function") shell();
         if (typeof route === "function") route();
+        syncStructuredDataJsonLd();
       }
     });
   }
@@ -1058,6 +1125,7 @@ function initApp() {
     syncProductsRemote().then(prods => {
       if (prods && prods.length > 0 && JSON.stringify(window.PRODUCTS || []) !== prevProdsHash) {
         if (typeof route === "function") route();
+        syncStructuredDataJsonLd();
       }
     });
   }

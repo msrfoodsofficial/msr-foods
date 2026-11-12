@@ -1521,7 +1521,7 @@ views.about = () => ({
         "opens": "00:00",
         "closes": "23:59"
       },
-      "priceRange": "PKR 899 - PKR 2999",
+      "priceRange": "${(() => { const prods = (typeof getProducts === 'function' ? getProducts() : (window.PRODUCTS || [])).map(p => (typeof getBestPromoForProduct === 'function' && getBestPromoForProduct(p)) ? getBestPromoForProduct(p).promoPrice : (Number(p.price) || 0)).filter(n => n > 0); return prods.length ? `PKR ${Math.min(...prods)} - PKR ${Math.max(...prods)}` : 'PKR 959 - PKR 3039'; })()}",
       "hasMap": "https://share.google/4qYt5oe9pBqKFpKce",
       "sameAs": [
         "https://share.google/4qYt5oe9pBqKFpKce",
@@ -1529,8 +1529,6 @@ views.about = () => ({
         "https://www.youtube.com/@MSRFoods-official-pk",
         "https://www.instagram.com/msrfoods.official/",
         "https://www.tiktok.com/@msrfoodsoffical",
-        "https://www.facebook.com/USSPRODUCTIONLEVEL"
-      ],
         "https://www.facebook.com/USSPRODUCTIONLEVEL"
       ],
       "foundingDate": "2026",

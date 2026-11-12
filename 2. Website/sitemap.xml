@@ -4,7 +4,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://msrfoodsofficial.food/</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -12,7 +12,7 @@
   <!-- Shop Catalog -->
   <url>
     <loc>https://msrfoodsofficial.food/#/shop</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -20,7 +20,7 @@
   <!-- Brand Story & Heritage -->
   <url>
     <loc>https://msrfoodsofficial.food/#/about</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -28,21 +28,21 @@
   <!-- Product Pages -->
   <url>
     <loc>https://msrfoodsofficial.food/products/honey-nut-mix-500g</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://msrfoodsofficial.food/products/honey-nut-mix-1kg</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://msrfoodsofficial.food/products/honey-nut-mix-250g</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -50,7 +50,7 @@
   <!-- Machine-Readable Catalog -->
   <url>
     <loc>https://msrfoodsofficial.food/catalog.json</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -58,7 +58,7 @@
   <!-- LLM / AI Search Index -->
   <url>
     <loc>https://msrfoodsofficial.food/llms.txt</loc>
-    <lastmod>2026-11-05</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

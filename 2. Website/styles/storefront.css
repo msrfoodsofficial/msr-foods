@@ -1226,8 +1226,13 @@
   color: #14100a;
 }
 
-.gal-nav.prev { left: 14px; }
-.gal-nav.next { right: 14px; }
+.gal-nav.prev {
+  left: 14px;
+}
+
+.gal-nav.next {
+  right: 14px;
+}
 
 @keyframes swap {
   from {
@@ -3421,6 +3426,7 @@ select:-webkit-autofill:focus {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -3430,10 +3436,12 @@ select:-webkit-autofill:focus {
   .promo-ticker-bar {
     padding: 7px 0;
   }
+
   .promo-ticker-seg {
     font-size: 11.5px;
     gap: 6px;
   }
+
   .promo-sep {
     margin-inline: 22px;
   }
